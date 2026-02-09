@@ -1,0 +1,25 @@
+{
+  "equation_type": "fitzhugh-nagumo",
+  "domain_type": "Finite",
+  "domain_size": 100,
+
+  "boundary_conditions": {
+    "LEFT":  { "type": "Neumann", "value": 0 },
+    "RIGHT": { "type": "Neumann", "value": 0 }
+  },
+
+  "diff_constant": 0.00,
+  "time_step": 0.01,
+  "total_time": 1,
+  "num_points": 400,
+  "reaction_term": false,
+
+  "a": 0.7,
+  "b": 0.8,
+  "tau": 12.5,
+
+  "fhn_initial_condition": {
+    "stimulated_region": [45, 55],
+    "stimulus_magnitude": 2.0
+  }
+}
