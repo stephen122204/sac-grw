@@ -1,4 +1,4 @@
-# GRW Heat Solver (JSON-driven)
+# GRW Heat Solver
 
 This project simulates the **1D heat equation** using a **Gaussian Random Walk (GRW)** / Monte Carlo particle method.  
 Runs are configured via a single **JSON file** (domain, boundary conditions, diffusion constant, timestep, initial condition, etc.) and the script automatically **simulates + plots** results.
