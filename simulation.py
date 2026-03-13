@@ -184,7 +184,7 @@ def simulate_fitzhugh_nagumo_grw(globs, config, _diag_dir=None):
     if _diag_dir is not None:
         _snap_at = {0, n_steps // 4, n_steps // 2, 3 * n_steps // 4, n_steps - 1}
         _snaps: dict = {}
-        _front_t:   list = []
+        _front_t: list = []
         _front_loc: list = []
         # Record initial front (t=0) from the un-stepped sorted globs.
         _ord0 = np.argsort(x)
@@ -199,7 +199,7 @@ def simulate_fitzhugh_nagumo_grw(globs, config, _diag_dir=None):
 
         # Step 2: Boundary reflection on a finite domain.
         #   Dirichlet: reflect position, preserve weight.
-        #   Neumann:   reflect position, negate weight.
+        #   Neumann: reflect position, negate weight.
         if L > 0.0:
             for _ in range(4):
                 ml = x < 0.0
@@ -239,7 +239,7 @@ def simulate_fitzhugh_nagumo_grw(globs, config, _diag_dir=None):
 
     for i in range(n):
         globs[i]['position'] = float(x[i])
-        globs[i]['value']    = float(w[i])
+        globs[i]['value'] = float(w[i])
 
     if _diag_dir is not None:
         _save_fhn_grw_diagnostics(
@@ -271,7 +271,7 @@ def _save_fhn_grw_diagnostics(diag_dir, front_t, front_loc, snaps,
     t_arr = np.asarray(front_t)
     fl_arr = np.asarray(front_loc)
     exact_front = x_center_init - theta * t_arr
-    ax[0].plot(t_arr, fl_arr,      'b-',  lw=0.7, alpha=0.8, label='GRW front')
+    ax[0].plot(t_arr, fl_arr, 'b-', lw=0.7, alpha=0.8, label='GRW front')
     ax[0].plot(t_arr, exact_front, 'r--', lw=1.5, label=f'Exact (speed={theta:.4g})')
     ax[0].set_xlabel('t')
     ax[0].set_ylabel('front x  (u = 0.5 crossing)')
@@ -387,7 +387,7 @@ def simulate_burgers_lagrangian(globs, config):
 
     for i, g in enumerate(globs):
         g['position'] = float(positions[i])
-        g['value']    = [float(u_vals[i])]
+        g['value'] = [float(u_vals[i])]
 
     return globs
 
@@ -416,8 +416,8 @@ def _reference_phi_heat_fd(phi0_interp, x_out, nu, T, phi_left, phi_right):
     for _ in range(n_steps):
         phi_new = phi.copy()
         phi_new[1:-1] = phi[1:-1] + r * (phi[2:] - 2.0 * phi[1:-1] + phi[:-2])
-        phi_new[0]    = float(phi_left)
-        phi_new[-1]   = float(phi_right)
+        phi_new[0] = float(phi_left)
+        phi_new[-1] = float(phi_right)
         phi = phi_new
     return phi
 
@@ -518,7 +518,7 @@ def _save_cole_hopf_diagnostics(
 
     # [1,0] phi_x strategies
     ax = axes[1, 0]
-    ax.plot(x_out, phi_x_out,  color=c_grw,         linewidth=lw_grw,
+    ax.plot(x_out, phi_x_out, color=c_grw, linewidth=lw_grw,
             label="GRW gradient(phi)")
     ax.plot(x_out, phi_x_bins, color="mediumpurple", linewidth=1.1,
             linestyle=":", label="GRW bins/dx")
@@ -566,7 +566,7 @@ def _save_cole_hopf_diagnostics(
             print(f"  [Cole-Hopf] Error decomposition:")
             print(f"    Total   rms = {rms_total:.4f}")
             print(f"    BC-mismatch = {rms_bc:.4f}  ({100*rms_bc/rms_total:.0f}% of total)")
-            print(f"    GRW noise   = {rms_noise:.4f}  ({100*rms_noise/rms_total:.0f}% of total)")
+            print(f"    GRW noise = {rms_noise:.4f}  ({100*rms_noise/rms_total:.0f}% of total)")
     ax.axhline(0.0, color="black", linewidth=0.7, linestyle="--")
     ax.legend(fontsize=6)
     ax.set_title("Error decomp: total / BC-mismatch / GRW-noise", fontsize=8)
@@ -758,14 +758,14 @@ def simulate_burgers_cole_hopf_grw(globs, config, _diag_dir=None):
         bin_sums_s *= exact_integral / bin_sums_s.sum()
 
     smoothed_after = float(bin_sums_s.sum())
-    print(f"  [Cole-Hopf] smoothed sum after correction  = {smoothed_after:.6e}")
+    print(f"  [Cole-Hopf] smoothed sum after correction = {smoothed_after:.6e}")
 
     # Reconstruct phi by integrating the smoothed phi_x bins.
     # phi(x_j) = phi0(0) + cumsum(bin_sums_s)[j]  (right-endpoint Riemann rule).
     # The right-boundary check phi_out[-1] == phi0(L) serves as a consistency test.
     phi_out = phi0_0 + np.cumsum(bin_sums_s)
 
-    print(f"  [Cole-Hopf] phi_out[0]  = {float(phi_out[0]):.6g}  "
+    print(f"  [Cole-Hopf] phi_out[0] = {float(phi_out[0]):.6g}  "
           f"(expect ~{float(phi0_0 + bin_sums_s[0]):.6g})")
     print(f"  [Cole-Hopf] phi_out[-1] = {float(phi_out[-1]):.6g}  "
           f"(expect ~{phi0_L:.6g})")
@@ -850,7 +850,7 @@ def simulate_burgers_cole_hopf_grw(globs, config, _diag_dir=None):
 
     for i in range(N):
         globs[i]['position'] = float(x_out[i])
-        globs[i]['value']    = [float(u_out[i])]
+        globs[i]['value'] = [float(u_out[i])]
 
     return globs
 
@@ -870,7 +870,7 @@ def simulate_burgers_direct_grw(globs, config):
 
       Dividing the non-diffusion terms by v yields the per-glob reaction statistic:
         R(u) = -(u * u_xx / u_x + u_x)
-             = -(u * v_x / v + v)
+ = -(u * v_x / v + v)
 
       In GRW, globs representing v = u_x evolve via:
         1. Brownian random walk (for nu*v_xx): x_i += Normal(0, sqrt(2*nu*dt))
@@ -979,7 +979,7 @@ def simulate_burgers_direct_grw(globs, config):
 
     for i in range(N):
         globs[i]['position'] = float(x_out[i])
-        globs[i]['value']    = [float(u_out[i])]
+        globs[i]['value'] = [float(u_out[i])]
 
     return globs
 
@@ -1048,7 +1048,7 @@ def simulate_burgers_fd(globs, config):
         else 0.0
         for glob in globs
     ], dtype=float)
-    u[0]  = bc_left
+    u[0] = bc_left
     u[-1] = bc_right
 
     t = 0.0
@@ -1062,7 +1062,7 @@ def simulate_burgers_fd(globs, config):
         u_x = np.gradient(u, dx)
         u_xx = np.gradient(u_x, dx)
         u   += (-u * u_x + nu * u_xx) * dt_inner
-        u[0]  = bc_left
+        u[0] = bc_left
         u[-1] = bc_right
         t += dt_inner
 

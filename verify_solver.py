@@ -78,9 +78,9 @@ from simulation import (
 # ---------------------------------------------------------------------------
 
 _DEFAULT_CONFIGS = {
-    "heat":    "configs/heat_step_dirichlet.json",
+    "heat": "configs/heat_step_dirichlet.json",
     "burgers": "configs/burgers_stationary_shock.json",
-    "fhn":     "configs/fhn_grw_steady.json",
+    "fhn": "configs/fhn_grw_steady.json",
 }
 
 
@@ -170,14 +170,14 @@ def compute_metrics(numerical, reference, dx):
     ref_norm = np.sqrt(np.sum(reference ** 2) * dx)
     linf = float(np.max(np.abs(diff)))
     return {
-        "l1":            float(np.sum(np.abs(diff)) * dx),
-        "l2":            float(np.sqrt(np.sum(diff ** 2) * dx)),
-        "linf":          linf,
+        "l1": float(np.sum(np.abs(diff)) * dx),
+        "l2": float(np.sqrt(np.sum(diff ** 2) * dx)),
+        "linf": linf,
         "max_abs_error": linf,
-        "rel_l2":        float(np.sqrt(np.sum(diff ** 2) * dx) / ref_norm)
+        "rel_l2": float(np.sqrt(np.sum(diff ** 2) * dx) / ref_norm)
                          if ref_norm > 1e-12 else None,
-        "mean_signed":   float(np.mean(diff)),
-        "rmse":          float(np.sqrt(np.mean(diff ** 2))),
+        "mean_signed": float(np.mean(diff)),
+        "rmse": float(np.sqrt(np.mean(diff ** 2))),
     }
 
 
@@ -240,8 +240,8 @@ def plot_comparison(
     """
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
 
-    ax1.plot(x, reference, color="black",    linewidth=2,   linestyle="-",  label=ref_label)
-    ax1.plot(x, numerical, color="crimson",  linewidth=1.5, linestyle="--", label=num_label)
+    ax1.plot(x, reference, color="black", linewidth=2, linestyle="-", label=ref_label)
+    ax1.plot(x, numerical, color="crimson", linewidth=1.5, linestyle="--", label=num_label)
 
     if extra_curves:
         _colors = ["steelblue", "darkorange", "seagreen"]
@@ -347,14 +347,14 @@ def run_heat(cfg, output_dir, do_save_data):
     u_exact = exact_heat_step(x_grid, T, x0, uL, uR, alpha)
     metrics = compute_metrics(u_num, u_exact, dx)
 
-    metrics["glob_mean_position"]  = mean_pos
-    metrics["glob_std_position"]   = std_pos
-    metrics["theoretical_std"]     = exp_std
+    metrics["glob_mean_position"] = mean_pos
+    metrics["glob_std_position"] = std_pos
+    metrics["theoretical_std"] = exp_std
     metrics["weight_conservation"] = total_wt
-    metrics["expected_weight"]     = jump_height
-    metrics["num_globs"]           = N
-    metrics["alpha"]               = alpha
-    metrics["T"]                   = T
+    metrics["expected_weight"] = jump_height
+    metrics["num_globs"] = N
+    metrics["alpha"] = alpha
+    metrics["T"] = T
 
     _print_metrics(metrics, "Error metrics  (numerical vs exact error function)")
 
@@ -482,9 +482,9 @@ def plot_burgers_cole_hopf(
     col_ref = "black"
     col_num = plt.rcParams['axes.prop_cycle'].by_key()['color'][1]
 
-    ax1.plot(x_grid, u_ref, color=col_ref, linewidth=2.0,  linestyle="-",
+    ax1.plot(x_grid, u_ref, color=col_ref, linewidth=2.0, linestyle="-",
              label=ref_label)
-    ax1.plot(x_grid, u_num, color=col_num, linewidth=1.5,  linestyle="--",
+    ax1.plot(x_grid, u_num, color=col_num, linewidth=1.5, linestyle="--",
              label=num_label)
     ax1.set_xlabel("x")
     ax1.set_ylabel("u(x, T)")
@@ -633,13 +633,13 @@ def run_burgers(cfg, output_dir, do_save_data, ref_factor):
     wave_loc_diff = abs(wave_loc_num - wave_loc_ref)
 
     metrics.update({
-        "wave_location_grw":  wave_loc_num,
-        "wave_location_ref":  wave_loc_ref,
+        "wave_location_grw": wave_loc_num,
+        "wave_location_ref": wave_loc_ref,
         "wave_location_diff": wave_loc_diff,
-        "u_min":              float(np.min(u_num_on_grid)),
-        "u_max":              float(np.max(u_num_on_grid)),
-        "burgers_mode":       mode,
-        "burgers_ic_type":    ic_type,
+        "u_min": float(np.min(u_num_on_grid)),
+        "u_max": float(np.max(u_num_on_grid)),
+        "burgers_mode": mode,
+        "burgers_ic_type": ic_type,
     })
 
     _print_metrics(metrics, metrics_label)
@@ -828,7 +828,7 @@ def plot_fhn_scalar_grw(
         err = u_gr - u_ex
         m = compute_metrics(u_gr, u_ex, float(x_grid[1] - x_grid[0]))
 
-        ax.plot(x_grid, u_ex, color=col_exa, linewidth=2,   linestyle='-',  label='exact')
+        ax.plot(x_grid, u_ex, color=col_exa, linewidth=2, linestyle='-', label='exact')
         ax.plot(x_grid, u_gr, color=col_num, linewidth=1.5, linestyle='--', label='GRW')
         ax.set_xlabel('x')
         ax.set_ylabel('u(x,t)')
@@ -956,7 +956,7 @@ def _run_fhn_scalar(cfg, output_dir, do_save_data):
     # All snapshots on the same x_grid; re-interpolate if needed.
     for i in range(len(snap_num)):
         if len(snap_num[i]) != len(x_grid_out):
-            snap_num[i]   = np.interp(x_grid_out, np.linspace(0.0, L, len(snap_num[i])),  snap_num[i])
+            snap_num[i] = np.interp(x_grid_out, np.linspace(0.0, L, len(snap_num[i])), snap_num[i])
         if len(snap_exact[i]) != len(x_grid_out):
             snap_exact[i] = np.interp(x_grid_out, np.linspace(0.0, L, len(snap_exact[i])), snap_exact[i])
 
@@ -974,23 +974,23 @@ def _run_fhn_scalar(cfg, output_dir, do_save_data):
             return float(x[i])
         return float(x[i] + (0.5 - u[i]) / (u[i+1] - u[i]) * (x[i+1] - x[i]))
 
-    front_grw = _front_loc(snap_num[-1],   x_grid_out)
+    front_grw = _front_loc(snap_num[-1], x_grid_out)
     front_ex = _front_loc(snap_exact[-1], x_grid_out)
     front_diff = abs(front_grw - front_ex)
 
     combined_metrics = {
-        "ic_type":          ic_type,
-        "a":                float(a_),
-        "theta":            float(theta),
-        "x_center":         float(x_center),
-        "T":                float(T),
-        "N_globs":          int(N),
-        "D":                float(D),
-        "dt":               float(dt),
+        "ic_type": ic_type,
+        "a": float(a_),
+        "theta": float(theta),
+        "x_center": float(x_center),
+        "T": float(T),
+        "N_globs": int(N),
+        "D": float(D),
+        "dt": float(dt),
         "u_final": m_fin,
-        "front_location_grw":   front_grw,
+        "front_location_grw": front_grw,
         "front_location_exact": front_ex,
-        "front_location_diff":  front_diff,
+        "front_location_diff": front_diff,
     }
 
     # Per-snapshot front table.
@@ -998,7 +998,7 @@ def _run_fhn_scalar(cfg, output_dir, do_save_data):
     print(f"    {'t':>6}   {'GRW front':>10}   {'exact front':>11}   {'error':>8}")
     print(f"    {'--':>6}   {'----------':>10}   {'-----------':>11}   {'-------':>8}")
     for (t_s, u_g_s, u_ex_s) in snap_fronts:
-        fg = _front_loc(u_g_s,  x_grid_out)
+        fg = _front_loc(u_g_s, x_grid_out)
         fe = _front_loc(u_ex_s, x_grid_out)
         print(f"    {t_s:6.3g}   {fg:10.4f}   {fe:11.4f}   {fg-fe:+8.4f}")
 

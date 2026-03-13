@@ -70,12 +70,12 @@ def run_verification(config_path, nbins=300):
     cfg = config_module.load_config_from_json(config_path)
 
     alpha = cfg.diff_constant
-    T     = cfg.total_time
-    L     = cfg.domain_size
-    N     = cfg.num_points
-    dt    = cfg.time_step
-    uL    = float(cfg.boundary_conditions['LEFT']['value'])
-    uR    = float(cfg.boundary_conditions['RIGHT']['value'])
+    T = cfg.total_time
+    L = cfg.domain_size
+    N = cfg.num_points
+    dt = cfg.time_step
+    uL = float(cfg.boundary_conditions['LEFT']['value'])
+    uR = float(cfg.boundary_conditions['RIGHT']['value'])
 
     # Jump position from the IC config (fallback to midpoint)
     heat_ic = getattr(cfg, '_raw_heat_ic', None)
@@ -84,16 +84,16 @@ def run_verification(config_path, nbins=300):
 
     print(f"  Parameters")
     print(f"    alpha (diff_constant) = {alpha}")
-    print(f"    T (total_time)        = {T}")
-    print(f"    dt (time_step)        = {dt}  ({int(T/dt)} steps)")
-    print(f"    N (num_points)        = {N}")
-    print(f"    Domain                = [0, {L}]")
-    print(f"    BCs                   = {cfg.boundary_conditions['LEFT']['type']}"
+    print(f"    T (total_time) = {T}")
+    print(f"    dt (time_step) = {dt}  ({int(T/dt)} steps)")
+    print(f"    N (num_points) = {N}")
+    print(f"    Domain = [0, {L}]")
+    print(f"    BCs = {cfg.boundary_conditions['LEFT']['type']}"
           f"–{cfg.boundary_conditions['RIGHT']['type']}")
-    print(f"    Step at x0            = {x0},  jump_height = {jump_height}")
+    print(f"    Step at x0 = {x0},  jump_height = {jump_height}")
 
     expected_std = np.sqrt(2.0 * alpha * T)
-    print(f"\n  Theoretical glob std after T:  sqrt(2*alpha*T) = {expected_std:.6f}")
+    print(f"\n  Theoretical glob std after T: sqrt(2*alpha*T) = {expected_std:.6f}")
 
     # Run
     print(f"\n  Running simulation...", flush=True)
@@ -102,21 +102,21 @@ def run_verification(config_path, nbins=300):
     print(f"  Done.\n")
 
     positions = np.array([g['position'] for g in results])
-    values    = np.array([g['value']    for g in results])
+    values = np.array([g['value']    for g in results])
 
     # ------------------------------------------------------------------
     # Check 1 — Glob statistics
     # ------------------------------------------------------------------
-    mean_pos  = float(np.mean(positions))
-    std_pos   = float(np.std(positions))
-    total_wt  = float(np.sum(values))
+    mean_pos = float(np.mean(positions))
+    std_pos = float(np.std(positions))
+    total_wt = float(np.sum(values))
 
     print(f"  [1] Glob statistics")
     print(f"      Mean position : {mean_pos:.6f}   (expected ≈ {x0:.4f})")
     print(f"      Std  position : {std_pos:.6f}   (expected ≈ {expected_std:.6f})")
     mean_err = abs(mean_pos - x0)
-    std_err  = abs(std_pos - expected_std)
-    std_tol  = 3.0 * expected_std / np.sqrt(N)   # 3-sigma Monte Carlo tolerance on std
+    std_err = abs(std_pos - expected_std)
+    std_tol = 3.0 * expected_std / np.sqrt(N)   # 3-sigma Monte Carlo tolerance on std
     print(f"      |mean - x0|   : {mean_err:.6f}  {'OK' if mean_err < 3*expected_std/np.sqrt(N) else 'WARN'}")
     print(f"      |std - theory|: {std_err:.6f}  {'OK' if std_err < std_tol else 'WARN'}  (3σ MC tol = {std_tol:.6f})")
 
@@ -138,7 +138,7 @@ def run_verification(config_path, nbins=300):
 
     u_exact = exact_heat_step(centers, T, x0, uL, uR, alpha)
 
-    l2_err  = float(np.sqrt(np.mean((u_grw - u_exact) ** 2)))
+    l2_err = float(np.sqrt(np.mean((u_grw - u_exact) ** 2)))
     max_err = float(np.max(np.abs(u_grw - u_exact)))
 
     print(f"\n  [3] Reconstruction vs. exact error function")
@@ -156,8 +156,8 @@ def run_verification(config_path, nbins=300):
 
     # Left: overlay
     ax = axes[0]
-    ax.plot(centers, u_exact, 'k-',  linewidth=2,   label="Exact (error function)")
-    ax.plot(centers, u_grw,   'r--', linewidth=1.5, label=f"GRW  (N={N})")
+    ax.plot(centers, u_exact, 'k-', linewidth=2, label="Exact (error function)")
+    ax.plot(centers, u_grw, 'r--', linewidth=1.5, label=f"GRW  (N={N})")
     ax.set_xlabel("x")
     ax.set_ylabel("u(x, T)")
     ax.set_title(f"Heat GRW vs. Exact  (T={T}, α={alpha})")

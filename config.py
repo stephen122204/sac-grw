@@ -28,9 +28,9 @@ _ALLOWED_BURGERS_IC_TYPES = {
 }
 
 _ALLOWED_BURGERS_MODES = {
-    "cole_hopf_grw",   # main Cole-Hopf GRW
-    "direct_grw",      # diagnostic: direct gradient-variable GRW (noisy by design)
-    "lagrangian_grw",  # experimental Lagrangian particle method (previous approach)
+    "cole_hopf_grw", # main Cole-Hopf GRW
+    "direct_grw", # diagnostic: direct gradient-variable GRW (noisy by design)
+    "lagrangian_grw", # experimental Lagrangian particle method (previous approach)
 }
 
 
