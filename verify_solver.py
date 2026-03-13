@@ -653,15 +653,18 @@ def exact_fhn_traveling_wave(x, t, a, x_center=0.0):
     return 1.0 / (1.0 + np.exp(-xi / 2.0))
 
 
-def _run_fhn_grw_scalar(cfg, total_time_override=None):
+def _run_fhn_grw_scalar(cfg, total_time_override=None, diag_dir=None):
     """
     Run the thesis scalar GRW FHN solver.
 
     Returns (x_sorted, u_reconstructed) on a uniform output grid.
-    u is reconstructed from the sorted glob list via cumulative summation.
+    u is reconstructed from the sorted glob list via cumulative summation
+    (the GRW integration of the gradient globs).
 
     :param cfg:                 SimulationConfig
     :param total_time_override: if not None, use this total time instead of cfg.total_time
+    :param diag_dir:            optional path; forwarded as _diag_dir to the solver for
+                                diagnostic figure output (front vs time, weight snapshots)
     :return:                    (x_grid, u_grid) arrays on a uniform output grid
     """
     ic_type = getattr(cfg, 'fhn_ic_type', '') or ''
@@ -689,6 +692,9 @@ def _run_fhn_grw_scalar(cfg, total_time_override=None):
             fhn_ic_type=ic_type,
         )
 
+    if diag_dir is not None:
+        run_cfg._diag_dir = diag_dir
+
     result = simulate_fitzhugh_nagumo(globs, run_cfg)
 
     x_pos = np.array([g['position'] for g in result])
@@ -697,13 +703,11 @@ def _run_fhn_grw_scalar(cfg, total_time_override=None):
     x_s   = x_pos[order]
     w_s   = w_val[order]
 
-    # Reconstruct u on a uniform grid by binning weights.
     L      = cfg.domain_size
     n_grid = max(200, cfg.num_points)
     x_grid = np.linspace(0.0, L, n_grid)
     u_grid = np.zeros(n_grid)
 
-    # For each output x, u = sum of weights at positions <= x.
     for j, xj in enumerate(x_grid):
         u_grid[j] = float(np.sum(w_s[x_s <= xj]))
 
@@ -842,9 +846,10 @@ def _run_fhn_scalar(cfg, output_dir, do_save_data):
     # Make sure the last entry is exactly T.
     t_snaps[-1] = T
 
-    snap_exact = []
-    snap_num   = []
-    x_grid_out = None
+    snap_exact  = []
+    snap_num    = []
+    snap_fronts = []  # (t_snap, grw_front, exact_front) for each non-zero snapshot
+    x_grid_out  = None
 
     for t_snap in t_snaps:
         u_ex = exact_fhn_traveling_wave(
@@ -854,19 +859,28 @@ def _run_fhn_scalar(cfg, output_dir, do_save_data):
 
         if t_snap == 0.0:
             # IC reconstruction from initial globs (no time stepping).
-            x_s = np.sort(x_ic)
-            w_ic = np.array([float(w) for _, w in cfg.initial_conditions])
+            x_s    = np.sort(x_ic)
+            w_ic   = np.array([float(w) for _, w in cfg.initial_conditions])
             w_ic_s = w_ic[np.argsort(x_ic)]
-            x_g = np.linspace(0.0, L, max(200, N))
-            u_g = np.array([float(np.sum(w_ic_s[x_s <= xj])) for xj in x_g])
+            x_g    = np.linspace(0.0, L, max(200, N))
+            u_g    = np.array([float(np.sum(w_ic_s[x_s <= xj])) for xj in x_g])
         else:
+            # Pass diag_dir only for the final snapshot so we get a single
+            # front-vs-time diagnostic figure covering the full run.
+            is_final = (t_snap == T)
+            ddir = output_dir if is_final else None
             print(f"\n  Running GRW to t = {t_snap:.3g} ...", flush=True)
-            x_g, u_g = _run_fhn_grw_scalar(cfg, total_time_override=t_snap)
+            x_g, u_g = _run_fhn_grw_scalar(
+                cfg, total_time_override=t_snap, diag_dir=ddir)
             print("  Done.")
 
         if x_grid_out is None:
             x_grid_out = x_g
         snap_num.append(u_g)
+
+        # Per-snapshot front comparison (skip t=0).
+        if t_snap > 0.0:
+            snap_fronts.append((t_snap, u_g, u_ex))
 
     if x_grid_out is None:
         x_grid_out = np.linspace(0.0, L, max(200, N))
@@ -911,7 +925,16 @@ def _run_fhn_scalar(cfg, output_dir, do_save_data):
         "front_location_diff":  front_diff,
     }
 
-    _print_metrics(m_fin, f"u error metrics  (GRW vs exact, t = {T})")
+    # Per-snapshot front table.
+    print(f"\n  Front location per snapshot  (u=0.5 crossing, exact speed = {theta:.4g})")
+    print(f"    {'t':>6}   {'GRW front':>10}   {'exact front':>11}   {'error':>8}")
+    print(f"    {'--':>6}   {'----------':>10}   {'-----------':>11}   {'-------':>8}")
+    for (t_s, u_g_s, u_ex_s) in snap_fronts:
+        fg = _front_loc(u_g_s,  x_grid_out)
+        fe = _front_loc(u_ex_s, x_grid_out)
+        print(f"    {t_s:6.3g}   {fg:10.4f}   {fe:11.4f}   {fg-fe:+8.4f}")
+
+    _print_metrics(m_fin, f"\n  u error metrics  (GRW vs exact, t = {T})")
     print(f"\n  Front location diagnostics (t = {T})")
     print(f"    Front (GRW)   : {front_grw:.4f}")
     print(f"    Front (exact) : {front_ex:.4f}")
