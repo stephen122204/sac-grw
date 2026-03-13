@@ -296,7 +296,7 @@ def generate_fitzhugh_nagumo_initial_conditions(
 
     if stimulated_region:
         start_index = int((stimulated_region[0] / domain_size) * num_points)
-        end_index   = int((stimulated_region[1] / domain_size) * num_points)
+        end_index = int((stimulated_region[1] / domain_size) * num_points)
         for i in range(start_index, end_index):
             values[i] = (float(stimulus_u), float(stimulus_v))
 
@@ -325,7 +325,7 @@ def generate_fhn_steady_ic(num_globs, a, x_center=0.0):
     :param x_center:  float, position of the wave center (u = 0.5) at t = 0
     :return: list of (position, weight) pairs
     """
-    N0  = int(num_globs)
+    N0 = int(num_globs)
     u_i = (np.arange(N0) + 0.5) / float(N0)
     x_i = x_center - 2.0 * np.log(1.0 / u_i - 1.0)
     w_i = np.full(N0, 1.0 / N0)
@@ -354,11 +354,11 @@ def generate_fhn_nonsmooth_ic(num_globs, a, x_center=0.0, half_width=3.0):
     :param half_width:  float, half-width of the linear transition zone
     :return: list of (position, weight) pairs
     """
-    N0   = int(num_globs)
-    hw   = float(half_width)
-    u_i  = (np.arange(N0) + 0.5) / float(N0)
-    x_i  = (x_center - hw) + 2.0 * hw * u_i
-    w_i  = np.full(N0, 1.0 / N0)
+    N0 = int(num_globs)
+    hw = float(half_width)
+    u_i = (np.arange(N0) + 0.5) / float(N0)
+    x_i = (x_center - hw) + 2.0 * hw * u_i
+    w_i = np.full(N0, 1.0 / N0)
     return list(zip(x_i.tolist(), w_i.tolist()))
 
 
@@ -379,7 +379,7 @@ def generate_fhn_discontinuous_ic(num_globs, a, x_center=0.0):
     :param x_center:  float, initial position of all globs
     :return: list of (position, weight) pairs
     """
-    N0  = int(num_globs)
+    N0 = int(num_globs)
     w_i = 1.0 / N0
     return [(float(x_center), w_i)] * N0
 
@@ -533,27 +533,27 @@ def load_config_from_json(path: str) -> SimulationConfig:
             raise ValueError(f"Unknown heat_initial_condition.type: {ic_type!r}")
 
     elif equation_type == "fitzhugh-nagumo":
-        fhn_ic      = data.get("fhn_initial_condition", {})
+        fhn_ic = data.get("fhn_initial_condition", {})
         ic_type_raw = str(fhn_ic.get("type", "legacy")).strip().lower()
 
         if ic_type_raw in ("steady_solution", "steady"):
             fhn_ic_type_stored = "steady_solution"
-            ic_a        = float(fhn_ic.get("a", data.get("a", 0.25)))
+            ic_a = float(fhn_ic.get("a", data.get("a", 0.25)))
             ic_x_center = float(fhn_ic.get("x_center", domain_size / 2.0))
             initial_conditions = generate_fhn_steady_ic(
                 num_points, ic_a, x_center=ic_x_center)
 
         elif ic_type_raw in ("nonsmooth", "non_smooth", "nonsmooth_initial_data"):
             fhn_ic_type_stored = "nonsmooth"
-            ic_a        = float(fhn_ic.get("a", data.get("a", 0.25)))
+            ic_a = float(fhn_ic.get("a", data.get("a", 0.25)))
             ic_x_center = float(fhn_ic.get("x_center", domain_size / 2.0))
-            ic_hw       = float(fhn_ic.get("half_width", 3.0))
+            ic_hw = float(fhn_ic.get("half_width", 3.0))
             initial_conditions = generate_fhn_nonsmooth_ic(
                 num_points, ic_a, x_center=ic_x_center, half_width=ic_hw)
 
         elif ic_type_raw in ("discontinuous", "heaviside", "discontinuous_initial_data"):
             fhn_ic_type_stored = "discontinuous"
-            ic_a        = float(fhn_ic.get("a", data.get("a", 0.25)))
+            ic_a = float(fhn_ic.get("a", data.get("a", 0.25)))
             ic_x_center = float(fhn_ic.get("x_center", domain_size / 2.0))
             initial_conditions = generate_fhn_discontinuous_ic(
                 num_points, ic_a, x_center=ic_x_center)
@@ -632,8 +632,8 @@ def load_config_from_json(path: str) -> SimulationConfig:
                 x_center=float(x_center) if x_center is not None else None,
             )
         elif condition_type == "stationary_shock":
-            ic_nu     = float(b_ic.get("nu", diff_constant))
-            x_center  = b_ic.get("x_center", None)
+            ic_nu = float(b_ic.get("nu", diff_constant))
+            x_center = b_ic.get("x_center", None)
             burgers_shock_amplitude = float(b_ic.get("amplitude", 1.0))
             initial_conditions = generate_burgers_stationary_shock_ic(
                 domain_size, num_points,
@@ -648,9 +648,9 @@ def load_config_from_json(path: str) -> SimulationConfig:
     else:
         raise ValueError(f"Invalid equation type in JSON: {equation_type!r}")
 
-    burgers_mode    = str(data.get("burgers_mode", "cole_hopf_grw")).strip().lower()
+    burgers_mode = str(data.get("burgers_mode", "cole_hopf_grw")).strip().lower()
     # burgers_ic_type_stored and burgers_shock_amplitude are set only for burgers ICs.
-    b_ic_type_out      = locals().get("burgers_ic_type_stored", "")
+    b_ic_type_out = locals().get("burgers_ic_type_stored", "")
     b_ic_amplitude_out = locals().get("burgers_shock_amplitude", None)
 
     return SimulationConfig(

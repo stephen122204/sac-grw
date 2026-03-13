@@ -1,227 +1,213 @@
-# GRW Feasibility Study — Heat, Burgers, FitzHugh-Nagumo
+# GRW Feasibility Study -- Heat, Burgers, FitzHugh-Nagumo
 
 > **Branch:** `main`
 >
-> This branch investigates whether the **Gradient Random Walk (GRW)** method can be
-> formulated and applied meaningfully across three PDE classes.  The goal is not to
-> use the most accurate standard solver for each equation.  The goal is to study GRW
-> feasibility, qualitative fidelity, stability, and limitations — including where GRW
-> works well and where it struggles.
+> This branch implements and evaluates the **Gradient Random Walk (GRW)** method
+> for three PDE classes.  The goal is not to produce the most accurate solver for
+> each equation; it is to study whether GRW-based formulations are feasible,
+> how closely they reproduce known solutions, and where they fail and why.
+> Method fidelity to the thesis is central.  Error metrics are feasibility
+> diagnostics, not accuracy claims.
+
+---
+
+## Current status
+
+| Equation | Primary method | Verification reference | Approximate status |
+|----------|---------------|------------------------|--------------------|
+| Heat     | Direct GRW (thesis-faithful) | Exact analytical solution | Good agreement |
+| Burgers  | Cole-Hopf GRW (main) | Exact stationary shock | Approximate; dominant error is finite-domain BC mismatch (~88% of total) |
+| Burgers  | Direct derivative GRW (diagnostic only) | High-res FD reference | Severely noisy by design |
+| FHN      | Scalar traveling-wave GRW (thesis) | Exact traveling-wave solution | Good agreement; residual is MC noise |
 
 ---
 
 ## Research framing
 
-| Equation | Solver on this branch | Status |
-|----------|-----------------------|--------|
-| Heat     | Thesis-faithful GRW   | Validated against exact erf solution |
-| Burgers  | Cole-Hopf GRW (main); direct GRW diagnostic; Lagrangian GRW (legacy) | Cole-Hopf: exact analytical solution; others: FD reference |
-| FHN      | Experimental GRW-inspired particle method | Compared against FD reference |
+The GRW method models the **gradient** of the solution field rather than the field
+itself.  Computational elements called **globs** carry positions and signed weights
+representing pieces of the gradient distribution.  The physical field is recovered
+by numerically integrating the glob distribution.
 
-Lower accuracy than a standard FD solver is acceptable as a research outcome, provided
-the implementation is methodologically honest and the limitations are measured.  The
-error metrics in `verify_solver.py` are feasibility diagnostics, not accuracy claims.
+Three PDE classes are studied:
 
-Standard FD implementations of Burgers and FHN are **not** used as the primary solvers
-here.  They are kept internally as `simulate_burgers_fd` and `simulate_fitzhugh_nagumo_fd`
-in `simulation.py`, used only for generating reference solutions in `verify_solver.py`.
+- **Heat**: the natural setting for GRW.  The gradient formulation is exact and
+  the method has a direct thesis derivation.
+- **Burgers**: solved via the Cole-Hopf transformation, which reduces Burgers to a
+  heat equation solvable by GRW.  A direct derivative-based GRW path is retained
+  only as a diagnostic showing why that approach is impractical.
+- **FitzHugh-Nagumo**: a scalar traveling-wave GRW following the thesis formulation.
+  The reaction statistic is derived analytically from the exact traveling-wave
+  solution and conserves total weight exactly.
 
-For the full mixed-method validation codebase (heat GRW + standard FD Burgers + standard
-FD FHN), see the `mixed-solvers-validation` branch.
+Standard FD implementations of Burgers and FHN are kept internally as
+`simulate_burgers_fd` and `simulate_fitzhugh_nagumo_fd` in `simulation.py`,
+used only to generate reference solutions in `verify_solver.py`.  They are not
+the primary solvers on this branch.
+
+For the full mixed-method codebase (heat GRW + standard FD Burgers + FD FHN),
+see the `mixed-solvers-validation` branch.
 
 ---
 
 ## Method descriptions
 
-### Heat — thesis-faithful GRW
+### Heat -- direct GRW (thesis-faithful)
 
-The heat equation u\_t = alpha \* u\_xx is transformed so the solver works on the
-**gradient variable** v = u\_x rather than u directly.  Computational elements called
-**globs** represent pieces of the gradient distribution.  At each time step every glob
-undergoes a Brownian displacement drawn from
+The heat equation  u_t = alpha * u_xx  is solved on the gradient variable
+v = u_x.  Globs represent pieces of the gradient distribution.  Each time step:
 
-```
-Normal(0, sqrt(2 * alpha * dt))
-```
+1. **Brownian walk**: displacement drawn from Normal(0, sqrt(2 * alpha * dt)).
+2. **Boundary reflection** (overshoot):
+   - Dirichlet: symmetric position reflection, weight preserved.
+   - Neumann: symmetric position reflection, weight negated.
+3. **Reconstruction**: sort globs by position; cumulative sum of signed weights
+   gives u(x, t).
 
-Boundary handling uses overshoot reflection:
+Verification: exact error-function analytical solution for a step initial condition.
 
-| BC type   | Position after reflection        | Glob value after reflection  |
-|-----------|----------------------------------|------------------------------|
-| Dirichlet | symmetric (`x -> -x` or `2L-x`) | preserved                    |
-| Neumann   | symmetric (same)                 | **negated** (anti-symmetric) |
+---
 
-The heat field u(x, t) is recovered by **sorting globs by position and cumulatively
-summing their signed values** — numerical integration of u\_x.
+### Burgers -- Cole-Hopf GRW (primary method)
 
-Verification: exact error-function analytical solution.
+Burgers equation:  u_t + u * u_x = nu * u_xx.
 
-### Burgers — Cole-Hopf GRW (thesis-faithful main method)
+#### Cole-Hopf transformation
 
-Burgers' equation: u\_t + u \* u\_x = nu \* u\_xx.
+The substitution  u = -2*nu * phi_x / phi  maps Burgers into the heat equation
+for phi:  phi_t = nu * phi_xx.  GRW evolves phi_x globs with the same Brownian
+step as the heat solver (alpha = nu).
 
-The **Cole-Hopf transformation** (`config: burgers_mode = "cole_hopf_grw"`, default)
-is the primary thesis-faithful approach.  It is the method described in Section 5 of
-the thesis for reducing Burgers to a heat equation solvable by GRW.
+**Initialisation:**
+1. Psi_0(x) = integral_0^x u_0(s) ds  (trapezoidal).
+2. phi_0(x) = exp(-Psi_0(x) / (2*nu)), normalised so max(phi_0) = 1.
+3. phi_x globs at midpoints x_{i+1/2} with weight w_i = phi_0(x_{i+1}) - phi_0(x_i).
 
-#### Cole-Hopf GRW (main method, `cole_hopf_grw`)
+**Boundary treatment:**
+Weight-preserving (symmetric position) reflection is used for phi_x globs.
+This implicitly enforces Dirichlet BC: phi(0, t) = phi_0(0) and
+phi(L, t) = phi_0(L) remain constant for all t, because the cumsum reconstruction
+is always anchored to those values.
 
-The transformation  u = -2\*nu \* phi\_x / phi  maps Burgers into the heat equation:
-  phi\_t = nu \* phi\_xx
+**Reconstruction at time T:**
+1. Bin phi_x glob weights onto a uniform output grid.
+2. Boundary-corrected Gaussian smoothing (sigma_bins = 12); the kernel is
+   normalised by its effective support at each bin to remove truncation bias
+   at x = 0 and x = L.
+3. Enforce correct total integral of smoothed bins.
+4. phi(x_j) = phi_0(0) + cumsum(smoothed_bins).
+5. phi_x(x_j) = d(phi)/dx  (gradient of reconstructed phi).
+6. u(x_j) = -2*nu * phi_x(x_j) / phi(x_j).
 
-Steps at t=0:
-1. Compute Psi\_0(x) = integral\_0^x u\_0(s) ds  (trapezoidal rule).
-2. phi\_0(x) = exp(-Psi\_0(x) / (2\*nu)), normalized so phi\_0\_max = 1.
-3. phi\_0\_x(x) = -u\_0(x) \* phi\_0(x) / (2\*nu); discretize into N phi\_x globs.
+**Known limitation -- finite-domain BC mismatch:**
+The stationary-shock benchmark is an exact solution on an infinite domain.
+On a finite domain [0, L] the GRW Dirichlet BC (phi = 1 at both walls) is
+inconsistent with that exact solution: under Dirichlet phi = 1, the heat
+equation drives phi toward 1 (flat), flattening the shock amplitude over time.
 
-GRW evolution (each time step):
-- Brownian walk: `x_i += Normal(0, sqrt(2*nu*dt))`  (same step as heat GRW, alpha=nu)
-- Neumann boundary reflection: phi\_x = 0 at walls (equivalent to u=0 at boundaries;
-  use a large domain so the wave does not reach the walls during the simulation).
+A deterministic FD reference heat solve (same Dirichlet BC, zero particle noise)
+is computed alongside the GRW and shown in the diagnostics figure.  Comparing
+  (FD_ref - exact):  BC-mismatch error  -- systematic, ~88% of total rms error
+  (GRW - FD_ref):    GRW shot noise     -- stochastic, ~32% of total rms error
+confirms that the GRW is correctly implementing the heat equation under its BCs;
+the dominant remaining error is the BC mismatch, not a GRW implementation defect.
 
-Reconstruction at time T:
-1. Bin phi\_x glob weights onto uniform output grid.
-2. phi(x\_j) = 1 + cumsum(bin\_weights) (cumulative integral of phi\_x).
-3. u(x\_j) = -2\*nu \* phi\_x(x\_j) / phi(x\_j).
+**Primary benchmark** (`configs/burgers_stationary_shock.json`):
+  u_0(x) = -A * tanh(A * (x - x_c) / (2 * nu)),  A = 1,  nu = 0.5,  domain [0, 4].
+Exact: u(x, t) = u_0(x) for all t.  Typical 5-run average: relL2 ~ 0.28.
 
-**Conditioning note**: phi\_0 varies as exp(-Psi\_0/(2\*nu)).  For small nu or large
-domains, phi\_0 can span many orders of magnitude, causing numerical overflow.  The
-benchmarks use nu=0.5 and domain [0, 4], where conditioning is manageable.  A warning
-is printed if the log\_phi0 range exceeds 50.
+**Secondary benchmark** (`configs/burgers_shock.json`):
+Same form with A = 0.5 (wider shock, better-conditioned phi_0 with min ~ 0.71).
+Typical 5-run average: relL2 ~ 0.22.
 
-**Primary benchmark** (`configs/burgers_stationary_shock.json`): stationary shock IC
-  u\_0(x) = -A \* tanh(A \* (x - x\_c) / (2 \* nu))
-with **exact stationary solution** u(x,t) = u\_0(x) for all t >= 0.
+**Conditioning note:** ICs with non-zero background velocity (mean u != 0) cause
+phi_0 to span a large dynamic range, amplifying reconstruction noise.  The
+stationary-shock ICs (zero mean, phi_0(0) = phi_0(L)) are recommended.  A warning
+is printed if the log_phi_0 range exceeds 50.
 
-This is an exact solution to u\_t + u\*u\_x = nu\*u\_xx for any amplitude A and viscosity
-nu.  The Cole-Hopf phi satisfies phi\_0(0) = phi\_0(L) (symmetric domain), so the
-cumulative sum reconstruction of phi returns to its starting value — well-conditioned
-for the GRW.  Expected relL2 approximately 0.30–0.35 at N=400 due to GRW particle
-noise and Gaussian smoothing; this is the honest accuracy of the method.
+#### Direct Burgers GRW (diagnostic only, `direct_grw`)
 
-**Additional benchmark** (`configs/burgers_traveling_wave.json`): traveling wave IC
-  u\_0(x) = 1 - 2\*sqrt(nu) \* tanh((x - x\_0) / sqrt(nu))
-with exact solution u(x,t) = 1 - 2\*sqrt(nu) \* tanh((x - x\_0 - t) / sqrt(nu)).
-Note: this IC has phi\_0(0) != phi\_0(L) on a finite domain, causing systematic
-reconstruction errors near the domain boundaries.  Reported for completeness but the
-stationary shock benchmark is recommended for evaluating the Cole-Hopf GRW pipeline.
+Evolves globs representing v = u_x directly under the reaction-diffusion equation
+  v_t = nu * v_xx - u * v_x - v^2.
+The reaction statistic requires computing u_xx from the noisy particle field
+(two numerical differentiations), which amplifies shot noise severely.  This path
+is included to reproduce the thesis finding that direct GRW for Burgers is
+impractical.  Large errors against an FD reference are expected and intentional.
 
-#### Direct Burgers GRW (diagnostic path, `direct_grw`)
+#### Lagrangian GRW (legacy, not a primary solver)
 
-The direct approach evolves globs representing v = u\_x directly.  The gradient equation
-  v\_t = nu\*v\_xx - u\*v\_x - v^2
-leads to the per-glob reaction statistic:
-  R(u) = -(u \* u\_xx / u\_x + u\_x)
+An earlier operator-splitting approach is preserved in `simulate_burgers_lagrangian`
+for reference only.  It is not reachable from the `simulate_burgers` dispatcher on
+this branch.
 
-This requires computing u\_xx from the noisy particle field (two numerical differentiations),
-which amplifies statistical noise.  The result is expected to be severely noisy and
-impractical as a primary solver.  This path is included as a **diagnostic** to reproduce
-the thesis discussion of why the direct GRW method for Burgers fails.
+---
 
-Use `configs/burgers_direct_grw_diagnostic.json` (nu=0.01, T=0.03) to reproduce
-this experiment.  Verification is against a high-resolution FD reference.
+### FitzHugh-Nagumo -- scalar traveling-wave GRW (thesis)
 
-#### Lagrangian GRW (experimental, `lagrangian_grw`)
+The FHN system is reduced to a scalar PDE  u_t = D * u_xx + f(u)  following the
+thesis traveling-wave formulation.  Globs represent contributions to u_x; u is
+reconstructed by cumulative summation exactly as in the heat GRW.
 
-An earlier experimental method using operator splitting (Lagrangian advection +
-GRW diffusion).  Kept for comparison with the shock IC (`configs/burgers_shock.json`).
-
-Verification: high-resolution FD reference (`simulate_burgers_fd`).
-
-### FitzHugh-Nagumo — thesis scalar GRW (traveling-wave formulation)
-
-This branch implements the FHN GRW method following Chapter 4 of the thesis.
-The formulation is a **scalar** traveling-wave GRW, not a standard two-component
-reaction-diffusion solver.
-
-**Scalar equation and exact solution**
-
-The thesis reduces the FHN system to a scalar PDE with a reaction term whose
-derivative is:
-
-```
-R(u) = -3*u^2 + 2*(0.5 - a)*u - a
-```
-
-The exact traveling-wave solution is:
+**Exact traveling-wave solution:**
 
 ```
 u(x, t) = 1 / (1 + exp(-(x + theta*t - x_center) / 2))
 theta    = sqrt(2) * (0.5 - a)
 ```
 
-**GRW gradient-side algorithm (globs represent u\_x)**
+**Reaction statistic:**
 
-Each glob carries a position `x_i` and a scalar weight `w_i` (contribution to
-the cumulative-sum reconstruction of `u`).  The algorithm per time step:
+The statistic R(u) is derived by substituting the exact sigmoid into the PDE,
+which requires  f(u) = u*(1-u) * [theta/2 - D*(1 - 2*u)/4].  Differentiating:
 
-1. **Brownian walk**: `x_i += Normal(0, sqrt(2 * D * dt))`
-2. **Boundary reflection**: Dirichlet — symmetric (preserve weight);
-   Neumann — anti-symmetric (negate weight).
-3. **Sort globs** by position.
-4. **Reconstruct** `u(x_i) = sum_{k <= i} w_k`  (cumulative sum, as in heat GRW).
-5. **React**: `w_i += dt * R(u_i) * w_i`
-   followed by renormalization `w_i /= sum(w)` to maintain total weight = 1.
+```
+R(u) = f'(u) = -(3*D/2)*u^2 + (3*D/2 - theta)*u + (theta/2 - D/4)
+```
 
-The renormalization is required because `int_0^1 R(u) du = -1/2 - 2*a != 0`
-for positive `a`, so the multiplicative weight update does not conserve total
-mass.  This reflects a mathematical inconsistency in the specified reaction
-statistic (discussed in the thesis and known from the analytical derivations).
+This satisfies  integral_0^1 R(u) du = f(1) - f(0) = 0,  so total glob weight is
+exactly conserved.  No per-step renormalization is applied or needed.
 
-**Initial condition modes** (configured via `fhn_initial_condition.type`):
+**Per-step algorithm:**
+1. Brownian walk: x_i += Normal(0, sqrt(2 * D * dt)).
+2. Boundary reflection (Dirichlet: preserve weight; Neumann: negate weight).
+3. Sort globs by position.
+4. Reconstruct u(x_i) = cumulative sum of sorted weights.
+5. React: w_i += dt * R(u_i) * w_i.
+
+**Initial condition modes:**
 
 | Type | Description |
 |------|-------------|
-| `steady_solution` | Globs at `x_i = x_center - 2*log(1/u_i - 1)`, `u_i` uniform on (0,1) |
-| `nonsmooth` | Linear-ramp IC; globs uniformly placed in a transition zone |
-| `discontinuous` | All globs at `x_center` (Heaviside / Dirac delta IC) |
+| `steady_solution` | Globs placed at sigmoid quantile positions; exact at t=0 |
+| `nonsmooth` | Linear-ramp IC; globs uniform in the transition zone |
+| `discontinuous` | All globs at x_center (Heaviside / Dirac delta IC) |
 
-**Verification**
+**Verification:** multi-snapshot comparison against the exact traveling-wave solution.
+Typical relL2 ~ 0.02--0.05; residual error is MC shot noise.
 
-The GRW output is compared against the exact traveling-wave solution at multiple
-time snapshots (t = 0, T/3, 2T/3, T).  Error metrics (L2, max|err|, relL2, front
-location difference) are saved to `metrics.json`.
-
-**Legacy two-component solver** (retained for backward compatibility)
-
-The older two-component GRW particle method (`simulate_fitzhugh_nagumo_two_component`)
-is still available for configs using the legacy `stimulated_region` IC format.
-It is not the primary FHN method on this branch.
+**Legacy two-component solver** (`simulate_fitzhugh_nagumo_two_component`) is
+retained for configs using the legacy `stimulated_region` IC format and is not
+the primary FHN method on this branch.
 
 ---
 
-## Verification philosophy
+## Verification
 
 ```
-Heat             → exact analytical solution (erf), valid for step IC
-Burgers (cole_hopf_grw + stationary_shock IC)  → exact analytical stationary solution
-Burgers (cole_hopf_grw + traveling_wave IC)    → exact analytical traveling wave solution
-Burgers (direct_grw, lagrangian_grw)           → high-resolution stable FD reference
-FHN (scalar GRW) → exact traveling-wave solution (analytic, multi-time)
+Heat                                  -> exact erf analytical solution
+Burgers (cole_hopf_grw, stationary)   -> exact stationary-shock solution
+Burgers (cole_hopf_grw, diagnostics)  -> FD reference heat solve (same BCs as GRW)
+Burgers (direct_grw)                  -> high-res FD reference (noise expected)
+FHN scalar GRW                        -> exact traveling-wave solution (multi-time)
 ```
 
-For heat, the GRW is expected to closely match the exact solution.  The diagnostics
-(weight conservation, observed vs theoretical sigma) confirm the random walk itself
-is behaving correctly.
+The Cole-Hopf diagnostics figure (`cole_hopf_diagnostics.png`) shows three curves
+per panel: GRW (blue), FD reference with same BCs (orange), exact infinite-domain
+shape (black).  The error-decomposition panel quantifies BC-mismatch vs GRW noise
+separately.
 
-For Burgers Cole-Hopf GRW with the stationary shock IC, comparison against the exact
-solution measures the full pipeline: IC transformation, GRW evolution, and
-reconstruction.  The expected relL2 is approximately 0.30–0.35, an honest quantification
-of the GRW particle noise and Gaussian-smoothing reconstruction bias.
-
-For direct GRW, large errors against the FD reference confirm the thesis finding
-that the direct method is impractical.  The noise is intentional.
-
-The FD reference solver (`simulate_burgers_fd`) uses adaptive sub-cycled time stepping
-to satisfy both diffusion and advection CFL conditions, guaranteeing stability for any
-nu and initial condition.
-
-For FHN (scalar GRW, thesis formulation), comparison is against the exact
-traveling-wave solution.  The reaction statistic R(u) as specified in the thesis
-is mathematically inconsistent (does not conserve total weight for typical a > 0),
-so a mass-correction renormalization is applied at each step.  The resulting errors
-against the exact solution quantify the feasibility of this GRW formulation and
-document the known mathematical limitations of the specified reaction statistic.
+The FD reference solver (`simulate_burgers_fd`) uses adaptive sub-cycled time
+stepping to satisfy both diffusion and advection CFL conditions.
 
 ---
 
@@ -245,29 +231,26 @@ pip install numpy matplotlib
 
 ```bash
 python main.py configs/heat_step_dirichlet.json
-python main.py configs/burgers_stationary_shock.json # Cole-Hopf GRW (primary benchmark)
-python main.py configs/burgers_traveling_wave.json   # Cole-Hopf GRW (additional benchmark)
-python main.py configs/burgers_shock.json            # Lagrangian GRW (legacy)
-python main.py configs/fhn_oscillatory.json
+python main.py configs/burgers_stationary_shock.json   # Cole-Hopf GRW (primary)
+python main.py configs/burgers_shock.json              # Cole-Hopf GRW (A=0.5)
+python main.py configs/fhn_grw_steady.json
 ```
 
 ### 4. Run the verification suite
 
 ```bash
-python verify_solver.py              # all three equations (uses default configs)
 python verify_solver.py --equation heat
-python verify_solver.py --equation burgers --config configs/burgers_stationary_shock.json   # Cole-Hopf vs exact
-python verify_solver.py --equation burgers --config configs/burgers_traveling_wave.json     # Cole-Hopf vs exact
-python verify_solver.py --equation burgers --config configs/burgers_direct_grw_diagnostic.json  # noise diagnostic
+python verify_solver.py --equation burgers --config configs/burgers_stationary_shock.json
 python verify_solver.py --equation burgers --config configs/burgers_shock.json
-python verify_solver.py --equation fhn                                       # steady_solution IC (default)
+python verify_solver.py --equation fhn
 python verify_solver.py --equation fhn --config configs/fhn_grw_nonsmooth.json
 python verify_solver.py --equation fhn --config configs/fhn_grw_discontinuous.json
 ```
 
 Outputs are written to `output/verify/<equation>/`:
-- `comparison_plot.png`   — numerical vs reference overlay + pointwise error
-- `metrics.json`          — L1, L2, max|err|, relL2, RMSE, equation-specific diagnostics
+- `comparison_plot.png`        -- numerical vs reference overlay + pointwise error
+- `cole_hopf_diagnostics.png`  -- Burgers transformed-variable error decomposition
+- `metrics.json`               -- L1, L2, max|err|, relL2, RMSE, equation-specific
 
 ---
 
@@ -275,67 +258,62 @@ Outputs are written to `output/verify/<equation>/`:
 
 ```
 heat_burgers_fhn/
-├── main.py                    Entry point
-├── simulation.py              GRW solvers (heat: thesis-faithful;
-│                              Burgers: Cole-Hopf GRW main + direct GRW diagnostic +
-│                              Lagrangian GRW legacy; FHN: thesis scalar GRW main +
-│                              legacy two-component GRW)
-│                              Also contains _fd reference variants for verification
-├── config.py                  Config loading, validation, IC generators
-├── utils.py                   Plotting
-├── verify_solver.py           Verification: exact (heat; Burgers stationary_shock/traveling_wave;
-│                              FHN scalar GRW); FD reference (Burgers direct/lagrangian; FHN legacy)
-├── config_template.jsonc      Master config reference (annotated examples)
-├── configs/                   Ready-to-run example configs
-│   ├── heat_step_dirichlet.json
-│   ├── heat_step_neumann.json
-│   ├── burgers_stationary_shock.json    Cole-Hopf GRW, stationary shock IC (primary benchmark)
-│   ├── burgers_traveling_wave.json      Cole-Hopf GRW, traveling wave IC (additional benchmark)
-│   ├── burgers_direct_grw_diagnostic.json  Direct GRW diagnostic (nu=0.01, noisy by design)
-│   ├── burgers_shock.json               Lagrangian GRW, shock IC (legacy)
-│   ├── fhn_grw_steady.json              Thesis FHN GRW, steady_solution IC (default benchmark)
-│   ├── fhn_grw_nonsmooth.json           Thesis FHN GRW, linear-ramp non-smooth IC
-│   ├── fhn_grw_discontinuous.json       Thesis FHN GRW, Heaviside (discontinuous) IC
-│   ├── fitzhugh_nagumo_pulse.json       Legacy two-component GRW
-│   └── fhn_oscillatory.json             Legacy two-component GRW
-├── json_tests/                Legacy test configs (still compatible)
-└── output/                    Generated PNGs and verification outputs (auto-created)
++-- main.py                    Entry point
++-- simulation.py              GRW solvers:
+|                                heat: thesis-faithful direct GRW
+|                                Burgers: Cole-Hopf GRW (main), direct GRW (diagnostic),
+|                                         Lagrangian GRW (legacy, not in main path)
+|                                FHN: thesis scalar traveling-wave GRW (main),
+|                                     legacy two-component GRW
+|                              Also: FD reference variants for verification
++-- config.py                  Config loading, validation, IC generators
++-- utils.py                   Plotting utilities
++-- verify_solver.py           Verification runner; exact and FD reference comparisons
++-- config_template.jsonc      Master config reference (annotated)
++-- configs/
+|   +-- heat_step_dirichlet.json
+|   +-- heat_step_neumann.json
+|   +-- burgers_stationary_shock.json    Cole-Hopf GRW, A=1 (primary benchmark)
+|   +-- burgers_shock.json               Cole-Hopf GRW, A=0.5 (secondary benchmark)
+|   +-- burgers_direct_grw_diagnostic.json  Direct GRW diagnostic (noisy by design)
+|   +-- fhn_grw_steady.json              FHN scalar GRW, steady_solution IC
+|   +-- fhn_grw_nonsmooth.json           FHN scalar GRW, linear-ramp IC
+|   +-- fhn_grw_discontinuous.json       FHN scalar GRW, Heaviside IC
+|   +-- fitzhugh_nagumo_pulse.json       Legacy two-component GRW
+|   +-- fhn_oscillatory.json             Legacy two-component GRW
++-- json_tests/                Legacy test configs (still compatible)
++-- output/                    Generated figures and metrics (auto-created)
 ```
 
 ---
 
 ## Config reference
 
-**`config_template.jsonc`** at the repo root is the master reference.
-It contains three self-contained, fully commented example configs — one for each
-equation.  To create a new config: copy the relevant block, strip `//` comments,
-and edit the values.
-
-> `.jsonc` files use `//` comments and are not parseable by Python's `json` module.
-> Actual run configs must be plain `.json` files.
+**`config_template.jsonc`** is the master reference with three self-contained
+annotated example configs (one per equation).  Strip `//` comments before use;
+plain `.json` is required.
 
 ### Global fields (all equations)
 
-| Field                | Type    | Required | Description |
-|----------------------|---------|----------|-------------|
-| `equation_type`      | string  | yes      | `"heat"` \| `"burgers"` \| `"fitzhugh-nagumo"` |
-| `domain_type`        | string  | yes      | `"Finite"` \| `"Semi-Infinite"` \| `"Infinite"` |
-| `domain_size`        | number  | yes      | Right endpoint L; domain is [0, L]. |
-| `boundary_conditions`| object  | yes*     | `LEFT` and `RIGHT` sub-objects. |
-| `diff_constant`      | number  | yes      | Diffusivity / viscosity. |
-| `time_step`          | number  | yes      | dt > 0. |
-| `total_time`         | number  | yes      | Total simulation time T > 0. |
-| `num_points`         | integer | yes      | Number of globs / particles / grid points. |
+| Field                | Type    | Description |
+|----------------------|---------|-------------|
+| `equation_type`      | string  | `"heat"` / `"burgers"` / `"fitzhugh-nagumo"` |
+| `domain_type`        | string  | `"Finite"` / `"Semi-Infinite"` / `"Infinite"` |
+| `domain_size`        | number  | Right endpoint L; domain is [0, L] |
+| `boundary_conditions`| object  | `LEFT` and `RIGHT` sub-objects with `type` and `value` |
+| `diff_constant`      | number  | Diffusivity (heat/FHN) or viscosity (Burgers) |
+| `time_step`          | number  | dt > 0 |
+| `total_time`         | number  | Total simulation time T |
+| `num_points`         | integer | Number of globs / particles |
 
 ---
 
 ## Validation errors
 
-If a config file has missing or invalid fields, the solver prints a clear error
-before running.  Examples:
+Config errors are caught before the simulation starts:
 
 ```
 ValueError: Config is missing required field: 'diff_constant'.
-ValueError: 'equation_type' must be one of ['burgers', 'fitzhugh-nagumo', 'heat'], got 'Heat_eq'.
-ValueError: boundary_conditions.LEFT.type must be one of ['dirichlet', 'neumann'], got 'fixed'.
+ValueError: 'equation_type' must be one of ['burgers', 'fitzhugh-nagumo', 'heat'].
+ValueError: boundary_conditions.LEFT.type must be one of ['dirichlet', 'neumann'].
 ```

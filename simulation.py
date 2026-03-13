@@ -108,7 +108,7 @@ def simulate_fitzhugh_nagumo_grw(globs, config, _diag_dir=None):
 
     Exact traveling-wave solution:
       u(x, t) = 1 / (1 + exp(-(x + theta*t - x_center) / 2))
-      theta   = sqrt(2) * (0.5 - a)
+      theta = sqrt(2) * (0.5 - a)
 
     Reaction statistic R(u) = f'(u), derived by requiring the sigmoid above to
     be an exact solution of the PDE.  Substituting u = 1/(1+exp(-xi/2)) gives:
@@ -150,17 +150,17 @@ def simulate_fitzhugh_nagumo_grw(globs, config, _diag_dir=None):
                       front-location vs time and per-snapshot weight profiles.
     :return: updated globs with final sorted positions and weights
     """
-    D   = config.diff_constant
-    a_  = config.a if config.a is not None else 0.25
-    dt  = config.time_step
-    L   = config.domain_size
-    bc  = config.boundary_conditions
-    n   = len(globs)
+    D = config.diff_constant
+    a_ = config.a if config.a is not None else 0.25
+    dt = config.time_step
+    L = config.domain_size
+    bc = config.boundary_conditions
+    n = len(globs)
     if n == 0:
         return globs
 
-    theta    = np.sqrt(2.0) * (0.5 - a_)
-    bc_left  = bc['LEFT']['type'].lower()
+    theta = np.sqrt(2.0) * (0.5 - a_)
+    bc_left = bc['LEFT']['type'].lower()
     bc_right = bc['RIGHT']['type'].lower()
 
     x = np.array([g['position'] for g in globs], dtype=float)
@@ -170,7 +170,7 @@ def simulate_fitzhugh_nagumo_grw(globs, config, _diag_dir=None):
         for g in globs
     ], dtype=float)
 
-    sigma   = np.sqrt(2.0 * D * dt) if D > 0.0 else 0.0
+    sigma = np.sqrt(2.0 * D * dt) if D > 0.0 else 0.0
     n_steps = int(config.total_time / dt)
 
     # Reaction coefficients: R(u) = c2*u^2 + c1*u + c0
@@ -188,7 +188,7 @@ def simulate_fitzhugh_nagumo_grw(globs, config, _diag_dir=None):
         _front_loc: list = []
         # Record initial front (t=0) from the un-stepped sorted globs.
         _ord0 = np.argsort(x)
-        _uc0  = np.cumsum(w[_ord0])
+        _uc0 = np.cumsum(w[_ord0])
         _idx0 = int(np.clip(np.searchsorted(_uc0, 0.5), 0, n - 1))
         _x_center_init = float(np.sort(x)[_idx0])
 
@@ -231,7 +231,7 @@ def simulate_fitzhugh_nagumo_grw(globs, config, _diag_dir=None):
         # Diagnostic: track front location and record snapshots.
         if _diag_dir is not None:
             u_post = np.cumsum(w)
-            idx_f  = int(np.clip(np.searchsorted(u_post, 0.5), 0, n - 1))
+            idx_f = int(np.clip(np.searchsorted(u_post, 0.5), 0, n - 1))
             _front_t.append((step + 1) * dt)
             _front_loc.append(float(x[idx_f]))
             if step in _snap_at:
@@ -268,7 +268,7 @@ def _save_fhn_grw_diagnostics(diag_dir, front_t, front_loc, snaps,
     ax = axes.flat
 
     # --- Panel 0: Front location vs time ---
-    t_arr  = np.asarray(front_t)
+    t_arr = np.asarray(front_t)
     fl_arr = np.asarray(front_loc)
     exact_front = x_center_init - theta * t_arr
     ax[0].plot(t_arr, fl_arr,      'b-',  lw=0.7, alpha=0.8, label='GRW front')
@@ -350,23 +350,23 @@ def simulate_burgers_lagrangian(globs, config):
     This method was introduced as a feasibility experiment on the GRW branch.
     It is kept for comparison.  The thesis-preferred method is Cole-Hopf GRW.
     """
-    dt  = config.time_step
-    nu  = config.diff_constant
-    L   = config.domain_size
-    bc  = config.boundary_conditions
-    n   = len(globs)
+    dt = config.time_step
+    nu = config.diff_constant
+    L = config.domain_size
+    bc = config.boundary_conditions
+    n = len(globs)
     if n == 0:
         return globs
 
     positions = np.array([g['position'] for g in globs], dtype=float)
-    u_vals    = np.array(
+    u_vals = np.array(
         [g['value'][0] if isinstance(g['value'], list) else float(g['value'])
          for g in globs],
         dtype=float,
     )
 
     sigma = np.sqrt(2.0 * nu * dt)
-    bc_left_type  = bc['LEFT']['type'].lower()
+    bc_left_type = bc['LEFT']['type'].lower()
     bc_right_type = bc['RIGHT']['type'].lower()
 
     for _ in range(int(config.total_time / dt)):
@@ -392,48 +392,194 @@ def simulate_burgers_lagrangian(globs, config):
     return globs
 
 
-def _save_cole_hopf_diagnostics(diag_dir, x0, u0, phi0, x_out, dx_out,
-                                 bin_sums_raw, bin_sums_s, phi_out, u_out):
+def _reference_phi_heat_fd(phi0_interp, x_out, nu, T, phi_left, phi_right):
     """
-    Save a multi-panel diagnostic figure for the Cole-Hopf GRW intermediate
-    quantities.  Called when simulate_burgers_cole_hopf_grw receives _diag_dir.
+    Explicit FD solve of  phi_t = nu * phi_xx  on [0, L] with Dirichlet BCs.
+
+    phi(0, t) = phi_left  (= phi0(0), constant for all t)
+    phi(L, t) = phi_right (= phi0(L), constant for all t)
+
+    These BCs match the GRW implicit treatment: weight-preserving reflection of
+    phi_x globs keeps the cumsum anchor phi(0,t) = phi0_0 and phi(L,t) = phi0_L
+    constant.  This FD reference is therefore what the GRW converges to in the
+    zero-noise limit.  The gap between this reference and the infinite-domain
+    exact solution quantifies the BC-mismatch (finite-domain truncation) error.
     """
-    import os
+    N = len(x_out)
+    dx = float(x_out[1] - x_out[0])
+    dt_fd = 0.4 * dx**2 / nu        # r = nu*dt/dx^2 = 0.4 < 0.5 (stable)
+    n_steps = int(np.ceil(T / dt_fd))
+    dt_fd = T / n_steps
+    r = nu * dt_fd / dx**2
+
+    phi = phi0_interp.copy()
+    for _ in range(n_steps):
+        phi_new = phi.copy()
+        phi_new[1:-1] = phi[1:-1] + r * (phi[2:] - 2.0 * phi[1:-1] + phi[:-2])
+        phi_new[0]    = float(phi_left)
+        phi_new[-1]   = float(phi_right)
+        phi = phi_new
+    return phi
+
+
+def _save_cole_hopf_diagnostics(
+    diag_dir, x0, u0, phi0, x_out, phi_out,
+    phi_x_out, phi_x_bins, u_out, nu,
+    u_ref=None, phi_exact=None, phi_x_over_phi_exact=None,
+    phi_ref_fd=None,
+):
+    """
+    Save a 2x3 diagnostic figure that decomposes the Cole-Hopf GRW error.
+
+    Three curves where available:
+      exact_shape  -- phi0(x) = cosh(...)/cosh(...); equals the infinite-domain
+                      exact phi(x,T)/C(T).  Shape is preserved on R.
+      FD reference -- phi(x,T) from a deterministic heat FD solve with the same
+                      Dirichlet BCs as the GRW (phi=phi0_0 at x=0,
+                      phi=phi0_L at x=L).  Zero-noise limit of the GRW.
+      GRW          -- stochastic Monte-Carlo reconstruction.
+
+    Error decomposition:
+      BC-mismatch = FD_ref - exact_shape  (dominant: finite-domain effect)
+      GRW-noise   = GRW    - FD_ref       (secondary: particle shot noise)
+
+    Layout:
+      [0,0] phi0(x): GRW init vs exact shape
+      [0,1] phi(x,T): GRW vs FD_ref vs exact_shape
+      [0,2] phi_x/phi: GRW vs FD_ref vs exact
+      [1,0] phi_x(T): gradient vs bins vs FD_ref vs exact
+      [1,1] u(x,T): GRW vs FD_ref u vs exact
+      [1,2] Error decomposition: total / BC-mismatch / GRW-noise
+    """
     import matplotlib.pyplot as plt
 
     os.makedirs(diag_dir, exist_ok=True)
 
-    phi_x_raw      = bin_sums_raw / dx_out
-    phi_x_smoothed = bin_sums_s   / dx_out
-    phi_x_over_phi = phi_x_smoothed / np.maximum(np.abs(phi_out), 1e-10)
+    has_exact = (phi_exact is not None) and (phi_x_over_phi_exact is not None)
+    has_fd = (phi_ref_fd is not None)
+    dx_out = float(x_out[1] - x_out[0])
 
-    fig, axes = plt.subplots(2, 4, figsize=(18, 8))
-    fig.suptitle("Cole-Hopf GRW: Intermediate Diagnostics", fontsize=10)
-    panels = [
-        (x0,    u0,              "u0(x)  (initial Burgers field)",      "u0"),
-        (x0,    phi0,            "phi0(x) = exp(-Psi0/(2*nu))",          "phi0"),
-        (x_out, phi_x_raw,       "phi_x raw  (binned, before smooth)",   "phi_x raw"),
-        (x_out, phi_x_smoothed,  "phi_x smoothed + corrected",           "phi_x"),
-        (x_out, phi_out,         "phi(x, T)  reconstructed",             "phi"),
-        (x_out, phi_x_over_phi,  "phi_x / phi  (before -2*nu factor)",   "phi_x/phi"),
-        (x_out, u_out,           "u(x, T)  Cole-Hopf GRW output",        "u"),
-        (x_out, -2.0 * (x_out[1] - x_out[0]) / dx_out *
-                phi_x_over_phi,  "u_out redundant check",                "check"),
-    ]
-    colors = ['steelblue', 'darkgreen', 'gray', 'darkorange',
-              'darkgreen', 'purple', 'crimson', 'black']
-    for ax, (x, y, title, ylabel), c in zip(axes.flat, panels, colors):
-        ax.plot(x, y, color=c, linewidth=1.2)
-        ax.set_title(title, fontsize=8)
+    if has_fd:
+        phi_x_fd = np.gradient(phi_ref_fd, dx_out)
+        phi_safe_fd = np.where(np.abs(phi_ref_fd) < 1e-12, 1e-12, phi_ref_fd)
+        ratio_fd = phi_x_fd / phi_safe_fd
+        u_fd = -2.0 * nu * phi_x_fd / phi_safe_fd
+
+    phi_safe_grw = np.where(np.abs(phi_out) < 1e-12, 1e-12, phi_out)
+    ratio_grw = phi_x_out / phi_safe_grw
+
+    phi_x_exact_arr = (phi_x_over_phi_exact * phi_exact) if has_exact else None
+
+    c_grw = "steelblue"; c_fd = "darkorange"; c_ex = "black"
+    lw_grw = 1.4; lw_fd = 1.3; lw_ex = 1.1
+
+    fig, axes = plt.subplots(2, 3, figsize=(15, 8))
+    fig.suptitle(
+        "Cole-Hopf GRW  |  blue=GRW   orange=FD ref (same Dirichlet BC)   "
+        "black=exact (infinite domain)",
+        fontsize=9,
+    )
+
+    # [0,0] phi0 initialisation
+    ax = axes[0, 0]
+    ax.plot(x0, phi0, color=c_grw, linewidth=lw_grw, label="GRW phi0")
+    if has_exact:
+        ax.plot(x0, np.interp(x0, x_out, phi_exact), color=c_ex,
+                linewidth=lw_ex, linestyle="--", label="exact shape")
+        ax.legend(fontsize=7)
+    ax.set_title("phi0(x)  [GRW init vs exact shape]", fontsize=8)
+    ax.set_ylabel("phi0", fontsize=7)
+
+    # [0,1] phi(T) shape
+    ax = axes[0, 1]
+    ax.plot(x_out, phi_out, color=c_grw, linewidth=lw_grw, label="GRW")
+    if has_fd:
+        ax.plot(x_out, phi_ref_fd, color=c_fd, linewidth=lw_fd,
+                linestyle="--", label="FD ref  (Dirichlet BCs)")
+    if has_exact:
+        ax.plot(x_out, phi_exact, color=c_ex, linewidth=lw_ex,
+                linestyle=":", label="exact shape  (inf. domain)")
+    ax.legend(fontsize=6)
+    ax.set_title("phi(x,T)  [GRW vs FD ref vs exact shape]", fontsize=8)
+    ax.set_ylabel("phi", fontsize=7)
+
+    # [0,2] phi_x/phi ratio
+    ax = axes[0, 2]
+    ax.plot(x_out, ratio_grw, color=c_grw, linewidth=lw_grw, label="GRW")
+    if has_fd:
+        ax.plot(x_out, ratio_fd, color=c_fd, linewidth=lw_fd,
+                linestyle="--", label="FD ref")
+    if has_exact:
+        ax.plot(x_out, phi_x_over_phi_exact, color=c_ex, linewidth=lw_ex,
+                linestyle=":", label="exact  A/(2nu)*tanh")
+    ax.legend(fontsize=6)
+    ax.set_title("phi_x/phi  (determines u = -2nu*(phi_x/phi))", fontsize=8)
+    ax.set_ylabel("phi_x / phi", fontsize=7)
+
+    # [1,0] phi_x strategies
+    ax = axes[1, 0]
+    ax.plot(x_out, phi_x_out,  color=c_grw,         linewidth=lw_grw,
+            label="GRW gradient(phi)")
+    ax.plot(x_out, phi_x_bins, color="mediumpurple", linewidth=1.1,
+            linestyle=":", label="GRW bins/dx")
+    if has_fd:
+        ax.plot(x_out, phi_x_fd, color=c_fd, linewidth=lw_fd,
+                linestyle="--", label="FD ref phi_x")
+    if has_exact:
+        ax.plot(x_out, phi_x_exact_arr, color=c_ex, linewidth=lw_ex,
+                linestyle=":", label="exact phi_x")
+    ax.legend(fontsize=6)
+    ax.set_title("phi_x(x,T): strategies vs FD ref vs exact", fontsize=8)
+    ax.set_ylabel("phi_x", fontsize=7)
+
+    # [1,1] u(T) comparison
+    ax = axes[1, 1]
+    ax.plot(x_out, u_out, color=c_grw, linewidth=lw_grw, label="GRW u(T)")
+    if has_fd:
+        ax.plot(x_out, u_fd, color=c_fd, linewidth=lw_fd,
+                linestyle="--", label="FD ref u(T)")
+    if u_ref is not None:
+        ax.plot(x_out, u_ref, color=c_ex, linewidth=lw_ex,
+                linestyle=":", label="exact u(T)")
+    ax.legend(fontsize=6)
+    ax.set_title("u(x,T)  [GRW vs FD ref vs exact]", fontsize=8)
+    ax.set_ylabel("u", fontsize=7)
+
+    # [1,2] Error decomposition
+    ax = axes[1, 2]
+    if u_ref is not None:
+        err_total = u_out - u_ref
+        rms_total = float(np.sqrt(np.mean(err_total**2)))
+        ax.plot(x_out, err_total, color=c_grw, linewidth=lw_grw,
+                label=f"GRW - exact  (rms={rms_total:.3f})")
+        if has_fd:
+            err_bc = u_fd - u_ref
+            err_noise = u_out - u_fd
+            rms_bc = float(np.sqrt(np.mean(err_bc**2)))
+            rms_noise = float(np.sqrt(np.mean(err_noise**2)))
+            ax.plot(x_out, err_bc, color=c_fd, linewidth=lw_fd,
+                    linestyle="--",
+                    label=f"FD ref - exact  BC-mismatch rms={rms_bc:.3f}")
+            ax.plot(x_out, err_noise, color="mediumpurple", linewidth=1.1,
+                    linestyle=":",
+                    label=f"GRW - FD ref  noise rms={rms_noise:.3f}")
+            print(f"  [Cole-Hopf] Error decomposition:")
+            print(f"    Total   rms = {rms_total:.4f}")
+            print(f"    BC-mismatch = {rms_bc:.4f}  ({100*rms_bc/rms_total:.0f}% of total)")
+            print(f"    GRW noise   = {rms_noise:.4f}  ({100*rms_noise/rms_total:.0f}% of total)")
+    ax.axhline(0.0, color="black", linewidth=0.7, linestyle="--")
+    ax.legend(fontsize=6)
+    ax.set_title("Error decomp: total / BC-mismatch / GRW-noise", fontsize=8)
+    ax.set_ylabel("error in u", fontsize=7)
+
+    for ax in axes.flat:
         ax.set_xlabel("x", fontsize=7)
-        ax.set_ylabel(ylabel, fontsize=7)
-        ax.grid(True, alpha=0.3)
+        ax.grid(True, alpha=0.25)
         ax.tick_params(labelsize=7)
-        ax.ticklabel_format(useOffset=False, axis='y', style='plain')
 
-    plt.tight_layout()
+    fig.tight_layout()
     path = os.path.join(diag_dir, "cole_hopf_diagnostics.png")
-    plt.savefig(path, dpi=120)
+    fig.savefig(path, dpi=130, bbox_inches="tight")
     plt.close(fig)
     print(f"  [Cole-Hopf] Saved diagnostics -> {path}")
 
@@ -466,7 +612,13 @@ def simulate_burgers_cole_hopf_grw(globs, config, _diag_dir=None):
 
     Reconstruction at final time T:
       1. Bin glob weights onto a uniform N-point output grid.
-      2. Smooth with a Gaussian kernel (sigma_bins=8) to reduce particle noise.
+      2. Smooth with a boundary-corrected Gaussian kernel (sigma_bins=12).
+         The kernel is divided by its effective support at each bin so that
+         truncation at x=0 and x=L does not bias the phi_x amplitude near the
+         boundaries (previously the standard mode='same' convolution
+         underestimated |phi_x| there by up to ~2x for sigma_bins=12).
+         sigma_bins=12 spans ~30 output bins, reducing shot noise by ~sqrt(30)
+         while remaining narrow relative to the phi variation scale.
       3. Enforce the correct total for the smoothed bins:
            - Symmetric IC (phi0(L)=phi0(0), exact_integral=0):
              subtract the mean of bin_sums_s to enforce zero total exactly.
@@ -477,7 +629,11 @@ def simulate_burgers_cole_hopf_grw(globs, config, _diag_dir=None):
            - Asymmetric IC (phi0(L)!=phi0(0)):
              proportional rescale so sum(bin_sums_s) = phi0(L) - phi0(0).
       4. phi(x_j) = phi0(0) + cumsum(smoothed_bins)
-      5. u(x_j)   = -2*nu * phi_x(x_j) / phi(x_j)
+      5. phi_x(x_j) = d(phi)/dx  [np.gradient of the reconstructed phi]
+         Using the derivative of phi rather than bin_sums/dx ensures phi and
+         phi_x are derived from the same smooth curve, so their ratio is
+         self-consistent.
+      6. u(x_j) = -2*nu * phi_x(x_j) / phi(x_j)  [single inverse-transform]
 
     :param globs: list of dicts 'position' and 'value' = [u_i] on a uniform grid
     :param config: SimulationConfig; diff_constant = nu, BCs used for phi_x walk
@@ -486,8 +642,8 @@ def simulate_burgers_cole_hopf_grw(globs, config, _diag_dir=None):
     """
     nu = config.diff_constant
     dt = config.time_step
-    L  = config.domain_size
-    N  = len(globs)
+    L = config.domain_size
+    N = len(globs)
     if N == 0:
         return globs
 
@@ -532,7 +688,7 @@ def simulate_burgers_cole_hopf_grw(globs, config, _diag_dir=None):
     # Phi_x globs: forward finite differences of phi0 at midpoints.
     # sum(w_diff) = phi0(L) - phi0(0) = exact_integral exactly.
     w_diff = np.diff(phi0)               # N-1 weights
-    x_mid  = 0.5 * (x0[:-1] + x0[1:])  # N-1 midpoint positions
+    x_mid = 0.5 * (x0[:-1] + x0[1:])  # N-1 midpoint positions
     print(f"  [Cole-Hopf] sum(w_diff) = {float(w_diff.sum()):.6e}  "
           f"(should equal exact_integral)")
 
@@ -554,10 +710,10 @@ def simulate_burgers_cole_hopf_grw(globs, config, _diag_dir=None):
             mr = x_ph > L;     x_ph[mr] = 2.0 * L - x_ph[mr]
 
     # Reconstruct phi and u on a uniform N-point output grid.
-    x_out  = np.linspace(0.0, L, N)
-    dx_out = x_out[1] - x_out[0]
+    x_out = np.linspace(0.0, L, N)
+    dx_out = float(x_out[1] - x_out[0])
 
-    # Bin phi_x weights using floor-based nearest-left-neighbour assignment.
+    # Bin phi_x glob weights onto the output grid (floor assignment).
     bin_sums = np.zeros(N)
     idx = np.clip(np.floor(x_ph / dx_out).astype(int), 0, N - 1)
     np.add.at(bin_sums, idx, w_ph)
@@ -566,30 +722,35 @@ def simulate_burgers_cole_hopf_grw(globs, config, _diag_dir=None):
     print(f"  [Cole-Hopf] raw sum(bin_sums) = {raw_sum:.6e}  "
           f"(should be ~{exact_integral:.6e})")
 
-    # Smooth bin_sums with a Gaussian kernel to suppress GRW particle noise.
-    # sigma_bins=8 spans enough bins to average down noise while staying narrower
-    # than the phi variation scale (~sqrt(nu)/dx_out bins for smooth profiles).
-    sigma_bins = 8
-    kw         = int(4 * sigma_bins) + 1
-    kernel_x   = np.arange(-kw, kw + 1, dtype=float)
-    kernel     = np.exp(-0.5 * (kernel_x / sigma_bins) ** 2)
-    kernel    /= kernel.sum()
-    bin_sums_s = np.convolve(bin_sums, kernel, mode='same')
+    # Gaussian smoothing to suppress GRW particle shot noise.
+    # sigma_bins=12 spans ~12*sqrt(2*pi)~30 output bins, reducing shot noise
+    # by ~sqrt(30) while staying well below the phi variation scale
+    # (shock width / dx_out >> 30 for well-resolved benchmarks).
+    #
+    # Boundary-corrected smoothing: mode='same' convolution zero-pads outside
+    # [0, N-1], which truncates the kernel near both domain edges.  The result
+    # underestimates |phi_x| at x=0 and x=L where the stationary shock has its
+    # largest values.  Dividing by kernel_norm (the effective kernel weight at
+    # each bin) corrects this boundary bias without any tunable parameter.
+    sigma_bins = 12
+    kw = int(4 * sigma_bins) + 1
+    kernel_x = np.arange(-kw, kw + 1, dtype=float)
+    kernel = np.exp(-0.5 * (kernel_x / sigma_bins) ** 2)
+    kernel     /= kernel.sum()
+    raw_conv = np.convolve(bin_sums, kernel, mode='same')
+    kernel_norm = np.convolve(np.ones(N, dtype=float), kernel, mode='same')
+    bin_sums_s = raw_conv / np.maximum(kernel_norm, 1e-12)
 
     smoothed_before = float(bin_sums_s.sum())
     print(f"  [Cole-Hopf] smoothed sum before correction = {smoothed_before:.6e}")
 
-    # Enforce the correct total for the smoothed bins.
-    #
-    # Symmetric IC case (exact_integral = 0, e.g. stationary shock):
-    #   Gaussian convolution with mode='same' truncates the kernel at both
-    #   domain edges, leaking net weight and making bin_sums_s.sum() != 0.
-    #   Without correction: phi_out[-1] = phi0(0) + (leaked sum) != phi0(L),
-    #   causing systematic domain-wide drift.  Fix: subtract the mean of
-    #   bin_sums_s so that sum(bin_sums_s) = 0 exactly.
-    #
-    # Asymmetric IC case (exact_integral != 0, e.g. traveling wave):
-    #   Proportional rescale to restore the correct total.
+    # Enforce the correct total integral for the smoothed bins.
+    #   Symmetric IC (exact_integral = 0, e.g. stationary shock):
+    #     Even after boundary correction the smoothed sum may drift slightly
+    #     from zero due to finite particle noise.  Subtract the mean to enforce
+    #     sum(bin_sums_s) = 0 exactly, so phi_out[-1] = phi0(L) as required.
+    #   Asymmetric IC (exact_integral != 0, e.g. traveling wave):
+    #     Proportional rescale to restore the correct total.
     near_zero = 1e-6 * max(float(np.abs(bin_sums).max()), 1e-30)
     if abs(exact_integral) < near_zero:
         bin_sums_s -= bin_sums_s.mean()
@@ -599,46 +760,92 @@ def simulate_burgers_cole_hopf_grw(globs, config, _diag_dir=None):
     smoothed_after = float(bin_sums_s.sum())
     print(f"  [Cole-Hopf] smoothed sum after correction  = {smoothed_after:.6e}")
 
-    # phi_x density on output grid (smoothed, corrected).
-    phi_x_out = bin_sums_s / dx_out
-
-    # phi(x_j) = phi0(0) + integral_0^{x_j} phi_x dx
-    #           = phi0(0) + cumsum(bin_sums_s up to bin j).
-    # phi0(0) = 1.0 after max-normalization (since Psi0(0) = 0).
+    # Reconstruct phi by integrating the smoothed phi_x bins.
+    # phi(x_j) = phi0(0) + cumsum(bin_sums_s)[j]  (right-endpoint Riemann rule).
+    # The right-boundary check phi_out[-1] == phi0(L) serves as a consistency test.
     phi_out = phi0_0 + np.cumsum(bin_sums_s)
 
     print(f"  [Cole-Hopf] phi_out[0]  = {float(phi_out[0]):.6g}  "
-          f"(expect ~{phi0_0 + float(bin_sums_s[0]):.6g})")
+          f"(expect ~{float(phi0_0 + bin_sums_s[0]):.6g})")
     print(f"  [Cole-Hopf] phi_out[-1] = {float(phi_out[-1]):.6g}  "
           f"(expect ~{phi0_L:.6g})")
     print(f"  [Cole-Hopf] min(phi_out) = {float(phi_out.min()):.6g},  "
           f"max(phi_out) = {float(phi_out.max()):.6g}")
-    idx_sparse = np.argsort(phi_out)[:3]
-    print(f"  [Cole-Hopf] 3 smallest phi_out at x = "
-          f"{[round(float(x_out[i]), 4) for i in idx_sparse]}")
 
-    # Physical floor: clip phi to phi0_min/2 where GRW noise pushes it too low.
-    phi0_min    = float(phi0.min())
-    phi_floor   = max(phi0_min / 2.0, 1e-10)
+    # Two phi_x strategies — compared in the diagnostics figure, gradient used
+    # for the final u reconstruction.
+    #
+    # Strategy A: gradient(phi_out, dx_out).
+    #   phi and phi_x are derived from the same smooth curve; their ratio
+    #   (hence u) is self-consistent.  Central differences at interior points
+    #   give a half-bin average of adjacent smoothed bins, which is slightly
+    #   smoother than a direct per-bin estimate.
+    #
+    # Strategy B: bin_sums_s / dx_out.
+    #   Direct per-bin estimate of phi_x.  At boundary bins this equals
+    #   Strategy A exactly (one-sided difference = per-bin value).  At interior
+    #   bins the two strategies agree to O(dx), so they are numerically
+    #   equivalent for the smooth profiles produced by sigma_bins=12.
+    #
+    # With boundary-corrected bin_sums_s both strategies now recover the full
+    # phi_x amplitude near x=0 and x=L; previously both were biased there
+    # because the kernel was truncated without normalization.
+    phi_x_out = np.gradient(phi_out, dx_out)   # Strategy A (used for u)
+    phi_x_bins = bin_sums_s / dx_out             # Strategy B (shown in diagnostics)
+
+    # Safety floor for phi in case GRW noise pushes phi below phi0_min/2.
+    phi0_min = float(phi0.min())
+    phi_floor = max(phi0_min / 2.0, 1e-10)
     phi_clipped = phi_out < phi_floor
     if np.any(phi_clipped):
         n_bad = int(phi_clipped.sum())
-        print(
-            f"  [Cole-Hopf GRW] NOTE: {n_bad} bins have phi < phi_floor "
-            f"({phi_floor:.2e}); u zeroed there."
-        )
+        print(f"  [Cole-Hopf] NOTE: {n_bad} bins have phi < {phi_floor:.2e}; "
+              f"u zeroed there.")
     phi_safe = np.where(phi_clipped, phi_floor, phi_out)
 
+    # Single inverse-transform: u = -2*nu * phi_x / phi.
     u_out = -2.0 * nu * phi_x_out / phi_safe
     u_out = np.where(phi_clipped, 0.0, u_out)
 
     print(f"  [Cole-Hopf] max(|phi_x/phi|) = "
           f"{float(np.max(np.abs(phi_x_out / phi_safe))):.6e}")
 
+    # Exact transformed quantities for stationary-shock IC.
+    # phi0_exact(x) = cosh(A*(x-xc)/(2*nu)) / cosh(A*xc/(2*nu))
+    #   — same normalisation as the code's phi0: max = 1 at x=0 and x=L.
+    # phi_x_over_phi_exact = A/(2*nu) * tanh(A*(x-xc)/(2*nu))
+    #   — time-independent (the C(T) scaling cancels in the ratio).
+    ic_type_ = (getattr(config, 'burgers_ic_type', '') or '').lower()
+    amplitude_ = getattr(config, 'burgers_ic_amplitude', None)
+    phi_exact = None
+    phi_x_over_phi_exact = None
+    if ic_type_ == 'stationary_shock' and amplitude_ is not None:
+        A_ = float(amplitude_)
+        xc_ = L / 2.0
+        arg_ = A_ * (x_out - xc_) / (2.0 * nu)
+        denom_ = float(np.cosh(A_ * xc_ / (2.0 * nu)))
+        phi_exact = np.cosh(arg_) / denom_
+        phi_x_over_phi_exact = (A_ / (2.0 * nu)) * np.tanh(arg_)
+        u_ref_exact = -2.0 * nu * phi_x_over_phi_exact
+    else:
+        u_ref_exact = None
+
     if _diag_dir is not None:
+        # Reference FD heat solve with the same Dirichlet BCs as the GRW.
+        # phi(0,t) = phi0_0 and phi(L,t) = phi0_L are constant: this is what
+        # weight-preserving reflection enforces in the cumsum reconstruction.
+        phi0_on_xout = np.interp(x_out, x0, phi0)
+        phi_ref_fd = _reference_phi_heat_fd(
+            phi0_on_xout, x_out, nu, config.total_time, phi0_0, phi0_L,
+        )
         _save_cole_hopf_diagnostics(
-            _diag_dir, x0, u0, phi0, x_out, dx_out,
-            bin_sums, bin_sums_s, phi_out, u_out,
+            _diag_dir, x0, u0, phi0, x_out, phi_out,
+            phi_x_out, phi_x_bins,
+            u_out, nu,
+            u_ref=u_ref_exact,
+            phi_exact=phi_exact,
+            phi_x_over_phi_exact=phi_x_over_phi_exact,
+            phi_ref_fd=phi_ref_fd,
         )
 
     for i in range(N):
@@ -684,11 +891,11 @@ def simulate_burgers_direct_grw(globs, config):
     """
     nu = config.diff_constant
     dt = config.time_step
-    L  = config.domain_size
+    L = config.domain_size
     bc = config.boundary_conditions
-    bc_left_type  = bc['LEFT']['type'].lower()
+    bc_left_type = bc['LEFT']['type'].lower()
     bc_right_type = bc['RIGHT']['type'].lower()
-    N  = len(globs)
+    N = len(globs)
     if N == 0:
         return globs
 
@@ -702,17 +909,17 @@ def simulate_burgers_direct_grw(globs, config):
     ])
 
     dx0 = L / (N - 1) if N > 1 else 1.0
-    uL  = float(bc['LEFT'].get('value', 0.0))  # left Dirichlet value for u reconstruction
+    uL = float(bc['LEFT'].get('value', 0.0))  # left Dirichlet value for u reconstruction
 
     # v0 = du0/dx; v-glob weights = v0 * dx (pieces of the v distribution).
-    v0          = np.gradient(u0, dx0)
+    v0 = np.gradient(u0, dx0)
     v_positions = x0.copy()
-    v_weights   = v0 * dx0
+    v_weights = v0 * dx0
 
-    sigma   = np.sqrt(2.0 * nu * dt)
+    sigma = np.sqrt(2.0 * nu * dt)
     n_steps = int(config.total_time / dt)
-    n_grid  = N
-    x_grid  = np.linspace(0.0, L, n_grid)
+    n_grid = N
+    x_grid = np.linspace(0.0, L, n_grid)
     dx_grid = L / (n_grid - 1)
 
     for _ in range(n_steps):
@@ -728,7 +935,7 @@ def simulate_burgers_direct_grw(globs, config):
         # Reaction statistic R = -(u * u_xx / v + v); minimal zero-division guard.
         u_xx_grid = np.gradient(v_grid, dx_grid)
         eps_div = 1.0e-15
-        v_safe  = np.where(
+        v_safe = np.where(
             np.abs(v_grid) > eps_div,
             v_grid,
             np.sign(v_grid + 1e-300) * eps_div
@@ -762,9 +969,9 @@ def simulate_burgers_direct_grw(globs, config):
                 v_weights[mask_r] = -v_weights[mask_r]
 
     # Final reconstruction: u on uniform output grid.
-    x_out     = x_grid
+    x_out = x_grid
     bin_final = np.zeros(n_grid)
-    idx_f     = np.clip(
+    idx_f = np.clip(
         np.floor(v_positions / dx_grid).astype(int), 0, n_grid - 1
     )
     np.add.at(bin_final, idx_f, v_weights)
@@ -781,26 +988,33 @@ def simulate_burgers(globs, config):
     """
     Dispatcher for Burgers GRW solvers.
 
-    Routes to the appropriate implementation based on config.burgers_mode:
+    On the GRW-feasibility branch there are two supported modes:
 
-      'cole_hopf_grw'  (default) — thesis-faithful GRW via Cole-Hopf transformation.
-                                    Reduces Burgers to a heat equation solved by GRW.
+      'cole_hopf_grw'  (default) — thesis-faithful GRW via the Cole-Hopf
+                                    transformation.  Reduces Burgers to a heat
+                                    equation solved by GRW.  This is the primary
+                                    and recommended Burgers path on this branch.
       'direct_grw'               — diagnostic direct gradient-variable GRW.
-                                    Noisy by design; reproduces thesis noise discussion.
-      'lagrangian_grw'           — experimental Lagrangian particle method (operator
-                                    splitting: advection + GRW diffusion).
+                                    Noisy by design; reproduces the thesis
+                                    observation that the direct GRW approach is
+                                    impractical for Burgers.  Not a primary solver.
+
+    The Lagrangian operator-splitting method (simulate_burgers_lagrangian) is
+    kept in this file for reference but is NOT routed from this dispatcher.
+    It should not be used as a primary Burgers solver on this branch.
 
     :param globs: list of dicts 'position' and 'value' = [u_i]
     :param config: SimulationConfig with burgers_mode attribute
     :return: updated globs
     """
-    mode     = (getattr(config, 'burgers_mode', None) or 'cole_hopf_grw').strip().lower()
+    mode = (getattr(config, 'burgers_mode', None) or 'cole_hopf_grw').strip().lower()
     diag_dir = getattr(config, '_diag_dir', None)
     if mode == 'direct_grw':
         return simulate_burgers_direct_grw(globs, config)
-    elif mode in ('lagrangian_grw', 'lagrangian'):
-        return simulate_burgers_lagrangian(globs, config)
     else:
+        if mode not in ('cole_hopf_grw', 'cole_hopf'):
+            print(f"  [Burgers] WARNING: unrecognised mode '{mode}'; "
+                  f"falling back to cole_hopf_grw.")
         return simulate_burgers_cole_hopf_grw(globs, config, _diag_dir=diag_dir)
 
 
@@ -825,8 +1039,8 @@ def simulate_burgers_fd(globs, config):
     """
     dx = config.domain_size / (config.num_points - 1)
     nu = config.diff_constant
-    T  = config.total_time
-    bc_left  = float(config.boundary_conditions['LEFT']['value'])
+    T = config.total_time
+    bc_left = float(config.boundary_conditions['LEFT']['value'])
     bc_right = float(config.boundary_conditions['RIGHT']['value'])
 
     u = np.array([
@@ -841,11 +1055,11 @@ def simulate_burgers_fd(globs, config):
     while t < T:
         # Adaptive inner step: satisfy diffusion and advection CFL simultaneously.
         dt_diff = 0.4 * dx ** 2 / nu if nu > 0.0 else np.inf
-        dt_adv  = 0.4 * dx / (np.abs(u).max() + 1e-12)
+        dt_adv = 0.4 * dx / (np.abs(u).max() + 1e-12)
         dt_inner = min(dt_diff, dt_adv, T - t)
         if dt_inner <= 0.0:
             break
-        u_x  = np.gradient(u, dx)
+        u_x = np.gradient(u, dx)
         u_xx = np.gradient(u_x, dx)
         u   += (-u * u_x + nu * u_xx) * dt_inner
         u[0]  = bc_left

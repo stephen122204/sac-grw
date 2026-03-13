@@ -1,25 +1,25 @@
 {
   "equation_type": "burgers",
   "domain_type": "Finite",
-  "domain_size": 10.0,
+  "domain_size": 4.0,
 
   "boundary_conditions": {
-    "LEFT":  { "type": "Dirichlet", "value": 1.0 },
+    "LEFT":  { "type": "Dirichlet", "value": 0.0 },
     "RIGHT": { "type": "Dirichlet", "value": 0.0 }
   },
 
-  "diff_constant": 0.05,
-  "time_step": 0.001,
+  "diff_constant": 0.5,
+  "time_step": 0.005,
   "total_time": 0.5,
-  "num_points": 500,
+  "num_points": 400,
   "reaction_term": false,
 
-  "burgers_mode": "lagrangian_grw",
+  "burgers_mode": "cole_hopf_grw",
 
   "burgers_initial_condition": {
-    "type": "shock",
-    "shock_position": 5.0,
-    "left_value": 1.0,
-    "right_value": 0.0
+    "type": "stationary_shock",
+    "nu": 0.5,
+    "x_center": 2.0,
+    "amplitude": 0.5
   }
 }

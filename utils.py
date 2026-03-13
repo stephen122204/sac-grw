@@ -51,8 +51,8 @@ def _bc_info(cfg=None):
     if isinstance(bc, dict) and "LEFT" in bc and "RIGHT" in bc:
         ltype = _safe_str(bc["LEFT"].get("type", ""))
         rtype = _safe_str(bc["RIGHT"].get("type", ""))
-        lval  = float(bc["LEFT"].get("value", 0.0))
-        rval  = float(bc["RIGHT"].get("value", 0.0))
+        lval = float(bc["LEFT"].get("value", 0.0))
+        rval = float(bc["RIGHT"].get("value", 0.0))
         print(f"[plot] BCs detected -> left: {ltype} ({lval}), right: {rtype} ({rval}), L={L}")
         return L, ltype, lval, rtype, rval
 
