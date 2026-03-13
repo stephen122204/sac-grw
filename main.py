@@ -31,19 +31,11 @@ def main():
         return
 
     if eq in {"fitzhugh-nagumo", "fitzhugh–nagumo", "fitzhugh", "nagumo"}:
-        ic_type = getattr(cfg, 'fhn_ic_type', '') or ''
-        if ic_type in ('steady_solution', 'nonsmooth', 'discontinuous', 'scalar_grw'):
-            # Scalar GRW: each glob carries a single float weight.
-            initial_globs = [
-                {'position': float(pos), 'value': float(val)}
-                for pos, val in cfg.initial_conditions
-            ]
-        else:
-            # Legacy two-component (u, v) particle method.
-            initial_globs = [
-                {'position': pos, 'value': list(val)}
-                for pos, val in cfg.initial_conditions
-            ]
+        # Thesis scalar GRW: each glob carries a single float weight.
+        initial_globs = [
+            {'position': float(pos), 'value': float(val)}
+            for pos, val in cfg.initial_conditions
+        ]
         results = simulate_fitzhugh_nagumo(initial_globs, cfg)
         print("Simulation Complete! Plotting Results...")
         plot_results(results, cfg.equation_type, cfg)

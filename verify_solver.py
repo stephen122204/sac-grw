@@ -20,9 +20,9 @@ a trusted benchmark:
     lagrangian_grw: experimental Lagrangian particle method (operator splitting).
         Compares against high-resolution FD reference.
 
-  fhn     -- high-resolution FD reference (ref_factor x smaller dt, same grid).
-             Primary solver: experimental GRW-inspired particle method.
-             Reference solver: standard finite-difference (simulate_fitzhugh_nagumo_fd).
+  fhn     -- exact traveling-wave solution (analytic, multi-time snapshots).
+             Primary solver: thesis scalar GRW (simulate_fitzhugh_nagumo_grw).
+             Reference: exact solution u = 1/(1+exp(-(x+theta*t)/2)).
 
 Burgers and FHN comparisons label exact vs reference solutions explicitly.
 The purpose of the error metrics on main is to quantify GRW feasibility and
@@ -70,7 +70,6 @@ from simulation import (
     simulate_burgers,
     simulate_burgers_fd,
     simulate_fitzhugh_nagumo,
-    simulate_fitzhugh_nagumo_fd,
 )
 
 
@@ -703,76 +702,8 @@ def _run_fhn_grw_scalar(cfg, total_time_override=None):
     return x_grid, u_grid
 
 
-def _run_fhn_grw_legacy(cfg):
-    """
-    Run the legacy two-component GRW particle solver for FHN.
-
-    Returns (x_sorted, u_sorted, v_sorted) on a scattered grid.
-    """
-    globs = [{'position': float(pos), 'value': list(val)}
-             for pos, val in cfg.initial_conditions]
-    result = simulate_fitzhugh_nagumo(globs, cfg)
-    x  = np.array([g['position'] for g in result])
-    uv = np.array([g['value']    for g in result])
-    order = np.argsort(x)
-    return x[order], uv[order, 0], uv[order, 1]
 
 
-def _run_fhn_fd(cfg):
-    """
-    Run the FD reference solver for FHN on a fixed uniform grid.
-
-    Returns (x_sorted, u_sorted, v_sorted) where x is the uniform grid.
-    """
-    globs = [{'position': float(pos), 'value': list(val)}
-             for pos, val in cfg.initial_conditions]
-    result = simulate_fitzhugh_nagumo_fd(globs, cfg)
-    x  = np.array([g['position'] for g in result])
-    uv = np.array([g['value']    for g in result])
-    order = np.argsort(x)
-    return x[order], uv[order, 0], uv[order, 1]
-
-
-def _fhn_ref_config(cfg, ref_factor):
-    """
-    Build a finer-timestep FHN config for the FD reference solve.
-
-    The spatial grid is kept identical to the primary run so both solutions
-    share the same x-coordinates (pointwise comparison without interpolation).
-    Only dt is reduced (by ref_factor), which isolates temporal error.
-
-    CFL stability for the explicit-FD reference solver:
-      dt <= dx^2 / (2 * D)
-    The reference dt_ref = dt / ref_factor makes this constraint more easily
-    satisfied.  The CFL condition does NOT apply to the GRW particle solver.
-    """
-    dt_ref = cfg.time_step / ref_factor
-
-    if cfg.diff_constant > 0.0:
-        dx = cfg.domain_size / (cfg.num_points - 1)
-        cfl_limit = dx**2 / (2.0 * cfg.diff_constant)
-        if cfg.time_step > cfl_limit * 1.05:
-            print(
-                f"  [verify] WARNING: coarse dt={cfg.time_step:.5g} exceeds "
-                f"CFL limit {cfl_limit:.5g} for D={cfg.diff_constant}, dx={dx:.5g}. "
-                f"Results may be unstable."
-            )
-
-    return SimulationConfig(
-        equation_type=cfg.equation_type,
-        domain_type=cfg.domain_type,
-        domain_size=cfg.domain_size,
-        boundary_conditions=cfg.boundary_conditions,
-        diff_constant=cfg.diff_constant,
-        time_step=dt_ref,
-        total_time=cfg.total_time,
-        num_points=cfg.num_points,
-        initial_conditions=list(cfg.initial_conditions),
-        reaction_term=cfg.reaction_term,
-        a=cfg.a,
-        b=cfg.b,
-        tau=cfg.tau,
-    )
 
 
 def plot_fhn_scalar_grw(
@@ -844,106 +775,18 @@ def plot_fhn_scalar_grw(
     plt.close(fig)
 
 
-def plot_fhn_comparison(
-    x, u_num, u_ref, v_num, v_ref,
-    title, num_label, ref_label, m_u, m_v,
-    output_path,
-    diag_u=None,
-    diag_v=None,
-):
-    """
-    Four-panel figure for legacy FHN two-component verification.
-
-    Layout (2 rows x 2 columns):
-      [0,0] u: numerical vs reference overlay
-      [0,1] u: pointwise error
-      [1,0] v: numerical vs reference overlay
-      [1,1] v: pointwise error
-    """
-    fig, axes = plt.subplots(2, 2, figsize=(13, 9))
-    fig.suptitle(title, fontsize=10, y=0.98)
-
-    u_err = u_num - u_ref
-    v_err = v_num - v_ref
-
-    _diag_box = dict(boxstyle="round,pad=0.3", facecolor="lightyellow",
-                     edgecolor="gray", alpha=0.85)
-
-    def _overlay(ax, x, num, ref, ylabel, num_lbl, ref_lbl, metrics, diag=None):
-        ax.plot(x, ref, color="black",   linewidth=2,   linestyle="-",  label=ref_lbl)
-        ax.plot(x, num, color="crimson", linewidth=1.5, linestyle="--", label=num_lbl)
-        ax.set_xlabel("x")
-        ax.set_ylabel(ylabel)
-        ax.set_title(_metrics_str(metrics), fontsize=9)
-        ax.legend(fontsize=8, loc="upper right")
-        ax.grid(True, alpha=0.3)
-        # Disable matplotlib's offset-notation on the y-axis so that values like
-        # 1.1994 are not displayed as "+1.1994e0" or "1.199 + offset".
-        ax.ticklabel_format(useOffset=False, axis="y", style="plain")
-
-        if diag is not None:
-            pn  = _fmt_compact(diag.get("peak_num"))
-            pr  = _fmt_compact(diag.get("peak_ref"))
-            pd  = _fmt_compact(diag.get("peak_num") - diag.get("peak_ref"))
-            ln  = _fmt_compact(diag.get("peak_loc_num"))
-            lr  = _fmt_compact(diag.get("peak_loc_ref"))
-            ld  = _fmt_compact(abs(diag.get("peak_loc_num") - diag.get("peak_loc_ref")))
-            txt = (f"peak:  num={pn},  ref={pr},  diff={pd}\n"
-                   f"loc:   num={ln},  ref={lr},  diff={ld}")
-            ax.text(0.03, 0.97, txt, transform=ax.transAxes,
-                    fontsize=7.5, verticalalignment="top",
-                    fontfamily="monospace", bbox=_diag_box)
-
-    def _error(ax, x, err, ylabel):
-        ax.plot(x, err, color="steelblue", linewidth=1.5)
-        ax.axhline(0.0, color="black", linewidth=0.8, linestyle="--")
-        ax.set_xlabel("x")
-        ax.set_ylabel(ylabel)
-        ax.set_title("Pointwise error", fontsize=9)
-        ax.grid(True, alpha=0.3)
-        # Use scientific notation with explicit exponent on error axes so tiny
-        # values like 1e-4 are shown as "1e-4" and not "0.0001" or offset.
-        ax.ticklabel_format(axis="y", style="sci", scilimits=(-2, 2))
-
-    _overlay(axes[0, 0], x, u_num, u_ref, "u(x, T)", num_label, ref_label, m_u, diag_u)
-    _error(  axes[0, 1], x, u_err, "u error  (numerical - reference)")
-    _overlay(axes[1, 0], x, v_num, v_ref, "v(x, T)",
-             num_label.replace("u ", "v "), ref_label.replace("u ", "v "), m_v, diag_v)
-    _error(  axes[1, 1], x, v_err, "v error  (numerical - reference)")
-
-    fig.text(
-        0.5, 0.005,
-        "Reference = high-resolution FD solution  "
-        "(simulate_fitzhugh_nagumo_fd, same grid, dt_ref = dt / ref_factor)",
-        ha="center", fontsize=8, color="gray", fontstyle="italic",
-    )
-
-    plt.tight_layout(rect=[0, 0.02, 1, 0.97])
-    os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
-    plt.savefig(output_path, dpi=150)
-    print(f"  [verify] Saved plot    -> {output_path}")
-    plt.close(fig)
 
 
 def run_fhn(cfg, output_dir, do_save_data, ref_factor):
     """
-    FHN verification dispatcher.
+    FHN verification: thesis scalar GRW vs exact traveling-wave solution.
 
-    Scalar GRW ICs (steady_solution, nonsmooth, discontinuous):
-      Compare the thesis scalar GRW result to the exact traveling-wave solution
-      at multiple time snapshots (t = 0, T/3, 2T/3, T).
-
-    Legacy two-component IC:
-      Compare the two-component GRW particle solver to a high-resolution FD
-      reference (same spatial grid, dt reduced by ref_factor).
+    Runs the GRW solver at multiple time snapshots (t = 0, T/3, 2T/3, T)
+    and compares each against the analytic solution:
+      u(x, t) = 1 / (1 + exp(-(x + theta*t - x_center) / 2))
+      theta   = sqrt(2) * (0.5 - a)
     """
-    ic_type = getattr(cfg, 'fhn_ic_type', '') or ''
-    scalar_path = ic_type in ('steady_solution', 'nonsmooth', 'discontinuous', 'scalar_grw')
-
-    if scalar_path:
-        _run_fhn_scalar(cfg, output_dir, do_save_data)
-    else:
-        _run_fhn_legacy(cfg, output_dir, do_save_data, ref_factor)
+    _run_fhn_scalar(cfg, output_dir, do_save_data)
 
 
 def _run_fhn_scalar(cfg, output_dir, do_save_data):
@@ -1100,126 +943,6 @@ def _run_fhn_scalar(cfg, output_dir, do_save_data):
         print(f"  [verify] Saved data    -> {path}")
 
 
-def _run_fhn_legacy(cfg, output_dir, do_save_data, ref_factor):
-    """
-    Legacy two-component FHN verification: GRW particle vs FD reference.
-    """
-    print("\n" + "=" * 62)
-    print("  FitzHugh-Nagumo -- legacy two-component GRW vs FD reference")
-    print("  Primary : two-component GRW particle method (legacy)")
-    print("  Reference: FD solver, same spatial grid, dt_ref = dt / ref_factor")
-    print("=" * 62)
-
-    N  = cfg.num_points
-    dt = cfg.time_step
-    T  = cfg.total_time
-    L  = cfg.domain_size
-    D  = cfg.diff_constant
-    dx = L / (N - 1)
-
-    print(f"\n  Parameters")
-    print(f"    a={cfg.a}, b={cfg.b}, tau={cfg.tau}, D={D}")
-    print(f"    T = {T},  dt = {dt}  ({int(T / dt)} GRW steps)")
-    print(f"    N = {N} particles,  dx = {dx:.5g},  domain [0, {L}]")
-
-    print("\n  Running FHN two-component GRW ...", flush=True)
-    x_num, u_num, v_num = _run_fhn_grw_legacy(cfg)
-    print("  Done.")
-
-    ref_cfg = _fhn_ref_config(cfg, ref_factor)
-    print(
-        f"\n  Running FHN FD reference  (dt={ref_cfg.time_step:.5g}) ...",
-        flush=True,
-    )
-    x_ref, u_ref, v_ref = _run_fhn_fd(ref_cfg)
-    print("  Done.")
-
-    u_num_i = np.interp(x_ref, x_num, u_num)
-    v_num_i = np.interp(x_ref, x_num, v_num)
-
-    dx_grid = float(L) / (N - 1)
-    m_u = compute_metrics(u_num_i, u_ref, dx_grid)
-    m_v = compute_metrics(v_num_i, v_ref, dx_grid)
-
-    u_peak_num     = float(np.max(u_num))
-    u_peak_ref     = float(np.max(u_ref))
-    u_peak_loc_num = float(x_num[np.argmax(u_num)])
-    u_peak_loc_ref = float(x_ref[np.argmax(u_ref)])
-
-    v_peak_num     = float(np.min(v_num))
-    v_peak_ref     = float(np.min(v_ref))
-    v_peak_loc_num = float(x_num[np.argmin(v_num)])
-    v_peak_loc_ref = float(x_ref[np.argmin(v_ref)])
-
-    combined_metrics = {
-        "u": m_u,
-        "v": m_v,
-        "u_peak_grw":           u_peak_num,
-        "u_peak_fd_ref":        u_peak_ref,
-        "u_peak_error":         float(abs(u_peak_num - u_peak_ref)),
-        "u_peak_error_rel":     float(abs(u_peak_num - u_peak_ref) / u_peak_ref)
-                                if abs(u_peak_ref) > 1e-12 else None,
-        "u_peak_location_grw":  u_peak_loc_num,
-        "u_peak_location_ref":  u_peak_loc_ref,
-        "u_peak_location_diff": float(abs(u_peak_loc_num - u_peak_loc_ref)),
-        "v_peak_grw":           v_peak_num,
-        "v_peak_fd_ref":        v_peak_ref,
-        "v_peak_error":         float(abs(v_peak_num - v_peak_ref)),
-        "v_peak_location_grw":  v_peak_loc_num,
-        "v_peak_location_ref":  v_peak_loc_ref,
-        "v_peak_location_diff": float(abs(v_peak_loc_num - v_peak_loc_ref)),
-        "ref_factor":           ref_factor,
-        "ref_time_step":        ref_cfg.time_step,
-    }
-
-    _print_metrics(m_u, "u error metrics  (GRW particle vs FD reference)")
-    _print_metrics(m_v, "v error metrics  (GRW particle vs FD reference)")
-    print(f"\n  FHN peak diagnostics")
-    print(f"    u peak (GRW) : {_fmt_val(u_peak_num)},  loc = {u_peak_loc_num:.4f}")
-    print(f"    u peak (FD)  : {_fmt_val(u_peak_ref)},  loc = {u_peak_loc_ref:.4f}")
-    print(f"    u peak diff  : {_fmt_val(abs(u_peak_num - u_peak_ref))}")
-    print(f"    v peak (GRW) : {_fmt_val(v_peak_num)},  loc = {v_peak_loc_num:.4f}")
-    print(f"    v peak (FD)  : {_fmt_val(v_peak_ref)},  loc = {v_peak_loc_ref:.4f}")
-    print(f"    v peak diff  : {_fmt_val(abs(v_peak_num - v_peak_ref))}")
-
-    num_lbl = f"GRW particle  (N={N}, dt={dt})"
-    ref_lbl = f"FD reference  (dt={ref_cfg.time_step:.5g})"
-    title = (
-        f"FHN: GRW particle vs FD reference  "
-        f"(T={T}, a={cfg.a}, b={cfg.b}, tau={cfg.tau}, D={D})\n"
-        f"u: {_metrics_str(m_u)}   |   v: {_metrics_str(m_v)}"
-    )
-
-    diag_u = dict(
-        peak_num=u_peak_num, peak_ref=u_peak_ref,
-        peak_loc_num=u_peak_loc_num, peak_loc_ref=u_peak_loc_ref,
-    )
-    diag_v = dict(
-        peak_num=v_peak_num, peak_ref=v_peak_ref,
-        peak_loc_num=v_peak_loc_num, peak_loc_ref=v_peak_loc_ref,
-    )
-
-    plot_fhn_comparison(
-        x_ref, u_num_i, u_ref, v_num_i, v_ref,
-        title=title,
-        num_label=f"u {num_lbl}",
-        ref_label=f"u {ref_lbl}",
-        m_u=m_u, m_v=m_v,
-        output_path=os.path.join(output_dir, "comparison_plot.png"),
-        diag_u=diag_u,
-        diag_v=diag_v,
-    )
-    save_metrics(combined_metrics, os.path.join(output_dir, "metrics.json"))
-    if do_save_data:
-        path = os.path.join(output_dir, "comparison_data.npz")
-        os.makedirs(output_dir, exist_ok=True)
-        np.savez(
-            path,
-            x=x_ref,
-            u_numerical=u_num_i, u_reference=u_ref, u_error=u_num_i - u_ref,
-            v_numerical=v_num_i, v_reference=v_ref, v_error=v_num_i - v_ref,
-        )
-        print(f"  [verify] Saved data    -> {path}")
 
 
 # ---------------------------------------------------------------------------

@@ -97,114 +97,6 @@ def simulate_heat_equation(globs, config):
     return globs
 
 
-def simulate_fitzhugh_nagumo_two_component(globs, config):
-    """
-    Experimental GRW-inspired particle method for the FitzHugh-Nagumo equations.
-
-    PDEs:
-      du/dt = D * d2u/dx2  +  tau * (u - u^3/3 + v)
-      dv/dt =               - (1/tau) * (u - a + b*v)
-
-    GRW-inspired formulation:
-
-      1. Spatial diffusion of u (GRW step):
-           x_i += Normal(0, sqrt(2 * D * dt))
-         Each particle's position undergoes a Brownian random walk, identical to
-         the heat GRW with alpha = D.  This represents the D * d2u/dx2 term.
-
-      2. Boundary reflection (same rules as the heat GRW):
-         Dirichlet -- symmetric reflection (position mirrored, u_i preserved).
-         Neumann   -- anti-symmetric reflection (position mirrored, u_i negated).
-         v always uses symmetric reflection (v_i is always preserved at walls).
-
-      3. Local reaction (explicit Euler per particle):
-           u_i += dt * tau * (u_i - u_i^3/3 + v_i)
-           v_i += dt * (-(1/tau) * (u_i - a + b*v_i))
-         Each particle integrates its own local ODE independently, without
-         spatial coupling to neighboring particles.
-
-    Each glob carries:
-      'position' : x_i, evolves by random walk
-      'value'    : [u_i, v_i], local state variables at this particle's location
-
-    Reconstruction of the spatial fields u(x, t) and v(x, t) is done in
-    utils.py and verify_solver.py by sorting particles by position and
-    interpolating their values onto a uniform grid.
-
-    Methodological notes (experimental formulation):
-      - The reaction step is evaluated at each particle's carried (u_i, v_i)
-        without reference to neighbouring particles.  In the true FHN PDE, the
-        diffusion term provides spatial coupling: excited u at one location
-        drives u at nearby locations above the excitation threshold.  In this
-        particle method that coupling exists only indirectly, through particles
-        diffusing from one spatial region into another.
-      - As a consequence, traveling-wave propagation in this formulation is
-        weaker than in the FD solver.  The wave "appears" to spread primarily
-        via diffusion of excited particles into the rest region, rather than
-        via the threshold-activation mechanism of the true FHN field PDE.
-      - v is NOT diffused in the true FHN, but in this particle formulation v
-        is transported with the particle position.  This introduces an effective
-        spatial diffusion of v, which is an approximation error.
-      - These limitations are quantified by the comparison with the FD reference
-        in verify_solver.py and are part of the GRW feasibility study.
-      - For the reference FD solve, see simulate_fitzhugh_nagumo_fd below.
-
-    :param globs: list of dicts with 'position' (evolves) and 'value' = [u_i, v_i]
-    :param config: SimulationConfig with a, b, tau, diff_constant (D),
-                   time_step, total_time, domain_size, boundary_conditions
-    :return: updated glob list with evolved positions and state values
-    """
-    a   = config.a
-    b   = config.b
-    tau = config.tau
-    dt  = config.time_step
-    D   = config.diff_constant
-    L   = config.domain_size
-    bc  = config.boundary_conditions
-    n   = len(globs)
-    if n == 0:
-        return globs
-
-    bc_left_type  = bc['LEFT']['type'].lower()
-    bc_right_type = bc['RIGHT']['type'].lower()
-
-    positions = np.array([g['position']   for g in globs], dtype=float)
-    u_vals    = np.array([g['value'][0]   for g in globs], dtype=float)
-    v_vals    = np.array([g['value'][1]   for g in globs], dtype=float)
-
-    sigma = np.sqrt(2.0 * D * dt) if D > 0.0 else 0.0
-
-    for _ in range(int(config.total_time / dt)):
-        # Step 1: GRW diffusion — Brownian walk for u spatial diffusion.
-        if sigma > 0.0:
-            positions += np.random.normal(0.0, sigma, size=n)
-
-        # Step 2: Boundary reflection on positions.
-        mask = positions < 0.0
-        if np.any(mask):
-            positions[mask] = -positions[mask]
-            if bc_left_type == 'neumann':
-                u_vals[mask] = -u_vals[mask]
-            # v is always preserved at walls (symmetric reflection only).
-
-        mask = positions > L
-        if np.any(mask):
-            positions[mask] = 2.0 * L - positions[mask]
-            if bc_right_type == 'neumann':
-                u_vals[mask] = -u_vals[mask]
-
-        # Step 3: Local reaction — each particle integrates its own ODE.
-        u_new = u_vals + dt * tau * (u_vals - u_vals**3 / 3.0 + v_vals)
-        v_new = v_vals + dt * (-(1.0 / tau) * (u_vals - a + b * v_vals))
-        u_vals, v_vals = u_new, v_new
-
-    for i, g in enumerate(globs):
-        g['position'] = float(positions[i])
-        g['value']    = [float(u_vals[i]), float(v_vals[i])]
-
-    return globs
-
-
 def simulate_fitzhugh_nagumo_grw(globs, config):
     """
     Thesis-faithful scalar GRW for the FitzHugh-Nagumo traveling front.
@@ -324,89 +216,14 @@ def simulate_fitzhugh_nagumo_grw(globs, config):
 
 def simulate_fitzhugh_nagumo(globs, config):
     """
-    Dispatcher for the FitzHugh-Nagumo solver.
+    FitzHugh-Nagumo solver for the GRW-feasibility branch.
 
-    Routes to the thesis-faithful scalar GRW (simulate_fitzhugh_nagumo_grw)
-    when config.fhn_ic_type indicates a thesis-style IC (steady_solution,
-    nonsmooth, or discontinuous).  Falls back to the legacy two-component
-    GRW-inspired particle method (simulate_fitzhugh_nagumo_two_component)
-    for configs that predate the scalar formulation.
-
-    On the GRW-feasibility (main) branch, the thesis scalar GRW is the
-    primary FHN implementation.  The two-component method is retained
-    for backward compatibility with legacy configs only.
+    Always routes to the thesis-faithful scalar GRW
+    (simulate_fitzhugh_nagumo_grw).  The FD reference solver and the legacy
+    two-component particle method are available on the mixed-solvers-validation
+    branch only.
     """
-    ic_type = getattr(config, 'fhn_ic_type', '') or ''
-    if ic_type in ('steady_solution', 'nonsmooth', 'discontinuous', 'scalar_grw'):
-        return simulate_fitzhugh_nagumo_grw(globs, config)
-    return simulate_fitzhugh_nagumo_two_component(globs, config)
-
-
-def simulate_fitzhugh_nagumo_fd(globs, config):
-    """
-    Standard fixed-grid explicit finite-difference solver for FitzHugh-Nagumo.
-
-    This implementation is kept as an internal reference-quality solver.
-    It is used by verify_solver.py to generate high-resolution reference
-    solutions for comparison with the GRW particle method above.  It is NOT
-    the primary solver on the main (GRW-feasibility) branch.
-
-    PDEs:
-      du/dt = D * d2u/dx2  +  tau * (u - u^3/3 + v)
-      dv/dt =               - (1/tau) * (u - a + b*v)
-
-    Stability (von Neumann criterion for the diffusion term): dt <= dx^2 / (2*D).
-
-    :param globs: list of dicts with 'position' (fixed) and 'value' = [u_i, v_i]
-    :param config: SimulationConfig
-    :return: same glob list with updated 'value' fields; positions unchanged
-    """
-    a   = config.a
-    b   = config.b
-    tau = config.tau
-    dt  = config.time_step
-    D   = config.diff_constant
-
-    N  = len(globs)
-    dx = config.domain_size / (N - 1)
-
-    bc = config.boundary_conditions
-    bc_left_type  = bc['LEFT']['type'].lower()
-    bc_right_type = bc['RIGHT']['type'].lower()
-    bc_left_val   = float(bc['LEFT'].get('value', 0.0))
-    bc_right_val  = float(bc['RIGHT'].get('value', 0.0))
-
-    u = np.array([g['value'][0] for g in globs], dtype=float)
-    v = np.array([g['value'][1] for g in globs], dtype=float)
-
-    for _ in range(int(config.total_time / dt)):
-        if D > 0.0:
-            u_xx       = np.empty(N, dtype=float)
-            u_xx[1:-1] = (u[:-2] - 2.0 * u[1:-1] + u[2:]) / dx**2
-            u_xx[0]    = 2.0 * (u[1]  - u[0])  / dx**2
-            u_xx[-1]   = 2.0 * (u[-2] - u[-1]) / dx**2
-        else:
-            u_xx = np.zeros(N, dtype=float)
-
-        u_new = u + dt * (D * u_xx + tau * (u - u**3 / 3.0 + v))
-        v_new = v + dt * (-(1.0 / tau) * (u - a + b * v))
-        u, v = u_new, v_new
-
-        if bc_left_type == 'dirichlet':
-            u[0] = bc_left_val
-        else:
-            u[0] = u[1]
-        if bc_right_type == 'dirichlet':
-            u[-1] = bc_right_val
-        else:
-            u[-1] = u[-2]
-        v[0]  = v[1]
-        v[-1] = v[-2]
-
-    for i, g in enumerate(globs):
-        g['value'] = [float(u[i]), float(v[i])]
-
-    return globs
+    return simulate_fitzhugh_nagumo_grw(globs, config)
 
 
 def simulate_burgers_lagrangian(globs, config):
