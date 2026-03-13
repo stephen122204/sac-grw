@@ -383,15 +383,22 @@ def run_heat(cfg, output_dir, do_save_data):
 # Reference solver: high-resolution finite-difference (simulate_burgers_fd)
 # ---------------------------------------------------------------------------
 
-def _run_burgers_grw(cfg):
+def _run_burgers_grw(cfg, diag_dir=None):
     """
     Run the active Burgers GRW solver (mode dispatched via config.burgers_mode).
 
+    If diag_dir is provided and mode is cole_hopf_grw, saves intermediate
+    diagnostic plots to diag_dir/cole_hopf_diagnostics.png.
+
     Returns (x_sorted, u_sorted) on a uniform or near-uniform grid.
     """
+    if diag_dir is not None:
+        cfg._diag_dir = diag_dir
     globs = [{"position": float(pos), "value": [float(val)]}
              for pos, val in cfg.initial_conditions]
     result = simulate_burgers(globs, cfg)
+    if diag_dir is not None and hasattr(cfg, '_diag_dir'):
+        del cfg._diag_dir
     x = np.array([g["position"] for g in result])
     u = np.array([g["value"][0] for g in result])
     order = np.argsort(x)
@@ -491,7 +498,8 @@ def run_burgers(cfg, output_dir, do_save_data, ref_factor):
         print(f"    IC: traveling wave centered at x={x_center}, exact solution available")
 
     print(f"\n  Running Burgers GRW ({mode}) ...", flush=True)
-    x_num, u_num = _run_burgers_grw(cfg)
+    grw_diag_dir = output_dir if mode == 'cole_hopf_grw' else None
+    x_num, u_num = _run_burgers_grw(cfg, diag_dir=grw_diag_dir)
     print("  Done.")
 
     # Build comparison grid and reference solution.
