@@ -9,7 +9,7 @@ def random_walk(globs, diff_constant, time_step):
 
     The GRW method evolves globs representing the gradient-side computational elements.
     Each glob's position is updated by a Gaussian displacement with mean 0 and variance
-    2 * alpha * dt, i.e. sigma = sqrt(2 * alpha * dt), matching the thesis random-walk step.
+    2 * alpha * dt, i.e. sigma = sqrt(2 * alpha * dt).
 
     Glob values (signed gradient weights) are not changed here; they are only modified by
     apply_boundary_conditions when a Neumann wall is crossed.
@@ -38,7 +38,7 @@ def apply_boundary_conditions(globs, boundary_conditions, domain_size):
     """
     Apply boundary conditions to heat globs after each Brownian step.
 
-    Thesis GRW rules:
+    GRW boundary rules:
     - Dirichlet: symmetric reflection — reflect by the overshoot distance back into the domain.
       The glob value is preserved (the boundary fixes u, not u_x).
     - Neumann: anti-symmetric reflection — reflect by the overshoot distance AND negate the
@@ -101,7 +101,7 @@ def simulate_heat_equation(globs, config):
 
 def simulate_fitzhugh_nagumo_grw(globs, config, _diag_dir=None):
     """
-    Thesis-faithful scalar GRW for the FitzHugh-Nagumo traveling front.
+    Scalar GRW for the FitzHugh-Nagumo traveling front.
 
     Scalar PDE:
       u_t = D * u_xx + f(u)
@@ -111,13 +111,13 @@ def simulate_fitzhugh_nagumo_grw(globs, config, _diag_dir=None):
       theta = sqrt(2) * (0.5 - a)
 
     Reaction statistic R(u) = f'(u), derived by requiring the sigmoid above to
-    be an exact solution of the PDE.  Substituting u = 1/(1+exp(-xi/2)) gives:
+    be an exact solution of the PDE. Substituting u = 1/(1+exp(-xi/2)) gives:
 
       f(u) = u*(1-u) * [theta/2 - D*(1-2*u)/4]
       R(u) = f'(u) = -(3D/2)*u^2 + (3D/2 - theta)*u + (theta/2 - D/4)
 
     Key property: integral_0^1 R(u) du = f(1) - f(0) = 0, so the total glob
-    weight is conserved by this reaction.  No per-step renormalization is
+    weight is conserved by this reaction. No per-step renormalization is
     needed or applied.
 
     GRW gradient-side algorithm (globs represent pieces of u_x):
@@ -126,24 +126,24 @@ def simulate_fitzhugh_nagumo_grw(globs, config, _diag_dir=None):
       sum of weights: u(x_n) = sum_{i: x_i <= x_n} w_i.
 
       Per time step:
-        1. Brownian walk:  x_i += Normal(0, sqrt(2 * D * dt))
-           The Brownian step uses variance 2 * D * dt (thesis convention).
+        1. Brownian walk: x_i += Normal(0, sqrt(2 * D * dt))
+           The Brownian step uses variance 2 * D * dt.
         2. Boundary reflection: Dirichlet (preserve weight) or
                                 Neumann (negate weight on crossing).
         3. Sort globs by position.
-        4. Reconstruct: u_i = sum_{k=1}^{i} w_k  (cumsum in sorted order).
-        5. React:   w_i += dt * R(u_i) * w_i
+        4. Reconstruct: u_i = sum_{k=1}^{i} w_k (cumsum in sorted order).
+        5. React: w_i += dt * R(u_i) * w_i
            where R(u) = -(3D/2)*u^2 + (3D/2 - theta)*u + (theta/2 - D/4).
 
     Initialization:
       steady_solution IC: globs placed at inverted-logistic positions
-        x_i = -2 * log(1/u_i - 1) + x_center,  u_i = (i + 0.5) / N0
+        x_i = -2 * log(1/u_i - 1) + x_center, u_i = (i + 0.5) / N0
         with uniform weights w_i = 1 / N0.
       discontinuous IC: all N0 globs at x=x_center, w_i = 1/N0.
       nonsmooth IC: linear-ramp inverse, w_i = 1/N0.
 
-    :param globs:     list of dicts with 'position' and scalar 'value' (= w_i)
-    :param config:    SimulationConfig; diff_constant = D, a = threshold param,
+    :param globs: list of dicts with 'position' and scalar 'value' (= w_i)
+    :param config: SimulationConfig; diff_constant = D, a = threshold param,
                       time_step = dt, total_time = T, domain_size = L,
                       boundary_conditions used for position reflection.
     :param _diag_dir: optional path; if set, saves a diagnostic figure with
@@ -193,7 +193,7 @@ def simulate_fitzhugh_nagumo_grw(globs, config, _diag_dir=None):
         _x_center_init = float(np.sort(x)[_idx0])
 
     for step in range(n_steps):
-        # Step 1: Brownian walk.  Variance = 2 * D * dt (thesis convention).
+        # Step 1: Brownian walk.  Variance = 2 * D * dt.
         if sigma > 0.0:
             x += np.random.normal(0.0, sigma, size=n)
 
@@ -318,8 +318,8 @@ def simulate_fitzhugh_nagumo(globs, config):
     """
     FitzHugh-Nagumo solver for the GRW-feasibility branch.
 
-    Always routes to the thesis-faithful scalar GRW
-    (simulate_fitzhugh_nagumo_grw).  The FD reference solver and the legacy
+    Always routes to the scalar GRW
+    (simulate_fitzhugh_nagumo_grw). The FD reference solver and the legacy
     two-component particle method are available on the mixed-solvers-validation
     branch only.
     """
@@ -334,13 +334,13 @@ def simulate_burgers_lagrangian(globs, config):
     Experimental GRW-inspired Lagrangian particle method for Burgers' equation.
 
     Operator splitting per step:
-      1. Lagrangian advection:  x_i += u_i * dt
-      2. GRW diffusion:          x_i += Normal(0, sqrt(2*nu*dt))
-      3. Boundary reflection:    symmetric (Dirichlet) or anti-symmetric (Neumann)
+      1. Lagrangian advection: x_i += u_i * dt
+      2. GRW diffusion: x_i += Normal(0, sqrt(2*nu*dt))
+      3. Boundary reflection: symmetric (Dirichlet) or anti-symmetric (Neumann)
 
     Each glob carries:
       'position' : current particle location (evolves each step)
-      'value'    : [u_i], the velocity carried by this particle (Lagrangian invariant)
+      'value' : [u_i], the velocity carried by this particle (Lagrangian invariant)
 
     Limitations:
       - u_i is frozen (inviscid characteristic value), so the diffusion step does
@@ -348,7 +348,7 @@ def simulate_burgers_lagrangian(globs, config):
       - Near shocks, particle clustering degrades reconstruction quality.
 
     This method was introduced as a feasibility experiment on the GRW branch.
-    It is kept for comparison.  The thesis-preferred method is Cole-Hopf GRW.
+    It is kept for comparison. The primary method is Cole-Hopf GRW.
     """
     dt = config.time_step
     nu = config.diff_constant
@@ -394,15 +394,15 @@ def simulate_burgers_lagrangian(globs, config):
 
 def _reference_phi_heat_fd(phi0_interp, x_out, nu, T, phi_left, phi_right):
     """
-    Explicit FD solve of  phi_t = nu * phi_xx  on [0, L] with Dirichlet BCs.
+    Explicit FD solve of phi_t = nu * phi_xx on [0, L] with Dirichlet BCs.
 
-    phi(0, t) = phi_left  (= phi0(0), constant for all t)
+    phi(0, t) = phi_left (= phi0(0), constant for all t)
     phi(L, t) = phi_right (= phi0(L), constant for all t)
 
     These BCs match the GRW implicit treatment: weight-preserving reflection of
     phi_x globs keeps the cumsum anchor phi(0,t) = phi0_0 and phi(L,t) = phi0_L
-    constant.  This FD reference is therefore what the GRW converges to in the
-    zero-noise limit.  The gap between this reference and the infinite-domain
+    constant. This FD reference is therefore what the GRW converges to in the
+    zero-noise limit. The gap between this reference and the infinite-domain
     exact solution quantifies the BC-mismatch (finite-domain truncation) error.
     """
     N = len(x_out)
@@ -432,16 +432,16 @@ def _save_cole_hopf_diagnostics(
     Save a 2x3 diagnostic figure that decomposes the Cole-Hopf GRW error.
 
     Three curves where available:
-      exact_shape  -- phi0(x) = cosh(...)/cosh(...); equals the infinite-domain
-                      exact phi(x,T)/C(T).  Shape is preserved on R.
+      exact_shape -- phi0(x) = cosh(...)/cosh(...); equals the infinite-domain
+                      exact phi(x,T)/C(T). Shape is preserved on R.
       FD reference -- phi(x,T) from a deterministic heat FD solve with the same
                       Dirichlet BCs as the GRW (phi=phi0_0 at x=0,
-                      phi=phi0_L at x=L).  Zero-noise limit of the GRW.
-      GRW          -- stochastic Monte-Carlo reconstruction.
+                      phi=phi0_L at x=L). Zero-noise limit of the GRW.
+      GRW -- stochastic Monte-Carlo reconstruction.
 
     Error decomposition:
-      BC-mismatch = FD_ref - exact_shape  (dominant: finite-domain effect)
-      GRW-noise   = GRW    - FD_ref       (secondary: particle shot noise)
+      BC-mismatch = FD_ref - exact_shape (dominant: finite-domain effect)
+      GRW-noise = GRW - FD_ref (secondary: particle shot noise)
 
     Layout:
       [0,0] phi0(x): GRW init vs exact shape
@@ -586,9 +586,9 @@ def _save_cole_hopf_diagnostics(
 
 def simulate_burgers_cole_hopf_grw(globs, config, _diag_dir=None):
     """
-    Thesis-faithful Burgers GRW via the Cole-Hopf transformation.
+    Burgers GRW via the Cole-Hopf transformation.
 
-    The Cole-Hopf transform  u = -2*nu * phi_x / phi  maps Burgers' equation
+    The Cole-Hopf transform u = -2*nu * phi_x / phi maps Burgers' equation
       u_t + u*u_x = nu*u_xx
     into the heat equation for phi:
       phi_t = nu*phi_xx
@@ -605,9 +605,9 @@ def simulate_burgers_cole_hopf_grw(globs, config, _diag_dir=None):
 
     Evolution:
       Brownian random walk followed by Dirichlet (weight-preserving, position-
-      mirroring) boundary reflection.  Dirichlet reflection implements Neumann
+      mirroring) boundary reflection. Dirichlet reflection implements Neumann
       BC for the phi_x density (zero flux at walls), meaning phi_x = 0 at walls
-      on average.  The domain should be large relative to the diffusion length
+      on average. The domain should be large relative to the diffusion length
       sqrt(2*nu*T) to minimize wall artifacts on the interior solution.
 
     Reconstruction at final time T:
@@ -629,11 +629,11 @@ def simulate_burgers_cole_hopf_grw(globs, config, _diag_dir=None):
            - Asymmetric IC (phi0(L)!=phi0(0)):
              proportional rescale so sum(bin_sums_s) = phi0(L) - phi0(0).
       4. phi(x_j) = phi0(0) + cumsum(smoothed_bins)
-      5. phi_x(x_j) = d(phi)/dx  [np.gradient of the reconstructed phi]
+      5. phi_x(x_j) = d(phi)/dx [np.gradient of the reconstructed phi]
          Using the derivative of phi rather than bin_sums/dx ensures phi and
          phi_x are derived from the same smooth curve, so their ratio is
          self-consistent.
-      6. u(x_j) = -2*nu * phi_x(x_j) / phi(x_j)  [single inverse-transform]
+      6. u(x_j) = -2*nu * phi_x(x_j) / phi(x_j) [single inverse-transform]
 
     :param globs: list of dicts 'position' and 'value' = [u_i] on a uniform grid
     :param config: SimulationConfig; diff_constant = nu, BCs used for phi_x walk
@@ -857,27 +857,27 @@ def simulate_burgers_cole_hopf_grw(globs, config, _diag_dir=None):
 
 def simulate_burgers_direct_grw(globs, config):
     """
-    Diagnostic direct Burgers GRW — thesis Section 5, gradient-variable approach.
+    Diagnostic direct Burgers GRW — gradient-variable approach.
 
-    THIS IS NOT THE PRIMARY SOLVER.  It is included to reproduce the thesis
+    THIS IS NOT THE PRIMARY SOLVER. It is included to demonstrate the
     observation that the direct GRW method for Burgers is severely noisy and
     impractical as a primary solver.
 
     Mathematical background:
-      Differentiating Burgers  u_t + u*u_x = nu*u_xx  w.r.t. x gives the
+      Differentiating Burgers u_t + u*u_x = nu*u_xx w.r.t. x gives the
       evolution equation for v = u_x:
-        v_t = nu*v_xx  -  u*v_x  -  v^2
+        v_t = nu*v_xx - u*v_x - v^2
 
       Dividing the non-diffusion terms by v yields the per-glob reaction statistic:
-        R(u) = -(u * u_xx / u_x  +  u_x)
-             = -(u * v_x / v     +  v)
+        R(u) = -(u * u_xx / u_x + u_x)
+             = -(u * v_x / v + v)
 
       In GRW, globs representing v = u_x evolve via:
         1. Brownian random walk (for nu*v_xx): x_i += Normal(0, sqrt(2*nu*dt))
-        2. Lagrangian advection (for -u*v_x):  x_i += u(x_i) * dt
-        3. Reaction (for -v^2):                w_i *= exp(R(x_i) * dt)
+        2. Lagrangian advection (for -u*v_x): x_i += u(x_i) * dt
+        3. Reaction (for -v^2): w_i *= exp(R(x_i) * dt)
 
-    Why the direct method fails (reproducing the thesis conclusion):
+    Why the direct method fails:
       - u_xx = dv/dx requires two numerical differentiations of a noisy particle
         field, amplifying statistical noise at each step.
       - Division by v in R(u) further amplifies errors when v is small.
@@ -990,14 +990,14 @@ def simulate_burgers(globs, config):
 
     On the GRW-feasibility branch there are two supported modes:
 
-      'cole_hopf_grw'  (default) — thesis-faithful GRW via the Cole-Hopf
-                                    transformation.  Reduces Burgers to a heat
-                                    equation solved by GRW.  This is the primary
+      'cole_hopf_grw' (default) — Cole-Hopf GRW
+                                    transformation. Reduces Burgers to a heat
+                                    equation solved by GRW. This is the primary
                                     and recommended Burgers path on this branch.
-      'direct_grw'               — diagnostic direct gradient-variable GRW.
-                                    Noisy by design; reproduces the thesis
-                                    observation that the direct GRW approach is
-                                    impractical for Burgers.  Not a primary solver.
+      'direct_grw' — diagnostic direct gradient-variable GRW.
+                                    Noisy by design; demonstrates that the
+                                    direct GRW approach is
+                                    impractical for Burgers. Not a primary solver.
 
     The Lagrangian operator-splitting method (simulate_burgers_lagrangian) is
     kept in this file for reference but is NOT routed from this dispatcher.
@@ -1024,12 +1024,12 @@ def simulate_burgers_fd(globs, config):
 
     This implementation is kept as an internal reference-quality solver.
     It is used by verify_solver.py to generate high-resolution reference
-    solutions for comparison with the GRW particle method above.  It is NOT
+    solutions for comparison with the GRW particle method above. It is NOT
     the primary solver on the main (GRW-feasibility) branch.
 
     Stability: the internal time step is sub-cycled to satisfy both the
-    diffusion CFL condition  dt_inner <= dx^2 / (2*nu)  and the advection
-    CFL condition  dt_inner <= dx / (|u|_max + eps).  The external dt from
+    diffusion CFL condition dt_inner <= dx^2 / (2*nu) and the advection
+    CFL condition dt_inner <= dx / (|u|_max + eps). The external dt from
     config is used only to set the macro time interval; the inner step is
     chosen automatically, guaranteeing stability for any nu and IC.
 

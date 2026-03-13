@@ -114,7 +114,7 @@ def _plot_heat_density(results, title_extra=""):
     Plot the weighted glob density, which approximates u_x(x, t).
 
     Each glob is weighted by its signed value when building the histogram, so the plot
-    shows the empirical gradient density rather than a raw position count.  This is the
+    shows the empirical gradient density rather than a raw position count. This is the
     direct output of the GRW method before reconstruction.
     """
     positions = _extract_positions(results)
@@ -172,9 +172,9 @@ def _plot_heat_dirichlet_as_field(results, cfg=None):
     """
     Reconstruct u(x, t) for Dirichlet–Dirichlet BCs by numerically integrating the glob list.
 
-    The GRW method stores the heat solution as a list of gradient-side globs.  The heat
+    The GRW method stores the heat solution as a list of gradient-side globs. The heat
     solution u is reconstructed by sorting globs by position and cumulatively summing their
-    signed values — this is the discrete numerical integration of u_x.  A left-boundary
+    signed values — this is the discrete numerical integration of u_x. A left-boundary
     offset uL is added so the Dirichlet condition u(0, t) = uL is satisfied.
 
     The sorted-cumsum staircase is binned onto a uniform grid for a smooth plot, using each
@@ -259,7 +259,7 @@ def _plot_fhn_fields(results):
     Plot the FHN solution u(x,t).
 
     Supports two result formats:
-      Scalar GRW:        each glob has a scalar 'value' (= glob weight w_i).
+      Scalar GRW: each glob has a scalar 'value' (= glob weight w_i).
                          u(x) is reconstructed by sorting and taking a
                          cumulative sum of the weights.
       Legacy two-component: each glob has 'value' = [u_i, v_i]; both
@@ -325,11 +325,11 @@ def plot_results(results, equation_type: str, cfg=None):
 
     Heat routing:
     - Dirichlet–Dirichlet BCs → reconstruct u(x,t) by cumulative sum of signed glob values
-    - Neumann or mixed BCs    → plot weighted glob density (≈ u_x); values used as histogram
+    - Neumann or mixed BCs → plot weighted glob density (≈ u_x); values used as histogram
                                 weights so anti-symmetric Neumann reflections are visible
 
     Other equations:
-    - Burgers        → plot u(x,t)
+    - Burgers → plot u(x,t)
     - FitzHugh–Nagumo → plot u(x,t) and v(x,t)
     """
     eq = (equation_type or "").strip().lower()

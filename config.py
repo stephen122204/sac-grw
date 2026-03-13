@@ -28,7 +28,7 @@ _ALLOWED_BURGERS_IC_TYPES = {
 }
 
 _ALLOWED_BURGERS_MODES = {
-    "cole_hopf_grw",   # main thesis-faithful GRW via Cole-Hopf transformation
+    "cole_hopf_grw",   # main Cole-Hopf GRW
     "direct_grw",      # diagnostic: direct gradient-variable GRW (noisy by design)
     "lagrangian_grw",  # experimental Lagrangian particle method (previous approach)
 }
@@ -227,7 +227,7 @@ def generate_heat_step_initial_conditions(domain_size, num_points, jump_position
     """
     GRW initial conditions for a step (Heaviside) initial temperature profile.
 
-    Differentiating a step function produces a single delta-function in u_x.  The GRW
+    Differentiating a step function produces a single delta-function in u_x. The GRW
     method represents that delta-jump as N globs all placed at the jump location, each
     carrying a signed value of jump_height / N so their cumulative sum reconstructs the
     original step.
@@ -248,7 +248,7 @@ def generate_heat_uniform_gradient_initial_conditions(domain_size, num_points, g
     """
     GRW initial conditions for a linear initial temperature profile u(x, 0) = gradient_value * x.
 
-    A constant gradient u_x = gradient_value is uniform across [0, L].  The GRW method
+    A constant gradient u_x = gradient_value is uniform across [0, L]. The GRW method
     represents this as N globs distributed uniformly over [0, L], each with value
     gradient_value * domain_size / N so their cumulative sum reconstructs the ramp.
 
@@ -305,24 +305,24 @@ def generate_fitzhugh_nagumo_initial_conditions(
 
 def generate_fhn_steady_ic(num_globs, a, x_center=0.0):
     """
-    Steady-solution IC for the thesis scalar FHN GRW.
+    Steady-solution IC for the scalar FHN GRW.
 
     Globs are initialized so that their cumulative sum reproduces the exact
-    traveling-wave profile  u(x, 0) = 1 / (1 + exp(-(x - x_center) / 2))
+    traveling-wave profile u(x, 0) = 1 / (1 + exp(-(x - x_center) / 2))
     at t = 0.
 
-    Initialization strategy (from the thesis):
+    Initialization strategy:
       - Divide the solution range [0, 1] into N0 equal segments.
-        u_i = (i + 0.5) / N0  for  i = 0, ..., N0-1.
-      - Invert the logistic:  x_i = x_center - 2 * log(1 / u_i - 1).
+        u_i = (i + 0.5) / N0 for i = 0, ..., N0-1.
+      - Invert the logistic: x_i = x_center - 2 * log(1 / u_i - 1).
       - Assign uniform weights w_i = 1 / N0.
 
     This places all globs in sorted order with equal weights; the cumulative
     sum reconstructs u from 0 at the left to 1 at the right.
 
     :param num_globs: int, number of globs N0
-    :param a:         float, FHN threshold parameter (used only for annotation)
-    :param x_center:  float, position of the wave center (u = 0.5) at t = 0
+    :param a: float, FHN threshold parameter (used only for annotation)
+    :param x_center: float, position of the wave center (u = 0.5) at t = 0
     :return: list of (position, weight) pairs
     """
     N0 = int(num_globs)
@@ -334,24 +334,24 @@ def generate_fhn_steady_ic(num_globs, a, x_center=0.0):
 
 def generate_fhn_nonsmooth_ic(num_globs, a, x_center=0.0, half_width=3.0):
     """
-    Non-smooth IC for the thesis scalar FHN GRW.
+    Non-smooth IC for the scalar FHN GRW.
 
     Globs are initialized to reproduce a piecewise-linear ramp profile:
-      u_0(x) = 0                          for  x < x_center - half_width
-      u_0(x) = (x - (x_center - hw)) / (2*hw)  for  |x - x_center| <= hw
-      u_0(x) = 1                          for  x > x_center + half_width
+      u_0(x) = 0 for x < x_center - half_width
+      u_0(x) = (x - (x_center - hw)) / (2*hw) for |x - x_center| <= hw
+      u_0(x) = 1 for x > x_center + half_width
 
-    where hw = half_width.  This is C0 but not C1: the gradient u_x has
-    jump discontinuities at the two kink points.  The profile is expected
+    where hw = half_width. This is C0 but not C1: the gradient u_x has
+    jump discontinuities at the two kink points. The profile is expected
     to relax toward the smooth logistic traveling wave over time.
 
     Glob positions are placed via the linear inverse:
       x_i = (x_center - hw) + 2 * hw * u_i
 
-    :param num_globs:   int, number of globs
-    :param a:           float, FHN threshold parameter (informational)
-    :param x_center:    float, center of the ramp
-    :param half_width:  float, half-width of the linear transition zone
+    :param num_globs: int, number of globs
+    :param a: float, FHN threshold parameter (informational)
+    :param x_center: float, center of the ramp
+    :param half_width: float, half-width of the linear transition zone
     :return: list of (position, weight) pairs
     """
     N0 = int(num_globs)
@@ -364,19 +364,18 @@ def generate_fhn_nonsmooth_ic(num_globs, a, x_center=0.0, half_width=3.0):
 
 def generate_fhn_discontinuous_ic(num_globs, a, x_center=0.0):
     """
-    Discontinuous (Heaviside) IC for the thesis scalar FHN GRW.
+    Discontinuous (Heaviside) IC for the scalar FHN GRW.
 
     All N0 globs are placed at x = x_center with equal weights w_i = 1/N0.
     This represents the Dirac delta u_x = delta(x - x_center), corresponding
     to the step function u_0(x) = 0 for x < x_center, 1 for x >= x_center.
 
-    Over time the globs diffuse and develop the traveling-wave profile,
-    reproducing the thesis observation that even this extreme IC relaxes to
-    the exact traveling wave solution.
+    Over time the globs diffuse and develop the traveling-wave profile.
+    Even this extreme IC relaxes to the exact traveling wave solution.
 
     :param num_globs: int, number of globs
-    :param a:         float, FHN threshold parameter (informational)
-    :param x_center:  float, initial position of all globs
+    :param a: float, FHN threshold parameter (informational)
+    :param x_center: float, initial position of all globs
     :return: list of (position, weight) pairs
     """
     N0 = int(num_globs)
@@ -412,8 +411,8 @@ def generate_burgers_stationary_shock_ic(domain_size, num_points, nu, x_center=N
 
     u0(x) = -A * tanh(A * (x - x_center) / (2 * nu))
 
-    where A = amplitude.  This is an EXACT stationary solution to Burgers':
-      u_t + u*u_x = nu*u_xx  =>  u_t = 0  (for all t)
+    where A = amplitude. This is an EXACT stationary solution to Burgers':
+      u_t + u*u_x = nu*u_xx => u_t = 0 (for all t)
 
     The Cole-Hopf transform phi0 = exp(-Psi0 / (2*nu)) satisfies phi0(0) = phi0(L)
     (since Psi0(L) = integral of u0 over [0,L] = 0 by antisymmetry around x_center).
@@ -421,10 +420,10 @@ def generate_burgers_stationary_shock_ic(domain_size, num_points, nu, x_center=N
     a well-conditioned benchmark for the Cole-Hopf GRW with finite-domain boundaries.
 
     :param domain_size: float, right endpoint [0, L]
-    :param num_points:  int, number of grid points / globs
-    :param nu:          float, kinematic viscosity (must match diff_constant in config)
-    :param x_center:    float, shock center; defaults to domain midpoint
-    :param amplitude:   float, shock amplitude A (sets both wave height and width)
+    :param num_points: int, number of grid points / globs
+    :param nu: float, kinematic viscosity (must match diff_constant in config)
+    :param x_center: float, shock center; defaults to domain midpoint
+    :param amplitude: float, shock amplitude A (sets both wave height and width)
     :return: list of (position, value) pairs
     """
     if x_center is None:
@@ -445,8 +444,8 @@ def generate_burgers_traveling_wave_ic(domain_size, num_points, nu, x_center=Non
     which moves at unit speed and satisfies u_t + u*u_x = nu*u_xx exactly.
 
     Derivation: inserting the ansatz f(x - ct) into Burgers yields c = 1 and
-    the tanh width delta = sqrt(nu).  This IC is the canonical benchmark used
-    in the thesis to test the Cole-Hopf GRW path.
+    the tanh width delta = sqrt(nu). This IC is the canonical benchmark used
+    to test the Cole-Hopf GRW path.
 
     :param domain_size: float, right endpoint of the domain [0, L]
     :param num_points: int, number of grid points / globs
@@ -704,7 +703,7 @@ def get_user_input():
 
     elif equation_type == "heat":
         print("Select the heat initial condition type:")
-        print("  1. Step / Heaviside  — N globs at a jump location (thesis canonical case)")
+        print("  1. Step / Heaviside  — N globs at a jump location (canonical case)")
         print("  2. Uniform gradient  — N globs spread across domain with constant u_x")
         print("  3. Gaussian cloud    — globs drawn from a Gaussian (exploratory)")
         ic_choice = input("Enter your choice (1-3, default 1): ").strip() or "1"

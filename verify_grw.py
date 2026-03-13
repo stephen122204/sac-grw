@@ -17,8 +17,8 @@ Three checks are reported:
   3. Reconstruction accuracy — L2 and max-absolute error vs. exact solution.
 
 Usage:
-    python verify_grw.py                    # uses built-in test parameters
-    python verify_grw.py <config.json>      # uses the given config file
+    python verify_grw.py # uses built-in test parameters
+    python verify_grw.py <config.json> # uses the given config file
 """
 
 import os

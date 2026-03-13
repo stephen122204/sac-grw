@@ -31,7 +31,7 @@ def main():
         return
 
     if eq in {"fitzhugh-nagumo", "fitzhugh–nagumo", "fitzhugh", "nagumo"}:
-        # Thesis scalar GRW: each glob carries a single float weight.
+        # Scalar GRW: each glob carries a single float weight.
         initial_globs = [
             {'position': float(pos), 'value': float(val)}
             for pos, val in cfg.initial_conditions

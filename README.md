@@ -6,7 +6,7 @@
 > for three PDE classes.  The goal is not to produce the most accurate solver for
 > each equation; it is to study whether GRW-based formulations are feasible,
 > how closely they reproduce known solutions, and where they fail and why.
-> Method fidelity to the thesis is central.  Error metrics are feasibility
+> Error metrics are feasibility
 > diagnostics, not accuracy claims.
 
 ---
@@ -15,10 +15,10 @@
 
 | Equation | Primary method | Verification reference | Approximate status |
 |----------|---------------|------------------------|--------------------|
-| Heat     | Direct GRW (thesis-faithful) | Exact analytical solution | Good agreement |
+| Heat     | Direct GRW | Exact analytical solution | Good agreement |
 | Burgers  | Cole-Hopf GRW (main) | Exact stationary shock | Approximate; dominant error is finite-domain BC mismatch (~88% of total) |
 | Burgers  | Direct derivative GRW (diagnostic only) | High-res FD reference | Severely noisy by design |
-| FHN      | Scalar traveling-wave GRW (thesis) | Exact traveling-wave solution | Good agreement; residual is MC noise |
+| FHN      | Scalar traveling-wave GRW | Exact traveling-wave solution | Good agreement; residual is MC noise |
 
 ---
 
@@ -32,11 +32,11 @@ by numerically integrating the glob distribution.
 Three PDE classes are studied:
 
 - **Heat**: the natural setting for GRW.  The gradient formulation is exact and
-  the method has a direct thesis derivation.
+  the method has a direct derivation from the heat equation.
 - **Burgers**: solved via the Cole-Hopf transformation, which reduces Burgers to a
   heat equation solvable by GRW.  A direct derivative-based GRW path is retained
   only as a diagnostic showing why that approach is impractical.
-- **FitzHugh-Nagumo**: a scalar traveling-wave GRW following the thesis formulation.
+- **FitzHugh-Nagumo**: a scalar traveling-wave GRW formulation.
   The reaction statistic is derived analytically from the exact traveling-wave
   solution and conserves total weight exactly.
 
@@ -52,7 +52,7 @@ see the `mixed-solvers-validation` branch.
 
 ## Method descriptions
 
-### Heat -- direct GRW (thesis-faithful)
+### Heat -- direct GRW
 
 The heat equation  u_t = alpha * u_xx  is solved on the gradient variable
 v = u_x.  Globs represent pieces of the gradient distribution.  Each time step:
@@ -131,7 +131,7 @@ Evolves globs representing v = u_x directly under the reaction-diffusion equatio
   v_t = nu * v_xx - u * v_x - v^2.
 The reaction statistic requires computing u_xx from the noisy particle field
 (two numerical differentiations), which amplifies shot noise severely.  This path
-is included to reproduce the thesis finding that direct GRW for Burgers is
+is included to demonstrate that direct GRW for Burgers is
 impractical.  Large errors against an FD reference are expected and intentional.
 
 #### Lagrangian GRW (legacy, not a primary solver)
@@ -142,10 +142,10 @@ this branch.
 
 ---
 
-### FitzHugh-Nagumo -- scalar traveling-wave GRW (thesis)
+### FitzHugh-Nagumo -- scalar traveling-wave GRW
 
-The FHN system is reduced to a scalar PDE  u_t = D * u_xx + f(u)  following the
-thesis traveling-wave formulation.  Globs represent contributions to u_x; u is
+The FHN system is reduced to a scalar PDE  u_t = D * u_xx + f(u)  in the
+traveling-wave formulation.  Globs represent contributions to u_x; u is
 reconstructed by cumulative summation exactly as in the heat GRW.
 
 **Exact traveling-wave solution:**
@@ -260,10 +260,10 @@ Outputs are written to `output/verify/<equation>/`:
 heat_burgers_fhn/
 +-- main.py                    Entry point
 +-- simulation.py              GRW solvers:
-|                                heat: thesis-faithful direct GRW
+|                                heat: direct GRW
 |                                Burgers: Cole-Hopf GRW (main), direct GRW (diagnostic),
 |                                         Lagrangian GRW (legacy, not in main path)
-|                                FHN: thesis scalar traveling-wave GRW (main),
+|                                FHN: scalar traveling-wave GRW (main),
 |                                     legacy two-component GRW
 |                              Also: FD reference variants for verification
 +-- config.py                  Config loading, validation, IC generators

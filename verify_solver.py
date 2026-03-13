@@ -7,21 +7,21 @@ Verification and benchmark comparison for the GRW solver suite.
 For each equation the script runs the primary solver and compares output against
 a trusted benchmark:
 
-  heat    -- exact analytical solution (error function), valid for step IC.
-             Primary solver: thesis-faithful GRW.
+  heat -- exact analytical solution (error function), valid for step IC.
+             Primary solver: direct GRW.
 
   burgers -- three modes depending on config.burgers_mode:
     cole_hopf_grw (default): Cole-Hopf transform reduces Burgers to a heat equation
-        solved by GRW.  For the traveling_wave IC, comparison is against the exact
-        analytical traveling wave solution.  For other ICs, a high-resolution FD
+        solved by GRW. For the traveling_wave IC, comparison is against the exact
+        analytical traveling wave solution. For other ICs, a high-resolution FD
         reference is used.
-    direct_grw: diagnostic path reproducing thesis Section 5 noise discussion.
+    direct_grw: diagnostic path reproducing the noise discussion.
         Compares against FD reference; noise in the result is expected and intentional.
     lagrangian_grw: experimental Lagrangian particle method (operator splitting).
         Compares against high-resolution FD reference.
 
-  fhn     -- exact traveling-wave solution (analytic, multi-time snapshots).
-             Primary solver: thesis scalar GRW (simulate_fitzhugh_nagumo_grw).
+  fhn -- exact traveling-wave solution (analytic, multi-time snapshots).
+             Primary solver: scalar GRW (simulate_fitzhugh_nagumo_grw).
              Reference: exact solution u = 1/(1+exp(-(x+theta*t)/2)).
 
 Burgers and FHN comparisons label exact vs reference solutions explicitly.
@@ -29,7 +29,7 @@ The purpose of the error metrics on main is to quantify GRW feasibility and
 limitations, not to advertise accuracy.
 
 Usage examples:
-  python verify_solver.py                                         # run all three
+  python verify_solver.py # run all three
   python verify_solver.py --equation heat
   python verify_solver.py --equation burgers --config configs/burgers_stationary_shock.json
   python verify_solver.py --equation burgers --config configs/burgers_traveling_wave.json
@@ -40,9 +40,9 @@ Usage examples:
   python verify_solver.py --equation burgers --ref-factor 8
 
 Outputs per equation (written to --output-dir, default: output/verify/<equation>):
-  comparison_plot.png   two-panel figure: numerical vs reference + pointwise error
-  metrics.json          all computed error metrics and equation-specific diagnostics
-  comparison_data.npz   (optional, with --save-data) x grid, solutions, error arrays
+  comparison_plot.png two-panel figure: numerical vs reference + pointwise error
+  metrics.json all computed error metrics and equation-specific diagnostics
+  comparison_data.npz (optional, with --save-data) x grid, solutions, error arrays
 """
 
 import argparse
@@ -105,7 +105,7 @@ def exact_heat_step(x, T, x0, uL, uR, alpha):
 
 def exact_burgers_traveling_wave(x, t, nu, x_center=0.0):
     """
-    Exact traveling wave solution for Burgers' equation  u_t + u*u_x = nu*u_xx.
+    Exact traveling wave solution for Burgers' equation u_t + u*u_x = nu*u_xx.
 
     u(x, t) = 1 - 2*sqrt(nu) * tanh((x - x_center - t) / sqrt(nu))
 
@@ -129,27 +129,27 @@ def exact_burgers_traveling_wave(x, t, nu, x_center=0.0):
 
 def exact_burgers_stationary_shock(x, nu, x_center=None, amplitude=1.0):
     """
-    Exact stationary-shock solution for Burgers' equation  u_t + u*u_x = nu*u_xx.
+    Exact stationary-shock solution for Burgers' equation u_t + u*u_x = nu*u_xx.
 
-    u(x, t) = -A * tanh(A * (x - x_center) / (2 * nu))   for all t >= 0
+    u(x, t) = -A * tanh(A * (x - x_center) / (2 * nu)) for all t >= 0
 
-    where A = amplitude.  This is an exact STATIONARY solution: the nonlinear
+    where A = amplitude. This is an exact STATIONARY solution: the nonlinear
     advection term u*u_x and the diffusion term nu*u_xx cancel exactly for any
-    amplitude A and viscosity nu.  Verification:
+    amplitude A and viscosity nu. Verification:
 
       u_x = -A^2 / (2*nu) * sech^2(A*(x-xc)/(2*nu))
       u*u_x = A^3 * tanh(...) * sech^2(...) / (2*nu)
       u_xx = A^3 * tanh(...) * sech^2(...) / (2*nu^2)
-      nu*u_xx = A^3 * tanh(...) * sech^2(...) / (2*nu) = u*u_x  QED
+      nu*u_xx = A^3 * tanh(...) * sech^2(...) / (2*nu) = u*u_x QED
 
     The Cole-Hopf phi0 for this IC satisfies phi0(0) = phi0(L) whenever xc = L/2
     and the domain is symmetric about xc, making the cumulative reconstruction in
     the GRW return exactly to its starting value -- a well-conditioned property for
     the Cole-Hopf GRW benchmark.
 
-    :param x:         array of spatial positions
-    :param nu:        kinematic viscosity
-    :param x_center:  shock centre; if None, defaults to domain midpoint
+    :param x: array of spatial positions
+    :param nu: kinematic viscosity
+    :param x_center: shock centre; if None, defaults to domain midpoint
     :param amplitude: shock amplitude A (controls both wave height and width)
     :return: array of exact u values (independent of time t)
     """
@@ -200,7 +200,7 @@ def _fmt_compact(v):
     """
     Compact adaptive formatter for figure titles and inline metric strings.
 
-    Values >= 1e-3 use 4 fixed decimal places.  Smaller values use 2-significant-
+    Values >= 1e-3 use 4 fixed decimal places. Smaller values use 2-significant-
     figure scientific notation so tiny metrics remain readable in the figure title.
     """
     if v is None:
@@ -462,17 +462,17 @@ def plot_burgers_cole_hopf(
     Clean two-panel Burgers Cole-Hopf verification figure.
 
     Layout mirrors the FHN verification style:
-      Left panel:  GRW reconstruction vs reference, clean legend, metrics subtitle.
+      Left panel: GRW reconstruction vs reference, clean legend, metrics subtitle.
       Right panel: pointwise error with zero line.
 
-    :param x_grid:       1d array, spatial grid
-    :param u_num:        1d array, GRW reconstruction
-    :param u_ref:        1d array, reference solution
-    :param title:        str, figure suptitle
-    :param num_label:    str, legend label for GRW curve
-    :param ref_label:    str, legend label for reference curve
-    :param metrics:      dict from compute_metrics
-    :param output_path:  str, file path for saved PNG
+    :param x_grid: 1d array, spatial grid
+    :param u_num: 1d array, GRW reconstruction
+    :param u_ref: 1d array, reference solution
+    :param title: str, figure suptitle
+    :param num_label: str, legend label for GRW curve
+    :param ref_label: str, legend label for reference curve
+    :param metrics: dict from compute_metrics
+    :param output_path: str, file path for saved PNG
     :param ref_is_exact: bool, whether the reference is exact (affects axis label)
     """
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
@@ -529,11 +529,11 @@ def run_burgers(cfg, output_dir, do_save_data, ref_factor):
     mode_labels = {
         'cole_hopf_grw': (
             'Cole-Hopf GRW  '
-            '(primary thesis method: Burgers -> heat equation via Cole-Hopf)'
+            '(primary method: Burgers -> heat equation via Cole-Hopf)'
         ),
         'direct_grw': (
             'Direct GRW  '
-            '(diagnostic only: expected noisy, thesis impracticality demo)'
+            '(diagnostic only: expected noisy, impracticality demo)'
         ),
     }
     if ic_type == 'stationary_shock':
@@ -651,7 +651,7 @@ def run_burgers(cfg, output_dir, do_save_data, ref_factor):
     if mode == 'direct_grw':
         print(f"\n  [direct_grw] Large errors are expected: R = -(u*u_xx/u_x + u_x)")
         print(f"    requires two numerical differentiations of a noisy particle field,")
-        print(f"    confirming the thesis conclusion that direct GRW is impractical.")
+        print(f"    confirming that direct GRW is impractical.")
 
     # Figures.
     if mode == 'cole_hopf_grw':
@@ -683,7 +683,7 @@ def run_burgers(cfg, output_dir, do_save_data, ref_factor):
             output_path=os.path.join(output_dir, "comparison_plot.png"),
             ref_note=(
                 "Direct GRW is a diagnostic mode.  "
-                "Large errors confirm the thesis noise discussion."
+                "Large errors confirm the noise discussion."
             ),
         )
 
@@ -702,7 +702,7 @@ def run_burgers(cfg, output_dir, do_save_data, ref_factor):
 
 def exact_fhn_traveling_wave(x, t, a, x_center=0.0):
     """
-    Exact traveling-wave solution for the thesis scalar FHN equation.
+    Exact traveling-wave solution for the scalar FHN equation.
 
     u(x, t) = 1 / (1 + exp(-(x + theta*t - x_center) / 2))
     theta = sqrt(2) * (0.5 - a)
@@ -710,11 +710,11 @@ def exact_fhn_traveling_wave(x, t, a, x_center=0.0):
     The wave front (u = 0.5) starts at x = x_center at t = 0 and moves at
     speed -theta in the x-direction (leftward for a < 0.5, rightward for a > 0.5).
 
-    :param x:        array-like, spatial coordinates
-    :param t:        float, time
-    :param a:        float, FHN threshold parameter
+    :param x: array-like, spatial coordinates
+    :param t: float, time
+    :param a: float, FHN threshold parameter
     :param x_center: float, initial position of the wave center (u = 0.5)
-    :return:         ndarray, exact u values at positions x, time t
+    :return: ndarray, exact u values at positions x, time t
     """
     theta = np.sqrt(2.0) * (0.5 - a)
     xi = np.asarray(x, dtype=float) + theta * float(t) - x_center
@@ -723,17 +723,17 @@ def exact_fhn_traveling_wave(x, t, a, x_center=0.0):
 
 def _run_fhn_grw_scalar(cfg, total_time_override=None, diag_dir=None):
     """
-    Run the thesis scalar GRW FHN solver.
+    Run the scalar GRW FHN solver.
 
     Returns (x_sorted, u_reconstructed) on a uniform output grid.
     u is reconstructed from the sorted glob list via cumulative summation
     (the GRW integration of the gradient globs).
 
-    :param cfg:                 SimulationConfig
+    :param cfg: SimulationConfig
     :param total_time_override: if not None, use this total time instead of cfg.total_time
-    :param diag_dir:            optional path; forwarded as _diag_dir to the solver for
+    :param diag_dir: optional path; forwarded as _diag_dir to the solver for
                                 diagnostic figure output (front vs time, weight snapshots)
-    :return:                    (x_grid, u_grid) arrays on a uniform output grid
+    :return: (x_grid, u_grid) arrays on a uniform output grid
     """
     ic_type = getattr(cfg, 'fhn_ic_type', '') or ''
     globs = [
@@ -793,19 +793,19 @@ def plot_fhn_scalar_grw(
     metrics_final,
 ):
     """
-    Multi-time verification figure for the thesis scalar FHN GRW.
+    Multi-time verification figure for the scalar FHN GRW.
 
     Layout: 2 rows x 2 columns (up to 4 time snapshots).
-      Left column:  numerical GRW vs exact traveling wave
+      Left column: numerical GRW vs exact traveling wave
       Right column: pointwise error
 
-    :param snap_times:    list of floats, snapshot times
-    :param snap_exact:    list of 1d arrays, exact solution at each snap time
-    :param snap_num:      list of 1d arrays, GRW reconstruction at each snap time
-    :param x_grid:        1d array, common output grid
-    :param title:         str, figure suptitle
-    :param ic_label:      str, IC type label for annotations
-    :param output_path:   str, file path to save the PNG
+    :param snap_times: list of floats, snapshot times
+    :param snap_exact: list of 1d arrays, exact solution at each snap time
+    :param snap_num: list of 1d arrays, GRW reconstruction at each snap time
+    :param x_grid: 1d array, common output grid
+    :param title: str, figure suptitle
+    :param ic_label: str, IC type label for annotations
+    :param output_path: str, file path to save the PNG
     :param metrics_final: dict, error metrics at the final snapshot time
     """
     n_snap = len(snap_times)
@@ -859,7 +859,7 @@ def plot_fhn_scalar_grw(
 
 def run_fhn(cfg, output_dir, do_save_data, ref_factor):
     """
-    FHN verification: thesis scalar GRW vs exact traveling-wave solution.
+    FHN verification: scalar GRW vs exact traveling-wave solution.
 
     Runs the GRW solver at multiple time snapshots (t = 0, T/3, 2T/3, T)
     and compares each against the analytic solution:
@@ -871,7 +871,7 @@ def run_fhn(cfg, output_dir, do_save_data, ref_factor):
 
 def _run_fhn_scalar(cfg, output_dir, do_save_data):
     """
-    Thesis scalar GRW FHN verification.
+    Scalar GRW FHN verification.
 
     Runs the GRW solver at multiple time snapshots and compares each to the
     exact traveling-wave solution:
@@ -879,8 +879,8 @@ def _run_fhn_scalar(cfg, output_dir, do_save_data):
       theta = sqrt(2) * (0.5 - a)
     """
     print("\n" + "=" * 62)
-    print("  FitzHugh-Nagumo -- thesis scalar GRW vs exact solution")
-    print("  Primary : GRW gradient-side method (thesis Chapter 4)")
+    print("  FitzHugh-Nagumo -- scalar GRW vs exact solution")
+    print("  Primary : GRW gradient-side method")
     print("  Reference: exact traveling-wave solution (analytic)")
     print("=" * 62)
 
