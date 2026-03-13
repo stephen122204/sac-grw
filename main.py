@@ -1,4 +1,3 @@
-# main.py
 import sys
 import config as config_module
 from utils import plot_results
@@ -11,9 +10,8 @@ from simulation import (
 
 
 def main():
-    # Usage:
-    #   python main.py                 -> interactive prompts
-    #   python main.py burgers.json    -> load config from JSON file
+    # Config-first: python main.py configs/heat_step_dirichlet.json
+    # Interactive fallback: python main.py  (no argument)
     if len(sys.argv) >= 2:
         cfg_path = sys.argv[1]
         cfg = config_module.load_config_from_json(cfg_path)
@@ -24,6 +22,8 @@ def main():
     eq = (cfg.equation_type or "").strip().lower()
 
     if eq == "heat":
+        # Glob values are signed gradient weights; u(x,t) is recovered by
+        # cumulatively summing the sorted glob list, not stored directly.
         initial_globs = [{'position': pos, 'value': val} for pos, val in cfg.initial_conditions]
         results = simulate_heat_equation(initial_globs, cfg)
         print("Simulation Complete! Plotting Results...")
@@ -31,14 +31,26 @@ def main():
         return
 
     if eq in {"fitzhugh-nagumo", "fitzhugh–nagumo", "fitzhugh", "nagumo"}:
-        initial_globs = [{'position': pos, 'value': list(val)} for pos, val in cfg.initial_conditions]
+        ic_type = getattr(cfg, 'fhn_ic_type', '') or ''
+        if ic_type in ('steady_solution', 'nonsmooth', 'discontinuous', 'scalar_grw'):
+            # Scalar GRW: each glob carries a single float weight.
+            initial_globs = [
+                {'position': float(pos), 'value': float(val)}
+                for pos, val in cfg.initial_conditions
+            ]
+        else:
+            # Legacy two-component (u, v) particle method.
+            initial_globs = [
+                {'position': pos, 'value': list(val)}
+                for pos, val in cfg.initial_conditions
+            ]
         results = simulate_fitzhugh_nagumo(initial_globs, cfg)
         print("Simulation Complete! Plotting Results...")
         plot_results(results, cfg.equation_type, cfg)
         return
 
     if eq in {"burgers", "burger", "burgers'"}:
-        # IMPORTANT for this repo: burgers solver expects value stored like [u]
+        # Burgers solver expects value stored as a single-element list [u].
         initial_globs = [{'position': pos, 'value': [float(val)]} for pos, val in cfg.initial_conditions]
         results = simulate_burgers(initial_globs, cfg)
         print("Simulation Complete! Plotting Results...")

@@ -10,21 +10,30 @@ a trusted benchmark:
   heat    -- exact analytical solution (error function), valid for step IC.
              Primary solver: thesis-faithful GRW.
 
-  burgers -- high-resolution FD reference (ref_factor x finer grid / smaller dt).
-             Primary solver: experimental GRW-inspired Lagrangian particle method.
-             Reference solver: standard finite-difference (simulate_burgers_fd).
+  burgers -- three modes depending on config.burgers_mode:
+    cole_hopf_grw (default): Cole-Hopf transform reduces Burgers to a heat equation
+        solved by GRW.  For the traveling_wave IC, comparison is against the exact
+        analytical traveling wave solution.  For other ICs, a high-resolution FD
+        reference is used.
+    direct_grw: diagnostic path reproducing thesis Section 5 noise discussion.
+        Compares against FD reference; noise in the result is expected and intentional.
+    lagrangian_grw: experimental Lagrangian particle method (operator splitting).
+        Compares against high-resolution FD reference.
 
   fhn     -- high-resolution FD reference (ref_factor x smaller dt, same grid).
              Primary solver: experimental GRW-inspired particle method.
              Reference solver: standard finite-difference (simulate_fitzhugh_nagumo_fd).
 
-Burgers and FHN comparisons are against *numerical FD references*, not exact solutions.
-The output labels this explicitly.  The purpose of the error metrics on main is to
-quantify GRW feasibility and limitations, not to advertise accuracy.
+Burgers and FHN comparisons label exact vs reference solutions explicitly.
+The purpose of the error metrics on main is to quantify GRW feasibility and
+limitations, not to advertise accuracy.
 
 Usage examples:
   python verify_solver.py                                         # run all three
   python verify_solver.py --equation heat
+  python verify_solver.py --equation burgers --config configs/burgers_stationary_shock.json
+  python verify_solver.py --equation burgers --config configs/burgers_traveling_wave.json
+  python verify_solver.py --equation burgers --config configs/burgers_direct_grw_diagnostic.json
   python verify_solver.py --equation burgers --config configs/burgers_shock.json
   python verify_solver.py --equation fhn --output-dir output/fhn_check
   python verify_solver.py --equation heat --save-data
@@ -71,8 +80,8 @@ from simulation import (
 
 _DEFAULT_CONFIGS = {
     "heat":    "configs/heat_step_dirichlet.json",
-    "burgers": "configs/burgers_shock.json",
-    "fhn":     "configs/fhn_oscillatory.json",
+    "burgers": "configs/burgers_stationary_shock.json",
+    "fhn":     "configs/fhn_grw_steady.json",
 }
 
 
@@ -93,6 +102,61 @@ def exact_heat_step(x, T, x0, uL, uR, alpha):
     u(x, T) = uL + (uR - uL) * 0.5 * (1 + erf((x - x0) / (2 * sqrt(alpha * T))))
     """
     return uL + (uR - uL) * 0.5 * (1.0 + _erf_vec((x - x0) / (2.0 * np.sqrt(alpha * T))))
+
+
+def exact_burgers_traveling_wave(x, t, nu, x_center=0.0):
+    """
+    Exact traveling wave solution for Burgers' equation  u_t + u*u_x = nu*u_xx.
+
+    u(x, t) = 1 - 2*sqrt(nu) * tanh((x - x_center - t) / sqrt(nu))
+
+    This is the exact infinite-domain solution for the IC
+      u0(x) = 1 - 2*sqrt(nu) * tanh((x - x_center) / sqrt(nu)).
+    The wave moves at unit speed c = 1.
+
+    Derivation: inserting the ansatz f(x - ct) into Burgers' equation yields
+    c = 1 (wave speed = mean value) and delta = sqrt(nu) (wave width).
+    The solution is valid on an infinite domain; on a finite domain it is an
+    approximation that degrades near the boundaries as the wave approaches them.
+
+    :param x: array of spatial positions
+    :param t: final time
+    :param nu: kinematic viscosity
+    :param x_center: initial wave center position
+    :return: array of exact u values at (x, t)
+    """
+    return 1.0 - 2.0 * np.sqrt(nu) * np.tanh((x - x_center - t) / np.sqrt(nu))
+
+
+def exact_burgers_stationary_shock(x, nu, x_center=None, amplitude=1.0):
+    """
+    Exact stationary-shock solution for Burgers' equation  u_t + u*u_x = nu*u_xx.
+
+    u(x, t) = -A * tanh(A * (x - x_center) / (2 * nu))   for all t >= 0
+
+    where A = amplitude.  This is an exact STATIONARY solution: the nonlinear
+    advection term u*u_x and the diffusion term nu*u_xx cancel exactly for any
+    amplitude A and viscosity nu.  Verification:
+
+      u_x   = -A^2 / (2*nu) * sech^2(A*(x-xc)/(2*nu))
+      u*u_x = A^3 * tanh(...) * sech^2(...) / (2*nu)
+      u_xx  = A^3 * tanh(...) * sech^2(...) / (2*nu^2)
+      nu*u_xx = A^3 * tanh(...) * sech^2(...) / (2*nu) = u*u_x  QED
+
+    The Cole-Hopf phi0 for this IC satisfies phi0(0) = phi0(L) whenever xc = L/2
+    and the domain is symmetric about xc, making the cumulative reconstruction in
+    the GRW return exactly to its starting value -- a well-conditioned property for
+    the Cole-Hopf GRW benchmark.
+
+    :param x:         array of spatial positions
+    :param nu:        kinematic viscosity
+    :param x_center:  shock centre; if None, defaults to domain midpoint
+    :param amplitude: shock amplitude A (controls both wave height and width)
+    :return: array of exact u values (independent of time t)
+    """
+    if x_center is None:
+        x_center = 0.5 * (float(x.max()) + float(x.min()))
+    return -amplitude * np.tanh(amplitude * (x - x_center) / (2.0 * nu))
 
 
 def compute_metrics(numerical, reference, dx):
@@ -210,7 +274,6 @@ def plot_comparison(
     os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
     plt.savefig(output_path, dpi=150)
     print(f"  [verify] Saved plot    -> {output_path}")
-    plt.show(block=True)
     plt.close(fig)
 
 
@@ -323,10 +386,9 @@ def run_heat(cfg, output_dir, do_save_data):
 
 def _run_burgers_grw(cfg):
     """
-    Run the GRW Lagrangian particle solver for Burgers.
+    Run the active Burgers GRW solver (mode dispatched via config.burgers_mode).
 
-    Returns (x_sorted, u_sorted) where x values are the final particle
-    positions (scattered, not on a uniform grid).
+    Returns (x_sorted, u_sorted) on a uniform or near-uniform grid.
     """
     globs = [{"position": float(pos), "value": [float(val)]}
              for pos, val in cfg.initial_conditions]
@@ -356,9 +418,10 @@ def _burgers_ref_config(cfg, ref_factor):
     """
     Build a higher-resolution FD reference config for Burgers.
 
-    Increases num_points by ref_factor and reduces time_step by the same factor
-    to maintain a comparable CFL condition.  The IC is interpolated onto the
-    finer grid.  This config is passed to _run_burgers_fd (not the GRW solver).
+    Increases num_points by ref_factor and reduces time_step by the same factor.
+    The IC is re-interpolated onto the finer grid.
+    This config is passed to _run_burgers_fd (not the GRW solver).
+    CFL stability conditions apply only to the FD solver.
     """
     N_ref  = cfg.num_points * ref_factor
     dt_ref = cfg.time_step / ref_factor
@@ -384,125 +447,273 @@ def _burgers_ref_config(cfg, ref_factor):
 
 
 def run_burgers(cfg, output_dir, do_save_data, ref_factor):
-    print("\n" + "=" * 62)
-    print("  Burgers -- GRW particle solver vs FD reference")
-    print("  Primary : GRW Lagrangian particle method (experimental)")
-    print("  Reference: standard FD, finer grid + smaller dt")
-    print("=" * 62)
+    mode    = getattr(cfg, 'burgers_mode', 'cole_hopf_grw') or 'cole_hopf_grw'
+    ic_type = getattr(cfg, 'burgers_ic_type', '') or ''
+    use_exact = (mode == 'cole_hopf_grw' and ic_type in ('traveling_wave', 'stationary_shock'))
+
+    # Header
+    print("\n" + "=" * 68)
+    mode_labels = {
+        'cole_hopf_grw': 'Cole-Hopf GRW  (thesis-faithful: Burgers -> heat via Cole-Hopf)',
+        'direct_grw':    'Direct GRW  (diagnostic: expected to be noisy, thesis Section 5)',
+        'lagrangian_grw':'Lagrangian GRW  (experimental operator splitting)',
+    }
+    if ic_type == 'stationary_shock':
+        ref_label_str = "exact stationary shock"
+    elif ic_type == 'traveling_wave' and use_exact:
+        ref_label_str = "exact traveling wave"
+    else:
+        ref_label_str = "high-resolution FD"
+    print(f"  Burgers -- {mode_labels.get(mode, mode)}")
+    print(f"  Reference : {ref_label_str}")
+    print("=" * 68)
 
     N  = cfg.num_points
     dt = cfg.time_step
     nu = cfg.diff_constant
     T  = cfg.total_time
     L  = cfg.domain_size
-    uL = float(cfg.boundary_conditions["LEFT"]["value"])
-    uR = float(cfg.boundary_conditions["RIGHT"]["value"])
 
     print(f"\n  Parameters")
     print(f"    nu = {nu},  T = {T},  dt = {dt}  ({int(T / dt)} steps)")
-    print(f"    N = {N} particles,  domain [0, {L}]")
-    print(f"    GRW: advection step u*dt + diffusion step Normal(0, sqrt(2*nu*dt))")
+    print(f"    N = {N} globs/particles,  domain [0, {L}]")
+    if mode == 'cole_hopf_grw':
+        print(f"    Cole-Hopf: u -> phi=exp(-Psi/(2*nu)), GRW on phi_x, "
+              f"u_out = -2*nu*phi_x/phi")
+    elif mode == 'direct_grw':
+        print(f"    Direct GRW: v=u_x globs, R=-(u*u_xx/u_x + u_x) reaction statistic")
+        print(f"    NOTE: noise in u_x and u_xx is expected and intentional.")
+    if use_exact and ic_type == 'stationary_shock':
+        x_center = L / 2.0
+        print(f"    IC: stationary shock centered at x={x_center}, exact solution available")
+        print(f"    u(x,t) = -A*tanh(A*(x-xc)/(2*nu))  [independent of t]")
+    elif use_exact and ic_type == 'traveling_wave':
+        x_center = L / 2.0
+        print(f"    IC: traveling wave centered at x={x_center}, exact solution available")
 
-    print("\n  Running Burgers GRW particle solver ...", flush=True)
+    print(f"\n  Running Burgers GRW ({mode}) ...", flush=True)
     x_num, u_num = _run_burgers_grw(cfg)
     print("  Done.")
 
-    ref_cfg = _burgers_ref_config(cfg, ref_factor)
-    print(
-        f"\n  Running Burgers FD reference  "
-        f"(N={ref_cfg.num_points}, dt={ref_cfg.time_step:.5g}) ...",
-        flush=True,
+    # Build comparison grid and reference solution.
+    x_grid = np.linspace(0.0, L, N)
+    dx_grid = L / (N - 1)
+
+    if use_exact and ic_type == 'stationary_shock':
+        # Exact stationary-shock solution: u(x,t) = u0(x) for all t.
+        # Use the IC values directly as the reference: u_exact = u0 for all t.
+        x_center = L / 2.0
+        ic_x    = np.array([pos for pos, _ in cfg.initial_conditions])
+        ic_vals = np.array([val for _, val in cfg.initial_conditions])
+        u_ref   = np.interp(x_grid, ic_x, ic_vals)
+        # Amplitude A from config; fall back to max|u0| on finite domain if not set.
+        amplitude = (float(cfg.burgers_ic_amplitude)
+                     if getattr(cfg, 'burgers_ic_amplitude', None) is not None
+                     else float(np.max(np.abs(ic_vals))))
+        x_ref = x_grid
+        ref_description = (f"exact stationary shock  "
+                           f"(A={amplitude:.4g}, width=2*nu/A={2*nu/amplitude:.4g})")
+        ref_short = "exact"
+        metrics_label = "Error metrics  (Cole-Hopf GRW vs exact stationary shock)"
+    elif use_exact and ic_type == 'traveling_wave':
+        x_center = L / 2.0
+        u_ref  = exact_burgers_traveling_wave(x_grid, T, nu, x_center=x_center)
+        x_ref  = x_grid
+        ref_description = f"exact traveling wave  (c=1, width=sqrt(nu)={np.sqrt(nu):.4g})"
+        ref_short = "exact"
+        metrics_label = "Error metrics  (Cole-Hopf GRW vs exact traveling wave)"
+    else:
+        ref_cfg = _burgers_ref_config(cfg, ref_factor)
+        print(
+            f"\n  Running Burgers FD reference  "
+            f"(N={ref_cfg.num_points}, dt={ref_cfg.time_step:.5g}) ...",
+            flush=True,
+        )
+        x_ref_raw, u_ref_raw = _run_burgers_fd(ref_cfg)
+        x_ref  = x_grid
+        u_ref  = np.interp(x_grid, x_ref_raw, u_ref_raw)
+        ref_description = (f"high-resolution FD  "
+                           f"(N={ref_cfg.num_points}, dt={ref_cfg.time_step:.5g})")
+        ref_short = "FD reference"
+        metrics_label = f"Error metrics  ({mode} GRW vs FD reference)"
+        print("  Done.")
+
+    # Interpolate numerical result onto comparison grid.
+    u_num_on_grid = np.interp(x_grid, x_num, u_num)
+    metrics = compute_metrics(u_num_on_grid, u_ref, dx_grid)
+
+    # Wave / shock location diagnostics.
+    u_mid = float(np.mean(u_ref))
+    wave_loc_num = float(x_grid[np.argmin(np.abs(u_num_on_grid - u_mid))]) \
+        if len(x_grid) else None
+    wave_loc_ref = float(x_grid[np.argmin(np.abs(u_ref - u_mid))]) \
+        if len(x_grid) else None
+
+    metrics["wave_location_grw"]     = wave_loc_num
+    metrics["wave_location_ref"]     = wave_loc_ref
+    metrics["wave_location_diff"]    = (
+        float(abs(wave_loc_num - wave_loc_ref))
+        if (wave_loc_num is not None and wave_loc_ref is not None) else None
     )
-    x_ref, u_ref = _run_burgers_fd(ref_cfg)
-    print("  Done.")
+    metrics["u_min"]   = float(np.min(u_num_on_grid))
+    metrics["u_max"]   = float(np.max(u_num_on_grid))
+    metrics["burgers_mode"]    = mode
+    metrics["burgers_ic_type"] = ic_type
+    if not use_exact:
+        metrics["ref_factor"]     = ref_factor
+        metrics["ref_num_points"] = ref_cfg.num_points
+        metrics["ref_time_step"]  = ref_cfg.time_step
 
-    # Interpolate GRW result (scattered positions) onto the reference grid.
-    u_num_on_ref = np.interp(x_ref, x_num, u_num)
-    dx_ref = float(L) / ref_cfg.num_points
-    metrics = compute_metrics(u_num_on_ref, u_ref, dx_ref)
-
-    u_mid = 0.5 * (uL + uR)
-    shock_num = float(x_num[np.argmin(np.abs(u_num - u_mid))]) if len(x_num) else None
-    shock_ref = float(x_ref[np.argmin(np.abs(u_ref - u_mid))]) if len(x_ref) else None
-
-    u_hi = max(uL, uR)
-    u_lo = min(uL, uR)
-    overshoot  = max(0.0, float(np.max(u_num)) - u_hi)
-    undershoot = max(0.0, u_lo - float(np.min(u_num)))
-
-    metrics["u_min"]                    = float(np.min(u_num))
-    metrics["u_max"]                    = float(np.max(u_num))
-    metrics["physical_upper_bound"]     = u_hi
-    metrics["physical_lower_bound"]     = u_lo
-    metrics["overshoot"]                = overshoot
-    metrics["undershoot"]               = undershoot
-    metrics["shock_location_grw"]       = shock_num
-    metrics["shock_location_fd_ref"]    = shock_ref
-    metrics["shock_location_diff"]      = (
-        float(abs(shock_num - shock_ref))
-        if (shock_num is not None and shock_ref is not None) else None
-    )
-    metrics["ref_factor"]      = ref_factor
-    metrics["ref_num_points"]  = ref_cfg.num_points
-    metrics["ref_time_step"]   = ref_cfg.time_step
-
-    _print_metrics(metrics, "Error metrics  (GRW particle vs FD reference)")
-    if shock_num is not None and shock_ref is not None:
-        print(f"\n  Shock diagnostics")
-        print(f"    Shock location (GRW)     : {shock_num:.4f}")
-        print(f"    Shock location (FD ref)  : {shock_ref:.4f}")
-        print(f"    Shock location diff      : {abs(shock_num - shock_ref):.6f}")
-    print(f"\n  Solution range  (physical bounds: [{u_lo}, {u_hi}])")
+    _print_metrics(metrics, metrics_label)
+    if wave_loc_num is not None and wave_loc_ref is not None:
+        print(f"\n  Wave / shock location diagnostics")
+        print(f"    Wave center (GRW)    : {wave_loc_num:.4f}")
+        print(f"    Wave center (ref)    : {wave_loc_ref:.4f}")
+        print(f"    Location diff        : {abs(wave_loc_num - wave_loc_ref):.6f}")
+    print(f"\n  Solution range")
     print(f"    u_min = {_fmt_val(metrics['u_min'])},  u_max = {_fmt_val(metrics['u_max'])}")
-    print(f"    Overshoot   (u_max - {u_hi}) : +{_fmt_val(overshoot)}"
-          + ("  <-- above physical bound" if overshoot > 1e-3 else ""))
-    print(f"    Undershoot  ({u_lo} - u_min) : +{_fmt_val(undershoot)}"
-          + ("  <-- below physical bound" if undershoot > 1e-3 else ""))
 
-    bound_str = f"u in [{metrics['u_min']:.3f}, {metrics['u_max']:.3f}]"
-    if overshoot > 1e-3 or undershoot > 1e-3:
-        os_str = f"overshoot +{overshoot:.4f}" if overshoot > 1e-3 else ""
-        us_str = f"undershoot -{undershoot:.4f}" if undershoot > 1e-3 else ""
-        nonphys = ",  ".join(filter(None, [os_str, us_str]))
-        bound_str += f"  [{nonphys}]"
+    if mode == 'direct_grw':
+        print(f"\n  [direct_grw] Diagnostic interpretation:")
+        print(f"    The reaction statistic R = -(u*u_xx/u_x + u_x) amplifies noise")
+        print(f"    in u_x and u_xx computed from the particle field.  Large errors")
+        print(f"    relative to the FD reference are expected and confirm the thesis")
+        print(f"    conclusion that the direct GRW path for Burgers is impractical.")
 
-    title = (
-        f"Burgers: GRW particle vs FD reference  (T={T}, nu={nu}, N={N})\n"
-        f"{bound_str}"
-    )
+    # Figure.
+    if use_exact and ic_type == 'stationary_shock':
+        method_str = "Cole-Hopf GRW"
+        num_label  = f"Cole-Hopf GRW  (N={N}, dt={dt})"
+        ref_note   = (f"Reference = exact stationary shock  "
+                      f"u(x,t) = -A*tanh(A*(x-xc)/(2*nu))  [all t]")
+    elif use_exact:
+        method_str = "Cole-Hopf GRW"
+        num_label  = f"Cole-Hopf GRW  (N={N}, dt={dt})"
+        ref_note   = (f"Reference = exact traveling wave  u(x,t) = "
+                      f"1 - 2*sqrt(nu)*tanh((x-x0-t)/sqrt(nu))")
+    elif mode == 'direct_grw':
+        method_str = "Direct GRW (diagnostic)"
+        num_label  = f"Direct GRW  (N={N}, dt={dt})  [noisy by design]"
+        ref_note   = ("Reference = high-resolution FD solution  "
+                      "(simulate_burgers_fd).  Noise is expected for direct GRW.")
+    else:
+        method_str = f"{mode} GRW"
+        num_label  = f"{mode} GRW  (N={N}, dt={dt})"
+        ref_note   = "Reference = high-resolution FD solution  (simulate_burgers_fd)"
+
+    title = f"Burgers: {method_str} vs {ref_short}  (T={T}, nu={nu}, N={N})"
     plot_comparison(
-        x_ref, u_num_on_ref, u_ref,
+        x_grid, u_num_on_grid, u_ref,
         title=title,
         ylabel="u(x, T)",
-        num_label=f"GRW particle  (N={N}, dt={dt})",
-        ref_label=f"FD reference  (N={ref_cfg.num_points}, dt={ref_cfg.time_step:.5g})",
+        num_label=num_label,
+        ref_label=ref_description,
         metrics=metrics,
         output_path=os.path.join(output_dir, "comparison_plot.png"),
-        ref_note="Reference = high-resolution FD solution  (not the GRW method)",
+        ref_note=ref_note,
     )
     save_metrics(metrics, os.path.join(output_dir, "metrics.json"))
     if do_save_data:
-        save_npz(x_ref, u_num_on_ref, u_ref, os.path.join(output_dir, "comparison_data"))
+        save_npz(x_grid, u_num_on_grid, u_ref,
+                 os.path.join(output_dir, "comparison_data"))
 
 
 # ---------------------------------------------------------------------------
 # FitzHugh-Nagumo verification
 # Primary solver: GRW-inspired particle method
-# Reference solver: high-resolution FD (simulate_fitzhugh_nagumo_fd)
+# ---------------------------------------------------------------------------
+# FHN helper: exact traveling wave and GRW runners
 # ---------------------------------------------------------------------------
 
-def _run_fhn_grw(cfg):
+def exact_fhn_traveling_wave(x, t, a, x_center=0.0):
     """
-    Run the GRW-inspired particle solver for FHN.
+    Exact traveling-wave solution for the thesis scalar FHN equation.
 
-    Returns (x_sorted, u_sorted, v_sorted) where x values are the final
-    particle positions (scattered, not on a uniform grid).
+    u(x, t) = 1 / (1 + exp(-(x + theta*t - x_center) / 2))
+    theta    = sqrt(2) * (0.5 - a)
+
+    The wave front (u = 0.5) starts at x = x_center at t = 0 and moves at
+    speed -theta in the x-direction (leftward for a < 0.5, rightward for a > 0.5).
+
+    :param x:        array-like, spatial coordinates
+    :param t:        float, time
+    :param a:        float, FHN threshold parameter
+    :param x_center: float, initial position of the wave center (u = 0.5)
+    :return:         ndarray, exact u values at positions x, time t
     """
-    globs = [{"position": float(pos), "value": list(val)}
+    theta = np.sqrt(2.0) * (0.5 - a)
+    xi    = np.asarray(x, dtype=float) + theta * float(t) - x_center
+    return 1.0 / (1.0 + np.exp(-xi / 2.0))
+
+
+def _run_fhn_grw_scalar(cfg, total_time_override=None):
+    """
+    Run the thesis scalar GRW FHN solver.
+
+    Returns (x_sorted, u_reconstructed) on a uniform output grid.
+    u is reconstructed from the sorted glob list via cumulative summation.
+
+    :param cfg:                 SimulationConfig
+    :param total_time_override: if not None, use this total time instead of cfg.total_time
+    :return:                    (x_grid, u_grid) arrays on a uniform output grid
+    """
+    ic_type = getattr(cfg, 'fhn_ic_type', '') or ''
+    globs = [
+        {'position': float(pos), 'value': float(val)}
+        for pos, val in cfg.initial_conditions
+    ]
+
+    run_cfg = cfg
+    if total_time_override is not None and total_time_override != cfg.total_time:
+        run_cfg = SimulationConfig(
+            equation_type=cfg.equation_type,
+            domain_type=cfg.domain_type,
+            domain_size=cfg.domain_size,
+            boundary_conditions=cfg.boundary_conditions,
+            diff_constant=cfg.diff_constant,
+            time_step=cfg.time_step,
+            total_time=float(total_time_override),
+            num_points=cfg.num_points,
+            initial_conditions=list(cfg.initial_conditions),
+            reaction_term=cfg.reaction_term,
+            a=cfg.a,
+            b=cfg.b,
+            tau=cfg.tau,
+            fhn_ic_type=ic_type,
+        )
+
+    result = simulate_fitzhugh_nagumo(globs, run_cfg)
+
+    x_pos = np.array([g['position'] for g in result])
+    w_val = np.array([float(g['value']) for g in result])
+    order = np.argsort(x_pos)
+    x_s   = x_pos[order]
+    w_s   = w_val[order]
+
+    # Reconstruct u on a uniform grid by binning weights.
+    L      = cfg.domain_size
+    n_grid = max(200, cfg.num_points)
+    x_grid = np.linspace(0.0, L, n_grid)
+    u_grid = np.zeros(n_grid)
+
+    # For each output x, u = sum of weights at positions <= x.
+    for j, xj in enumerate(x_grid):
+        u_grid[j] = float(np.sum(w_s[x_s <= xj]))
+
+    return x_grid, u_grid
+
+
+def _run_fhn_grw_legacy(cfg):
+    """
+    Run the legacy two-component GRW particle solver for FHN.
+
+    Returns (x_sorted, u_sorted, v_sorted) on a scattered grid.
+    """
+    globs = [{'position': float(pos), 'value': list(val)}
              for pos, val in cfg.initial_conditions]
     result = simulate_fitzhugh_nagumo(globs, cfg)
-    x  = np.array([g["position"] for g in result])
-    uv = np.array([g["value"]    for g in result])
+    x  = np.array([g['position'] for g in result])
+    uv = np.array([g['value']    for g in result])
     order = np.argsort(x)
     return x[order], uv[order, 0], uv[order, 1]
 
@@ -513,11 +724,11 @@ def _run_fhn_fd(cfg):
 
     Returns (x_sorted, u_sorted, v_sorted) where x is the uniform grid.
     """
-    globs = [{"position": float(pos), "value": list(val)}
+    globs = [{'position': float(pos), 'value': list(val)}
              for pos, val in cfg.initial_conditions]
     result = simulate_fitzhugh_nagumo_fd(globs, cfg)
-    x  = np.array([g["position"] for g in result])
-    uv = np.array([g["value"]    for g in result])
+    x  = np.array([g['position'] for g in result])
+    uv = np.array([g['value']    for g in result])
     order = np.argsort(x)
     return x[order], uv[order, 0], uv[order, 1]
 
@@ -537,7 +748,6 @@ def _fhn_ref_config(cfg, ref_factor):
     """
     dt_ref = cfg.time_step / ref_factor
 
-    # Safety: warn if even the coarse dt violates the FD CFL limit.
     if cfg.diff_constant > 0.0:
         dx = cfg.domain_size / (cfg.num_points - 1)
         cfl_limit = dx**2 / (2.0 * cfg.diff_constant)
@@ -565,6 +775,75 @@ def _fhn_ref_config(cfg, ref_factor):
     )
 
 
+def plot_fhn_scalar_grw(
+    snap_times, snap_exact, snap_num,
+    x_grid, title, ic_label,
+    output_path,
+    metrics_final,
+):
+    """
+    Multi-time verification figure for the thesis scalar FHN GRW.
+
+    Layout: 2 rows x 2 columns (up to 4 time snapshots).
+      Left column:  numerical GRW vs exact traveling wave
+      Right column: pointwise error
+
+    :param snap_times:    list of floats, snapshot times
+    :param snap_exact:    list of 1d arrays, exact solution at each snap time
+    :param snap_num:      list of 1d arrays, GRW reconstruction at each snap time
+    :param x_grid:        1d array, common output grid
+    :param title:         str, figure suptitle
+    :param ic_label:      str, IC type label for annotations
+    :param output_path:   str, file path to save the PNG
+    :param metrics_final: dict, error metrics at the final snapshot time
+    """
+    n_snap = len(snap_times)
+    n_rows = (n_snap + 1) // 2
+    fig, axes = plt.subplots(n_rows, 2, figsize=(12, 3.5 * n_rows + 0.8))
+    if n_rows == 1:
+        axes = np.array([axes])
+    fig.suptitle(title, fontsize=10, y=0.99)
+
+    colors  = plt.rcParams['axes.prop_cycle'].by_key()['color']
+    col_num = colors[1] if len(colors) > 1 else 'crimson'
+    col_exa = 'black'
+
+    for idx, (t_snap, u_ex, u_gr) in enumerate(
+            zip(snap_times, snap_exact, snap_num)):
+        row = idx // 2
+        col = idx % 2
+        ax  = axes[row, col]
+
+        err = u_gr - u_ex
+        m   = compute_metrics(u_gr, u_ex, float(x_grid[1] - x_grid[0]))
+
+        ax.plot(x_grid, u_ex, color=col_exa, linewidth=2,   linestyle='-',  label='exact')
+        ax.plot(x_grid, u_gr, color=col_num, linewidth=1.5, linestyle='--', label='GRW')
+        ax.set_xlabel('x')
+        ax.set_ylabel('u(x,t)')
+        ax.set_title(
+            f't = {t_snap:.1f}  |  {_metrics_str(m)}',
+            fontsize=9,
+        )
+        ax.legend(fontsize=8, loc='upper left')
+        ax.grid(True, alpha=0.3)
+        ax.ticklabel_format(useOffset=False, axis='y', style='plain')
+
+        # Small inset-style error curve on the same axis using a twin.
+        ax2 = ax.twinx()
+        ax2.plot(x_grid, err, color='gray', linewidth=0.9, linestyle=':', alpha=0.7)
+        ax2.axhline(0.0, color='gray', linewidth=0.5, linestyle=':')
+        ax2.set_ylabel('error', fontsize=7, color='gray')
+        ax2.tick_params(axis='y', labelsize=7, colors='gray')
+        ax2.ticklabel_format(useOffset=False, axis='y', style='sci', scilimits=(-2, 2))
+
+    plt.tight_layout(rect=[0, 0, 1, 0.97])
+    os.makedirs(os.path.dirname(output_path) or '.', exist_ok=True)
+    plt.savefig(output_path, dpi=150)
+    print(f'  [verify] Saved plot     -> {output_path}')
+    plt.close(fig)
+
+
 def plot_fhn_comparison(
     x, u_num, u_ref, v_num, v_ref,
     title, num_label, ref_label, m_u, m_v,
@@ -573,17 +852,13 @@ def plot_fhn_comparison(
     diag_v=None,
 ):
     """
-    Four-panel figure for FHN verification.
+    Four-panel figure for legacy FHN two-component verification.
 
     Layout (2 rows x 2 columns):
       [0,0] u: numerical vs reference overlay
       [0,1] u: pointwise error
       [1,0] v: numerical vs reference overlay
       [1,1] v: pointwise error
-
-    diag_u / diag_v: optional dicts with keys
-      peak_num, peak_ref, peak_loc_num, peak_loc_ref
-    These are displayed as a compact annotation box on the overlay panels.
     """
     fig, axes = plt.subplots(2, 2, figsize=(13, 9))
     fig.suptitle(title, fontsize=10, y=0.98)
@@ -647,14 +922,191 @@ def plot_fhn_comparison(
     os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
     plt.savefig(output_path, dpi=150)
     print(f"  [verify] Saved plot    -> {output_path}")
-    plt.show(block=True)
     plt.close(fig)
 
 
 def run_fhn(cfg, output_dir, do_save_data, ref_factor):
+    """
+    FHN verification dispatcher.
+
+    Scalar GRW ICs (steady_solution, nonsmooth, discontinuous):
+      Compare the thesis scalar GRW result to the exact traveling-wave solution
+      at multiple time snapshots (t = 0, T/3, 2T/3, T).
+
+    Legacy two-component IC:
+      Compare the two-component GRW particle solver to a high-resolution FD
+      reference (same spatial grid, dt reduced by ref_factor).
+    """
+    ic_type = getattr(cfg, 'fhn_ic_type', '') or ''
+    scalar_path = ic_type in ('steady_solution', 'nonsmooth', 'discontinuous', 'scalar_grw')
+
+    if scalar_path:
+        _run_fhn_scalar(cfg, output_dir, do_save_data)
+    else:
+        _run_fhn_legacy(cfg, output_dir, do_save_data, ref_factor)
+
+
+def _run_fhn_scalar(cfg, output_dir, do_save_data):
+    """
+    Thesis scalar GRW FHN verification.
+
+    Runs the GRW solver at multiple time snapshots and compares each to the
+    exact traveling-wave solution:
+      u(x, t) = 1 / (1 + exp(-(x + theta*t - x_center) / 2))
+      theta   = sqrt(2) * (0.5 - a)
+    """
     print("\n" + "=" * 62)
-    print("  FitzHugh-Nagumo -- GRW particle solver vs FD reference")
-    print("  Primary : GRW-inspired particle method (experimental)")
+    print("  FitzHugh-Nagumo -- thesis scalar GRW vs exact solution")
+    print("  Primary : GRW gradient-side method (thesis Chapter 4)")
+    print("  Reference: exact traveling-wave solution (analytic)")
+    print("=" * 62)
+
+    N      = cfg.num_points
+    dt     = cfg.time_step
+    T      = cfg.total_time
+    L      = cfg.domain_size
+    D      = cfg.diff_constant
+    a_     = cfg.a if cfg.a is not None else 0.25
+    ic_type = getattr(cfg, 'fhn_ic_type', '') or ''
+    theta  = np.sqrt(2.0) * (0.5 - a_)
+
+    # Infer wave center from the IC: the midpoint value x_center.
+    # For steady_solution, the first glob position should be near the left tail,
+    # last near the right tail.  Median position estimates the center.
+    x_ic = np.array([pos for pos, _ in cfg.initial_conditions])
+    x_center = float(np.median(x_ic))
+
+    print(f"\n  Parameters")
+    print(f"    a={a_:.4g},  D={D:.4g},  theta = sqrt(2)*(0.5-a) = {theta:.4g}")
+    print(f"    T = {T},  dt = {dt}  ({int(T / dt)} GRW steps)")
+    print(f"    N = {N} globs,  domain [0, {L}]")
+    print(f"    IC type: {ic_type},  wave center at x = {x_center:.3g}")
+
+    # Snapshot times: 0, T/3, 2T/3, T  (capped at 4 times for the 2x2 layout).
+    t_snaps = [0.0]
+    n_panels = 4
+    step = T / (n_panels - 1)
+    for k in range(1, n_panels):
+        t_snaps.append(round(k * step, 6))
+    # Make sure the last entry is exactly T.
+    t_snaps[-1] = T
+
+    snap_exact = []
+    snap_num   = []
+    x_grid_out = None
+
+    for t_snap in t_snaps:
+        u_ex = exact_fhn_traveling_wave(
+            np.linspace(0.0, L, max(200, N)),
+            t_snap, a_, x_center=x_center)
+        snap_exact.append(u_ex)
+
+        if t_snap == 0.0:
+            # IC reconstruction from initial globs (no time stepping).
+            x_s = np.sort(x_ic)
+            w_ic = np.array([float(w) for _, w in cfg.initial_conditions])
+            w_ic_s = w_ic[np.argsort(x_ic)]
+            x_g = np.linspace(0.0, L, max(200, N))
+            u_g = np.array([float(np.sum(w_ic_s[x_s <= xj])) for xj in x_g])
+        else:
+            print(f"\n  Running GRW to t = {t_snap:.3g} ...", flush=True)
+            x_g, u_g = _run_fhn_grw_scalar(cfg, total_time_override=t_snap)
+            print("  Done.")
+
+        if x_grid_out is None:
+            x_grid_out = x_g
+        snap_num.append(u_g)
+
+    if x_grid_out is None:
+        x_grid_out = np.linspace(0.0, L, max(200, N))
+
+    # All snapshots on the same x_grid; re-interpolate if needed.
+    for i in range(len(snap_num)):
+        if len(snap_num[i]) != len(x_grid_out):
+            snap_num[i]   = np.interp(x_grid_out, np.linspace(0.0, L, len(snap_num[i])),  snap_num[i])
+        if len(snap_exact[i]) != len(x_grid_out):
+            snap_exact[i] = np.interp(x_grid_out, np.linspace(0.0, L, len(snap_exact[i])), snap_exact[i])
+
+    dx_g  = float(x_grid_out[1] - x_grid_out[0])
+    m_fin = compute_metrics(snap_num[-1], snap_exact[-1], dx_g)
+
+    # Front location: where u = 0.5 (zero-crossing of u - 0.5).
+    def _front_loc(u, x):
+        diff = u - 0.5
+        idx  = np.where(np.diff(np.sign(diff)))[0]
+        if len(idx) == 0:
+            return float(x[np.argmin(np.abs(diff))])
+        i = idx[0]
+        if u[i+1] == u[i]:
+            return float(x[i])
+        return float(x[i] + (0.5 - u[i]) / (u[i+1] - u[i]) * (x[i+1] - x[i]))
+
+    front_grw  = _front_loc(snap_num[-1],   x_grid_out)
+    front_ex   = _front_loc(snap_exact[-1], x_grid_out)
+    front_diff = abs(front_grw - front_ex)
+
+    combined_metrics = {
+        "ic_type":          ic_type,
+        "a":                float(a_),
+        "theta":            float(theta),
+        "x_center":         float(x_center),
+        "T":                float(T),
+        "N_globs":          int(N),
+        "D":                float(D),
+        "dt":               float(dt),
+        "u_final": m_fin,
+        "front_location_grw":   front_grw,
+        "front_location_exact": front_ex,
+        "front_location_diff":  front_diff,
+    }
+
+    _print_metrics(m_fin, f"u error metrics  (GRW vs exact, t = {T})")
+    print(f"\n  Front location diagnostics (t = {T})")
+    print(f"    Front (GRW)   : {front_grw:.4f}")
+    print(f"    Front (exact) : {front_ex:.4f}")
+    print(f"    Difference    : {_fmt_val(front_diff)}")
+
+    ic_label = f"IC: {ic_type}"
+    title = (
+        f"FHN scalar GRW vs exact traveling wave  "
+        f"(a={a_:.4g}, D={D:.4g}, theta={theta:.4g})\n"
+        f"{ic_label}  |  t in [0, {T}]  |  "
+        f"final: {_metrics_str(m_fin)}"
+    )
+
+    plot_path = os.path.join(output_dir, "comparison_plot.png")
+    plot_fhn_scalar_grw(
+        snap_times=t_snaps,
+        snap_exact=snap_exact,
+        snap_num=snap_num,
+        x_grid=x_grid_out,
+        title=title,
+        ic_label=ic_label,
+        output_path=plot_path,
+        metrics_final=m_fin,
+    )
+    save_metrics(combined_metrics, os.path.join(output_dir, "metrics.json"))
+
+    if do_save_data:
+        path = os.path.join(output_dir, "comparison_data.npz")
+        os.makedirs(output_dir, exist_ok=True)
+        np.savez(
+            path,
+            x=x_grid_out,
+            u_grw=snap_num[-1],
+            u_exact=snap_exact[-1],
+            u_error=snap_num[-1] - snap_exact[-1],
+        )
+        print(f"  [verify] Saved data    -> {path}")
+
+
+def _run_fhn_legacy(cfg, output_dir, do_save_data, ref_factor):
+    """
+    Legacy two-component FHN verification: GRW particle vs FD reference.
+    """
+    print("\n" + "=" * 62)
+    print("  FitzHugh-Nagumo -- legacy two-component GRW vs FD reference")
+    print("  Primary : two-component GRW particle method (legacy)")
     print("  Reference: FD solver, same spatial grid, dt_ref = dt / ref_factor")
     print("=" * 62)
 
@@ -668,17 +1120,10 @@ def run_fhn(cfg, output_dir, do_save_data, ref_factor):
     print(f"\n  Parameters")
     print(f"    a={cfg.a}, b={cfg.b}, tau={cfg.tau}, D={D}")
     print(f"    T = {T},  dt = {dt}  ({int(T / dt)} GRW steps)")
-    print(f"    N = {N} particles,  dx (initial grid) = {dx:.5g},  domain [0, {L}]")
-    if D > 0.0:
-        cfl = dx**2 / (2.0 * D)
-        ref_dt = dt / ref_factor
-        print(f"    FD reference CFL limit: dx^2/(2D) = {cfl:.5g}")
-        print(f"    FD reference dt = {ref_dt:.5g},  dt/CFL = {ref_dt/cfl:.3f}"
-              + ("  OK" if ref_dt <= cfl else "  *** VIOLATED ***"))
-        print(f"    (CFL does not apply to the GRW particle solver)")
+    print(f"    N = {N} particles,  dx = {dx:.5g},  domain [0, {L}]")
 
-    print("\n  Running FHN GRW particle solver ...", flush=True)
-    x_num, u_num, v_num = _run_fhn_grw(cfg)
+    print("\n  Running FHN two-component GRW ...", flush=True)
+    x_num, u_num, v_num = _run_fhn_grw_legacy(cfg)
     print("  Done.")
 
     ref_cfg = _fhn_ref_config(cfg, ref_factor)
@@ -689,7 +1134,6 @@ def run_fhn(cfg, output_dir, do_save_data, ref_factor):
     x_ref, u_ref, v_ref = _run_fhn_fd(ref_cfg)
     print("  Done.")
 
-    # GRW particles are scattered; interpolate onto the reference (uniform) grid.
     u_num_i = np.interp(x_ref, x_num, u_num)
     v_num_i = np.interp(x_ref, x_num, v_num)
 
@@ -697,13 +1141,11 @@ def run_fhn(cfg, output_dir, do_save_data, ref_factor):
     m_u = compute_metrics(u_num_i, u_ref, dx_grid)
     m_v = compute_metrics(v_num_i, v_ref, dx_grid)
 
-    # u peak: maximum of u (front of the traveling pulse)
     u_peak_num     = float(np.max(u_num))
     u_peak_ref     = float(np.max(u_ref))
     u_peak_loc_num = float(x_num[np.argmax(u_num)])
     u_peak_loc_ref = float(x_ref[np.argmax(u_ref)])
 
-    # v peak: minimum of v (v dips during the action potential recovery tail)
     v_peak_num     = float(np.min(v_num))
     v_peak_ref     = float(np.min(v_ref))
     v_peak_loc_num = float(x_num[np.argmin(v_num)])
@@ -712,41 +1154,33 @@ def run_fhn(cfg, output_dir, do_save_data, ref_factor):
     combined_metrics = {
         "u": m_u,
         "v": m_v,
-        "u_peak_grw":                   u_peak_num,
-        "u_peak_fd_ref":                u_peak_ref,
-        "u_peak_error":                 float(abs(u_peak_num - u_peak_ref)),
-        "u_peak_error_rel":             float(abs(u_peak_num - u_peak_ref) / u_peak_ref)
-                                        if abs(u_peak_ref) > 1e-12 else None,
-        "u_peak_location_grw":          u_peak_loc_num,
-        "u_peak_location_fd_ref":       u_peak_loc_ref,
-        "u_peak_location_diff":         float(abs(u_peak_loc_num - u_peak_loc_ref)),
-        "v_peak_grw":                   v_peak_num,
-        "v_peak_fd_ref":                v_peak_ref,
-        "v_peak_error":                 float(abs(v_peak_num - v_peak_ref)),
-        "v_peak_location_grw":          v_peak_loc_num,
-        "v_peak_location_fd_ref":       v_peak_loc_ref,
-        "v_peak_location_diff":         float(abs(v_peak_loc_num - v_peak_loc_ref)),
-        "ref_factor":                   ref_factor,
-        "ref_time_step":                ref_cfg.time_step,
+        "u_peak_grw":           u_peak_num,
+        "u_peak_fd_ref":        u_peak_ref,
+        "u_peak_error":         float(abs(u_peak_num - u_peak_ref)),
+        "u_peak_error_rel":     float(abs(u_peak_num - u_peak_ref) / u_peak_ref)
+                                if abs(u_peak_ref) > 1e-12 else None,
+        "u_peak_location_grw":  u_peak_loc_num,
+        "u_peak_location_ref":  u_peak_loc_ref,
+        "u_peak_location_diff": float(abs(u_peak_loc_num - u_peak_loc_ref)),
+        "v_peak_grw":           v_peak_num,
+        "v_peak_fd_ref":        v_peak_ref,
+        "v_peak_error":         float(abs(v_peak_num - v_peak_ref)),
+        "v_peak_location_grw":  v_peak_loc_num,
+        "v_peak_location_ref":  v_peak_loc_ref,
+        "v_peak_location_diff": float(abs(v_peak_loc_num - v_peak_loc_ref)),
+        "ref_factor":           ref_factor,
+        "ref_time_step":        ref_cfg.time_step,
     }
 
     _print_metrics(m_u, "u error metrics  (GRW particle vs FD reference)")
     _print_metrics(m_v, "v error metrics  (GRW particle vs FD reference)")
     print(f"\n  FHN peak diagnostics")
-    print(f"    u peak (GRW)            : {_fmt_val(u_peak_num)}")
-    print(f"    u peak (FD ref)         : {_fmt_val(u_peak_ref)}")
-    print(f"    u peak error            : {_fmt_val(abs(u_peak_num - u_peak_ref))}")
-    if combined_metrics["u_peak_error_rel"] is not None:
-        print(f"    u peak error (rel)      : {_fmt_val(combined_metrics['u_peak_error_rel'])}")
-    print(f"    u peak location (GRW)   : {u_peak_loc_num:.4f}")
-    print(f"    u peak location (FD)    : {u_peak_loc_ref:.4f}")
-    print(f"    u peak location diff    : {_fmt_val(abs(u_peak_loc_num - u_peak_loc_ref))}")
-    print(f"    v peak (GRW)            : {_fmt_val(v_peak_num)}")
-    print(f"    v peak (FD ref)         : {_fmt_val(v_peak_ref)}")
-    print(f"    v peak error            : {_fmt_val(abs(v_peak_num - v_peak_ref))}")
-    print(f"    v peak location (GRW)   : {v_peak_loc_num:.4f}")
-    print(f"    v peak location (FD)    : {v_peak_loc_ref:.4f}")
-    print(f"    v peak location diff    : {_fmt_val(abs(v_peak_loc_num - v_peak_loc_ref))}")
+    print(f"    u peak (GRW) : {_fmt_val(u_peak_num)},  loc = {u_peak_loc_num:.4f}")
+    print(f"    u peak (FD)  : {_fmt_val(u_peak_ref)},  loc = {u_peak_loc_ref:.4f}")
+    print(f"    u peak diff  : {_fmt_val(abs(u_peak_num - u_peak_ref))}")
+    print(f"    v peak (GRW) : {_fmt_val(v_peak_num)},  loc = {v_peak_loc_num:.4f}")
+    print(f"    v peak (FD)  : {_fmt_val(v_peak_ref)},  loc = {v_peak_loc_ref:.4f}")
+    print(f"    v peak diff  : {_fmt_val(abs(v_peak_num - v_peak_ref))}")
 
     num_lbl = f"GRW particle  (N={N}, dt={dt})"
     ref_lbl = f"FD reference  (dt={ref_cfg.time_step:.5g})"

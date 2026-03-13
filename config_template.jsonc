@@ -1,0 +1,274 @@
+// config_template.jsonc
+// ============================================================
+// GRW Solver — Master Configuration Reference
+// ============================================================
+//
+// This file contains three self-contained example configs,
+// one for each supported equation.  Each block shows every
+// available field with inline documentation.
+//
+// HOW TO USE
+// ----------
+// 1. Find the section for the equation you want.
+// 2. Copy the JSON block (without the // comments) into a
+//    new .json file — plain JSON only, no // comments.
+// 3. Fill in your values and run:
+//
+//      python main.py configs/your_config.json
+//
+// See configs/ for ready-to-run examples with no editing needed.
+//
+// ============================================================
+//
+// TABLE OF CONTENTS
+//   A. GLOBAL FIELDS  (common to every equation)
+//   B. HEAT CONFIG    (equation_type: "heat")
+//   C. BURGERS CONFIG (equation_type: "burgers")
+//   D. FITZHUGH–NAGUMO CONFIG (equation_type: "fitzhugh-nagumo")
+//
+// ============================================================
+
+
+// ============================================================
+// A. GLOBAL FIELDS — present in every config
+// ============================================================
+//
+// "equation_type"      string   Which PDE to simulate.
+//                               Allowed: "heat" | "burgers" | "fitzhugh-nagumo"
+//
+// "domain_type"        string   Shape of the spatial domain.
+//                               Allowed: "Finite" | "Semi-Infinite" | "Infinite"
+//                               "Finite"        bounded [0, domain_size]; BCs required
+//                               "Semi-Infinite" one-sided; BCs for the bounded end
+//                               "Infinite"      unbounded; BCs are ignored
+//
+// "domain_size"        number   Right endpoint L; domain spans [0, L].  Must be > 0.
+//
+// "boundary_conditions"  object  Required for Finite domains.
+//   Each side has:
+//     "type"   "Dirichlet" | "Neumann"   (case-insensitive)
+//       Dirichlet — fixes u at the wall.
+//                   GRW: symmetric overshoot reflection; glob value preserved.
+//       Neumann   — fixes du/dx = 0 (zero-flux / insulating wall).
+//                   GRW: overshoot reflection + glob value negated.
+//     "value"  number
+//       Dirichlet: prescribed value of u at that wall.
+//       Neumann:   must be 0.0  (only zero-flux Neumann is supported).
+//
+// "diff_constant"      number   Thermal diffusivity (heat), kinematic viscosity
+//                               (Burgers), or spatial diffusivity (FHN).
+//                               Must be >= 0.  Must be > 0 for heat.
+//                               GRW Brownian step: sigma = sqrt(2 * diff_constant * dt)
+//
+// "time_step"          number   Integration step dt.  Must be > 0.
+//                               Number of steps = total_time / time_step.
+//
+// "total_time"         number   Total physical time T to simulate.  Must be > 0.
+//
+// "num_points"         integer  Number of GRW globs (heat) or grid points (Burgers/FHN).
+//                               Must be >= 1.
+//                               Heat typical range:    5 000 – 200 000
+//                               Burgers typical range: 100   – 2 000
+//                               FHN typical range:     100   – 1 000
+//
+// "reaction_term"      boolean  Reserved for future use.  Set false.
+
+
+// ============================================================
+// B. HEAT CONFIG
+// ============================================================
+//
+// The GRW method for the heat equation evolves gradient-side
+// computational elements (globs) representing u_x.
+// The field u(x,t) is recovered by sorting globs and
+// cumulatively summing their signed values (integral of u_x).
+//
+// Plotting:
+//   Dirichlet–Dirichlet BCs  →  reconstructed field u(x,t)
+//   Neumann or mixed BCs     →  gradient density plot (≈ u_x)
+//
+// HEAT INITIAL CONDITION TYPES
+// ----------------------------
+//   "step"             Canonical GRW case.
+//                      IC: u(x,0) = Heaviside step.
+//                      All N globs start at jump_position; each has
+//                      value = jump_height / N.
+//                      Fields: jump_position, jump_height
+//
+//   "uniform_gradient" IC: u(x,0) is a linear ramp with slope du/dx.
+//   (aliases:          Globs distributed uniformly over [0, L];
+//    "ramp",           each carries value = gradient_value * L / N.
+//    "linear",         Field: gradient_value
+//    "linear_ramp")
+//
+//   "gaussian_cloud"   Globs drawn from a Gaussian distribution.
+//   (aliases:          For qualitative / exploratory runs.
+//    "gaussian",       Fields: center (default L/2), sigma (default 0.1*L)
+//    "cloud")          jump_height controls total weight (default 1.0)
+
+{
+  "equation_type": "heat",
+  "domain_type": "Finite",
+  "domain_size": 10.0,
+
+  "boundary_conditions": {
+    "LEFT":  { "type": "Dirichlet", "value": 0.0 },
+    "RIGHT": { "type": "Dirichlet", "value": 1.0 }
+  },
+
+  "diff_constant": 0.1,
+  "time_step": 0.001,
+  "total_time": 0.5,
+  "num_points": 50000,
+  "reaction_term": false,
+
+  // --- Choose one IC type and fill in its fields ---
+
+  "heat_initial_condition": {
+
+    // OPTION 1: step (canonical GRW)
+    "type": "step",
+    "jump_position": 5.0,    // x-location of the Heaviside jump (default: L/2)
+    "jump_height": 1.0,      // u_R - u_L; sets total glob weight
+
+    // OPTION 2: uniform_gradient (linear ramp IC)
+    // "type": "uniform_gradient",
+    // "gradient_value": 10.0,
+
+    // OPTION 3: gaussian_cloud (exploratory)
+    // "type": "gaussian_cloud",
+    // "center": 5.0,
+    // "sigma": 0.5,
+    // "jump_height": 1.0
+  }
+}
+
+
+// ============================================================
+// C. BURGERS CONFIG
+// ============================================================
+//
+// Solves  u_t + u * u_x = nu * u_xx  via finite differences.
+// Dirichlet BCs are enforced on the u field at every time step.
+//
+// BURGERS INITIAL CONDITION TYPES
+// --------------------------------
+//   "shock"        Step profile from left_value to right_value.
+//   (aliases:      Fields: shock_position, left_value, right_value
+//    "shockwave",
+//    "shock_wave",
+//    "step",
+//    "stepfunction",
+//    "step_function")
+//
+//   "rarefaction"  Linearly varying profile from left_value to right_value.
+//                  Fields: left_value, right_value
+//
+//   "uniform"      Constant field equal to left_value everywhere.
+//                  Field: left_value
+//
+//   "tanh"         Smooth hyperbolic-tangent transition centred at L/2.
+//   (aliases:      Width = 0.1 * domain_size.  No extra fields.
+//    "tanh_profile",
+//    "hyperbolic_tangent")
+
+{
+  "equation_type": "burgers",
+  "domain_type": "Finite",
+  "domain_size": 10.0,
+
+  "boundary_conditions": {
+    "LEFT":  { "type": "Dirichlet", "value": 1.0 },
+    "RIGHT": { "type": "Dirichlet", "value": 0.0 }
+  },
+
+  "diff_constant": 0.05,    // kinematic viscosity nu; set 0.0 for inviscid Burgers
+  "time_step": 0.001,
+  "total_time": 0.5,
+  "num_points": 500,        // finite-difference grid points
+  "reaction_term": false,
+
+  // --- Choose one IC type and fill in its fields ---
+
+  "burgers_initial_condition": {
+
+    // OPTION 1: shock
+    "type": "shock",
+    "shock_position": 5.0,  // x-location of the transition (default: L/2)
+    "left_value": 1.0,
+    "right_value": 0.0,
+
+    // OPTION 2: rarefaction
+    // "type": "rarefaction",
+    // "left_value": 0.0,
+    // "right_value": 1.0,
+
+    // OPTION 3: uniform
+    // "type": "uniform",
+    // "left_value": 0.5,
+
+    // OPTION 4: tanh (smooth transition, no extra fields needed)
+    // "type": "tanh"
+  }
+}
+
+
+// ============================================================
+// D. FITZHUGH–NAGUMO CONFIG
+// ============================================================
+//
+// Solves the FHN model (dimensionless form):
+//   du/dt = tau * (u - u^3/3 - v)  +  D * u_xx
+//   dv/dt = (1/tau) * (u - a + b*v)
+//
+// All three model parameters a, b, tau are required.
+//
+// FHN PARAMETERS
+// --------------
+//   a    Recovery offset — shifts the resting potential (nullcline position).
+//        Typical range: 0.5 – 0.9.
+//
+//   b    Recovery coupling strength — how strongly v damps u.
+//        Typical range: 0.5 – 0.9.
+//
+//   tau  Temporal scaling — ratio of u to v timescale; governs excitability.
+//        Larger tau → faster activation, slower recovery.
+//        Typical range: 5 – 20.
+//
+// FHN INITIAL CONDITION
+// ---------------------
+//   "stimulated_region"   [x_start, x_end]  Sub-domain that receives an
+//                         initial stimulus on u.  Omit (or set to null) to
+//                         start from rest (u=0, v=0) everywhere.
+//   "stimulus_magnitude"  float  Value applied to u in the stimulated region.
+//                         Must be large enough to trigger an action potential
+//                         (typically >= 1.5 for standard FHN parameters).
+//
+// NOTE: spatial diffusion (D * u_xx) requires diff_constant > 0.
+//       Set diff_constant = 0.0 for a pure-ODE system with no spatial coupling.
+
+{
+  "equation_type": "fitzhugh-nagumo",
+  "domain_type": "Finite",
+  "domain_size": 100.0,
+
+  "boundary_conditions": {
+    "LEFT":  { "type": "Neumann", "value": 0.0 },
+    "RIGHT": { "type": "Neumann", "value": 0.0 }
+  },
+
+  "diff_constant": 0.0,     // spatial diffusivity D; 0.0 = no spatial coupling
+  "time_step": 0.01,
+  "total_time": 50.0,
+  "num_points": 400,
+  "reaction_term": false,
+
+  "a": 0.7,
+  "b": 0.8,
+  "tau": 12.5,
+
+  "fhn_initial_condition": {
+    "stimulated_region": [45.0, 55.0],   // [x_start, x_end]; omit for rest IC
+    "stimulus_magnitude": 2.0
+  }
+}

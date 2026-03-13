@@ -1,16 +1,16 @@
 {
   "equation_type": "fitzhugh-nagumo",
   "domain_type": "Finite",
-  "domain_size": 100,
+  "domain_size": 100.0,
 
   "boundary_conditions": {
-    "LEFT":  { "type": "Neumann", "value": 0 },
-    "RIGHT": { "type": "Neumann", "value": 0 }
+    "LEFT":  { "type": "Neumann", "value": 0.0 },
+    "RIGHT": { "type": "Neumann", "value": 0.0 }
   },
 
-  "diff_constant": 0.00,
+  "diff_constant": 0.0,
   "time_step": 0.01,
-  "total_time": 1,
+  "total_time": 50.0,
   "num_points": 400,
   "reaction_term": false,
 
@@ -19,7 +19,7 @@
   "tau": 12.5,
 
   "fhn_initial_condition": {
-    "stimulated_region": [45, 55],
+    "stimulated_region": [45.0, 55.0],
     "stimulus_magnitude": 2.0
   }
 }
