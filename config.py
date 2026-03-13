@@ -28,9 +28,8 @@ _ALLOWED_BURGERS_IC_TYPES = {
 }
 
 _ALLOWED_BURGERS_MODES = {
-    "cole_hopf_grw", # main Cole-Hopf GRW
-    "direct_grw", # diagnostic: direct gradient-variable GRW (noisy by design)
-    "lagrangian_grw", # experimental Lagrangian particle method (previous approach)
+    "cole_hopf_grw",  # Cole-Hopf GRW (only supported mode)
+    "cole_hopf",      # alias
 }
 
 
@@ -185,7 +184,7 @@ class SimulationConfig:
         self.a = a
         self.b = b
         self.tau = tau
-        # Burgers solver mode: "cole_hopf_grw" | "direct_grw" | "lagrangian_grw"
+        # Burgers solver mode: "cole_hopf_grw" (only supported)
         self.burgers_mode = (burgers_mode or "cole_hopf_grw").strip().lower()
         # Burgers IC type string, set by load_config_from_json for verify_solver.
         self.burgers_ic_type = (burgers_ic_type or "").strip().lower()

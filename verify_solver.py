@@ -10,15 +10,8 @@ a trusted benchmark:
   heat -- exact analytical solution (error function), valid for step IC.
              Primary solver: direct GRW.
 
-  burgers -- three modes depending on config.burgers_mode:
-    cole_hopf_grw (default): Cole-Hopf transform reduces Burgers to a heat equation
-        solved by GRW. For the traveling_wave IC, comparison is against the exact
-        analytical traveling wave solution. For other ICs, a high-resolution FD
-        reference is used.
-    direct_grw: diagnostic path reproducing the noise discussion.
-        Compares against FD reference; noise in the result is expected and intentional.
-    lagrangian_grw: experimental Lagrangian particle method (operator splitting).
-        Compares against high-resolution FD reference.
+  burgers -- Cole-Hopf GRW only. Comparison against exact stationary-shock or
+        traveling-wave solution. Supported ICs: stationary_shock, traveling_wave.
 
   fhn -- exact traveling-wave solution (analytic, multi-time snapshots).
              Primary solver: scalar GRW (simulate_fitzhugh_nagumo_grw).
@@ -33,7 +26,6 @@ Usage examples:
   python verify_solver.py --equation heat
   python verify_solver.py --equation burgers --config configs/burgers_stationary_shock.json
   python verify_solver.py --equation burgers --config configs/burgers_traveling_wave.json
-  python verify_solver.py --equation burgers --config configs/burgers_direct_grw_diagnostic.json
   python verify_solver.py --equation burgers --config configs/burgers_shock.json
   python verify_solver.py --equation fhn --output-dir output/fhn_check
   python verify_solver.py --equation heat --save-data
@@ -68,7 +60,6 @@ from config import SimulationConfig
 from simulation import (
     simulate_heat_equation,
     simulate_burgers,
-    simulate_burgers_fd,
     simulate_fitzhugh_nagumo,
 )
 
@@ -378,9 +369,7 @@ def run_heat(cfg, output_dir, do_save_data):
 
 
 # ---------------------------------------------------------------------------
-# Burgers verification
-# Primary solver: GRW-inspired Lagrangian particle method
-# Reference solver: high-resolution finite-difference (simulate_burgers_fd)
+# Burgers verification (Cole-Hopf GRW only, exact benchmarks)
 # ---------------------------------------------------------------------------
 
 def _run_burgers_grw(cfg, diag_dir=None):
@@ -403,53 +392,6 @@ def _run_burgers_grw(cfg, diag_dir=None):
     u = np.array([g["value"][0] for g in result])
     order = np.argsort(x)
     return x[order], u[order]
-
-
-def _run_burgers_fd(cfg):
-    """
-    Run the FD reference solver for Burgers on a fixed uniform grid.
-
-    Returns (x_sorted, u_sorted) where x is the original uniform grid.
-    """
-    globs = [{"position": float(pos), "value": [float(val)]}
-             for pos, val in cfg.initial_conditions]
-    result = simulate_burgers_fd(globs, cfg)
-    x = np.array([g["position"] for g in result])
-    u = np.array([g["value"][0] for g in result])
-    order = np.argsort(x)
-    return x[order], u[order]
-
-
-def _burgers_ref_config(cfg, ref_factor):
-    """
-    Build a higher-resolution FD reference config for Burgers.
-
-    Increases num_points by ref_factor and reduces time_step by the same factor.
-    The IC is re-interpolated onto the finer grid.
-    This config is passed to _run_burgers_fd (not the GRW solver).
-    CFL stability conditions apply only to the FD solver.
-    """
-    N_ref = cfg.num_points * ref_factor
-    dt_ref = cfg.time_step / ref_factor
-
-    x_orig = np.array([float(pos) for pos, _ in cfg.initial_conditions])
-    u_orig = np.array([float(val) for _, val in cfg.initial_conditions])
-    x_fine = np.linspace(float(x_orig[0]), float(x_orig[-1]), N_ref)
-    u_fine = np.interp(x_fine, x_orig, u_orig)
-    ref_ic = list(zip(x_fine.tolist(), u_fine.tolist()))
-
-    return SimulationConfig(
-        equation_type=cfg.equation_type,
-        domain_type=cfg.domain_type,
-        domain_size=cfg.domain_size,
-        boundary_conditions=cfg.boundary_conditions,
-        diff_constant=cfg.diff_constant,
-        time_step=dt_ref,
-        total_time=cfg.total_time,
-        num_points=N_ref,
-        initial_conditions=ref_ic,
-        reaction_term=cfg.reaction_term,
-    )
 
 
 def plot_burgers_cole_hopf(
@@ -516,34 +458,24 @@ def run_burgers(cfg, output_dir, do_save_data, ref_factor):
     mode = (getattr(cfg, 'burgers_mode', 'cole_hopf_grw') or 'cole_hopf_grw').lower()
     ic_type = getattr(cfg, 'burgers_ic_type', '') or ''
 
-    # Normalize any legacy/unsupported mode names.
-    if mode not in ('cole_hopf_grw', 'direct_grw'):
-        print(f"  [Burgers] NOTE: mode '{mode}' is not supported on this branch; "
-              f"using cole_hopf_grw.")
+    # Only Cole-Hopf GRW is supported. Other modes are not routed.
+    if mode != 'cole_hopf_grw' and mode != 'cole_hopf':
+        print(f"  [Burgers] NOTE: mode '{mode}' is not supported. Using cole_hopf_grw.")
         mode = 'cole_hopf_grw'
 
-    use_exact = (mode == 'cole_hopf_grw'
-                 and ic_type in ('traveling_wave', 'stationary_shock'))
+    use_exact = ic_type in ('traveling_wave', 'stationary_shock')
+    if not use_exact:
+        print("  [Burgers] Only stationary_shock and traveling_wave ICs are supported.")
+        print("  [Burgers] These have exact solutions for comparison. Exiting.")
+        return
 
     print("\n" + "=" * 68)
-    mode_labels = {
-        'cole_hopf_grw': (
-            'Cole-Hopf GRW  '
-            '(primary method: Burgers -> heat equation via Cole-Hopf)'
-        ),
-        'direct_grw': (
-            'Direct GRW  '
-            '(diagnostic only: expected noisy, impracticality demo)'
-        ),
-    }
+    print("  Burgers -- Cole-Hopf GRW (Burgers -> heat equation via Cole-Hopf)")
     if ic_type == 'stationary_shock':
         ref_label_str = "exact stationary shock"
-    elif ic_type == 'traveling_wave' and use_exact:
-        ref_label_str = "exact traveling wave"
     else:
-        ref_label_str = "high-resolution FD"
-    print(f"  Burgers -- {mode_labels.get(mode, mode)}")
-    print(f"  Reference : {ref_label_str}")
+        ref_label_str = "exact traveling wave"
+    print(f"  Reference: {ref_label_str}")
     print("=" * 68)
 
     N = cfg.num_points
@@ -555,31 +487,27 @@ def run_burgers(cfg, output_dir, do_save_data, ref_factor):
     print(f"\n  Parameters")
     print(f"    nu = {nu},  T = {T},  dt = {dt}  ({int(T / dt)} steps)")
     print(f"    N = {N} globs,  domain [0, {L}]")
-    if mode == 'cole_hopf_grw':
-        print(f"    Cole-Hopf: u = -2*nu*phi_x/phi,  phi solves phi_t = nu*phi_xx")
-    elif mode == 'direct_grw':
-        print(f"    Direct GRW: v=u_x globs,  R = -(u*u_xx/u_x + u_x)")
-        print(f"    NOTE: noise in u_x and u_xx is expected and intentional.")
-    if use_exact and ic_type == 'stationary_shock':
+    print(f"    Cole-Hopf: u = -2*nu*phi_x/phi,  phi solves phi_t = nu*phi_xx")
+    if ic_type == 'stationary_shock':
         amplitude = (float(cfg.burgers_ic_amplitude)
                      if getattr(cfg, 'burgers_ic_amplitude', None) is not None
                      else None)
         A_str = f"A={amplitude:.4g}" if amplitude is not None else "A=?"
         print(f"    IC: stationary shock  ({A_str}, xc={L/2:.3g})")
         print(f"    Exact: u(x,t) = -A*tanh(A*(x-xc)/(2*nu))  [all t]")
-    elif use_exact and ic_type == 'traveling_wave':
+    elif ic_type == 'traveling_wave':
         print(f"    IC: traveling wave  (xc={L/2:.3g}, wave speed c=1)")
         print(f"    Exact: u(x,t) = 1 - 2*sqrt(nu)*tanh((x-xc-t)/sqrt(nu))")
 
-    print(f"\n  Running Burgers GRW ({mode}) ...", flush=True)
-    grw_diag_dir = output_dir if mode == 'cole_hopf_grw' else None
+    print(f"\n  Running Burgers GRW (cole_hopf_grw) ...", flush=True)
+    grw_diag_dir = output_dir
     x_num, u_num = _run_burgers_grw(cfg, diag_dir=grw_diag_dir)
     print("  Done.")
 
     x_grid = np.linspace(0.0, L, N)
     dx_grid = float(x_grid[1] - x_grid[0])
 
-    if use_exact and ic_type == 'stationary_shock':
+    if ic_type == 'stationary_shock':
         ic_x = np.array([pos for pos, _ in cfg.initial_conditions])
         ic_vals = np.array([val for _, val in cfg.initial_conditions])
         u_ref = np.interp(x_grid, ic_x, ic_vals)
@@ -594,7 +522,7 @@ def run_burgers(cfg, output_dir, do_save_data, ref_factor):
         ref_is_exact = True
         metrics_label = "Error metrics  (Cole-Hopf GRW vs exact stationary shock)"
 
-    elif use_exact and ic_type == 'traveling_wave':
+    elif ic_type == 'traveling_wave':
         x_center = L / 2.0
         u_ref = exact_burgers_traveling_wave(x_grid, T, nu, x_center=x_center)
         ref_description = (
@@ -604,24 +532,6 @@ def run_burgers(cfg, output_dir, do_save_data, ref_factor):
         ref_short = "exact"
         ref_is_exact = True
         metrics_label = "Error metrics  (Cole-Hopf GRW vs exact traveling wave)"
-
-    else:
-        ref_cfg = _burgers_ref_config(cfg, ref_factor)
-        print(
-            f"\n  Running Burgers FD reference  "
-            f"(N={ref_cfg.num_points}, dt={ref_cfg.time_step:.5g}) ...",
-            flush=True,
-        )
-        x_ref_raw, u_ref_raw = _run_burgers_fd(ref_cfg)
-        u_ref = np.interp(x_grid, x_ref_raw, u_ref_raw)
-        ref_description = (
-            f"FD reference  "
-            f"(N={ref_cfg.num_points}, dt={ref_cfg.time_step:.5g})"
-        )
-        ref_short = "FD reference"
-        ref_is_exact = False
-        metrics_label = f"Error metrics  ({mode} GRW vs FD reference)"
-        print("  Done.")
 
     u_num_on_grid = np.interp(x_grid, x_num, u_num)
     metrics = compute_metrics(u_num_on_grid, u_ref, dx_grid)
@@ -638,7 +548,7 @@ def run_burgers(cfg, output_dir, do_save_data, ref_factor):
         "wave_location_diff": wave_loc_diff,
         "u_min": float(np.min(u_num_on_grid)),
         "u_max": float(np.max(u_num_on_grid)),
-        "burgers_mode": mode,
+        "burgers_mode": "cole_hopf_grw",
         "burgers_ic_type": ic_type,
     })
 
@@ -648,44 +558,21 @@ def run_burgers(cfg, output_dir, do_save_data, ref_factor):
     print(f"    Ref : {wave_loc_ref:.4f}")
     print(f"    Diff: {wave_loc_diff:.6f}")
 
-    if mode == 'direct_grw':
-        print(f"\n  [direct_grw] Large errors are expected: R = -(u*u_xx/u_x + u_x)")
-        print(f"    requires two numerical differentiations of a noisy particle field,")
-        print(f"    confirming that direct GRW is impractical.")
-
     # Figures.
-    if mode == 'cole_hopf_grw':
-        num_label = f"Cole-Hopf GRW  (N={N}, nu={nu}, dt={dt})"
-        fig_title = (
-            f"Burgers: Cole-Hopf GRW vs {ref_short}  "
-            f"(T={T}, nu={nu}, N={N})"
-        )
-        plot_burgers_cole_hopf(
-            x_grid, u_num_on_grid, u_ref,
-            title=fig_title,
-            num_label=num_label,
-            ref_label=ref_description,
-            metrics=metrics,
-            output_path=os.path.join(output_dir, "comparison_plot.png"),
-            ref_is_exact=ref_is_exact,
-        )
-    else:
-        # direct_grw: use the generic two-panel helper.
-        num_label = f"Direct GRW  (N={N}, dt={dt})  [noisy by design]"
-        fig_title = f"Burgers: Direct GRW (diagnostic) vs {ref_short}  (T={T}, nu={nu})"
-        plot_comparison(
-            x_grid, u_num_on_grid, u_ref,
-            title=fig_title,
-            ylabel="u(x, T)",
-            num_label=num_label,
-            ref_label=ref_description,
-            metrics=metrics,
-            output_path=os.path.join(output_dir, "comparison_plot.png"),
-            ref_note=(
-                "Direct GRW is a diagnostic mode.  "
-                "Large errors confirm the noise discussion."
-            ),
-        )
+    num_label = f"Cole-Hopf GRW  (N={N}, nu={nu}, dt={dt})"
+    fig_title = (
+        f"Burgers: Cole-Hopf GRW vs {ref_short}  "
+        f"(T={T}, nu={nu}, N={N})"
+    )
+    plot_burgers_cole_hopf(
+        x_grid, u_num_on_grid, u_ref,
+        title=fig_title,
+        num_label=num_label,
+        ref_label=ref_description,
+        metrics=metrics,
+        output_path=os.path.join(output_dir, "comparison_plot.png"),
+        ref_is_exact=ref_is_exact,
+    )
 
     save_metrics(metrics, os.path.join(output_dir, "metrics.json"))
     if do_save_data:
