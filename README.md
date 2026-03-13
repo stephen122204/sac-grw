@@ -65,7 +65,7 @@ Verification: exact error-function analytical solution for a step initial condit
 
 ---
 
-### Burgers -- Cole-Hopf GRW (primary method)
+### Burgers -- Cole-Hopf GRW
 
 Burgers equation:  u_t + u * u_x = nu * u_xx.
 
@@ -167,10 +167,6 @@ exactly conserved. No per-step renormalization is applied or needed.
 **Verification:** multi-snapshot comparison against the exact traveling-wave solution.
 Typical relL2 is about 0.02--0.05. Residual error is MC shot noise.
 
-**Legacy two-component solver** (`simulate_fitzhugh_nagumo_two_component`) is
-retained for configs using the legacy `stimulated_region` IC format and is not
-the primary FHN method on this branch.
-
 ---
 
 ## Verification
@@ -208,8 +204,10 @@ pip install numpy matplotlib
 
 ```bash
 python main.py configs/heat_step_dirichlet.json
-python main.py configs/burgers_stationary_shock.json   # Cole-Hopf GRW (primary)
-python main.py configs/burgers_shock.json              # Cole-Hopf GRW (A=0.5)
+python main.py configs/heat_step_neumann.json
+python main.py configs/burgers_stationary_shock.json
+python main.py configs/burgers_shock.json
+python main.py configs/burgers_traveling_wave.json
 python main.py configs/fhn_grw_steady.json
 ```
 
@@ -219,6 +217,7 @@ python main.py configs/fhn_grw_steady.json
 python verify_solver.py --equation heat
 python verify_solver.py --equation burgers --config configs/burgers_stationary_shock.json
 python verify_solver.py --equation burgers --config configs/burgers_shock.json
+python verify_solver.py --equation burgers --config configs/burgers_traveling_wave.json
 python verify_solver.py --equation fhn
 python verify_solver.py --equation fhn --config configs/fhn_grw_nonsmooth.json
 python verify_solver.py --equation fhn --config configs/fhn_grw_discontinuous.json
@@ -236,8 +235,8 @@ Outputs are written to `output/verify/<equation>/`:
 ```
 heat_burgers_fhn/
 +-- main.py - Entry point
-+-- simulation.py - GRW solvers: heat (direct GRW), Burgers (Cole-Hopf only), FHN
-|   (scalar traveling-wave main, legacy two-component). FHN FD reference variant.
++-- simulation.py - GRW solvers: heat (direct GRW), Burgers (Cole-Hopf), FHN
+|   (scalar traveling-wave). FHN FD reference for verify_solver only.
 +-- config.py - Config loading, validation, IC generators
 +-- utils.py - Plotting utilities
 +-- verify_solver.py - Verification runner (exact-solution comparisons)
@@ -251,8 +250,6 @@ heat_burgers_fhn/
 |   +-- fhn_grw_steady.json - FHN scalar GRW, steady_solution IC
 |   +-- fhn_grw_nonsmooth.json - FHN scalar GRW, linear-ramp IC
 |   +-- fhn_grw_discontinuous.json - FHN scalar GRW, Heaviside IC
-|   +-- fitzhugh_nagumo_pulse.json - Legacy two-component GRW
-|   +-- fhn_oscillatory.json - Legacy two-component GRW
 +-- output/ - Generated figures and metrics (auto-created)
 ```
 

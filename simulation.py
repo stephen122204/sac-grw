@@ -329,69 +329,6 @@ def simulate_fitzhugh_nagumo(globs, config):
     )
 
 
-def simulate_burgers_lagrangian(globs, config):
-    """
-    Experimental GRW-inspired Lagrangian particle method for Burgers' equation.
-
-    Operator splitting per step:
-      1. Lagrangian advection: x_i += u_i * dt
-      2. GRW diffusion: x_i += Normal(0, sqrt(2*nu*dt))
-      3. Boundary reflection: symmetric (Dirichlet) or anti-symmetric (Neumann)
-
-    Each glob carries:
-      'position' : current particle location (evolves each step)
-      'value' : [u_i], the velocity carried by this particle (Lagrangian invariant)
-
-    Limitations:
-      - u_i is frozen (inviscid characteristic value), so the diffusion step does
-        not feed back into the carried velocity.
-      - Near shocks, particle clustering degrades reconstruction quality.
-
-    This method was introduced as a feasibility experiment on the GRW branch.
-    It is kept for comparison. The primary method is Cole-Hopf GRW.
-    """
-    dt = config.time_step
-    nu = config.diff_constant
-    L = config.domain_size
-    bc = config.boundary_conditions
-    n = len(globs)
-    if n == 0:
-        return globs
-
-    positions = np.array([g['position'] for g in globs], dtype=float)
-    u_vals = np.array(
-        [g['value'][0] if isinstance(g['value'], list) else float(g['value'])
-         for g in globs],
-        dtype=float,
-    )
-
-    sigma = np.sqrt(2.0 * nu * dt)
-    bc_left_type = bc['LEFT']['type'].lower()
-    bc_right_type = bc['RIGHT']['type'].lower()
-
-    for _ in range(int(config.total_time / dt)):
-        positions += u_vals * dt
-        positions += np.random.normal(0.0, sigma, size=n)
-
-        mask = positions < 0.0
-        if np.any(mask):
-            positions[mask] = -positions[mask]
-            if bc_left_type == 'neumann':
-                u_vals[mask] = -u_vals[mask]
-
-        mask = positions > L
-        if np.any(mask):
-            positions[mask] = 2.0 * L - positions[mask]
-            if bc_right_type == 'neumann':
-                u_vals[mask] = -u_vals[mask]
-
-    for i, g in enumerate(globs):
-        g['position'] = float(positions[i])
-        g['value'] = [float(u_vals[i])]
-
-    return globs
-
-
 def _reference_phi_heat_fd(phi0_interp, x_out, nu, T, phi_left, phi_right):
     """
     Explicit FD solve of phi_t = nu * phi_xx on [0, L] with Dirichlet BCs.

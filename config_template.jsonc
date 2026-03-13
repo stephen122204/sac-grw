@@ -235,40 +235,38 @@
 //        Larger tau → faster activation, slower recovery.
 //        Typical range: 5 – 20.
 //
-// FHN INITIAL CONDITION
-// ---------------------
-//   "stimulated_region"   [x_start, x_end]  Sub-domain that receives an
-//                         initial stimulus on u.  Omit (or set to null) to
-//                         start from rest (u=0, v=0) everywhere.
-//   "stimulus_magnitude"  float  Value applied to u in the stimulated region.
-//                         Must be large enough to trigger an action potential
-//                         (typically >= 1.5 for standard FHN parameters).
+// FHN INITIAL CONDITION (scalar traveling-wave GRW)
+// -------------------------------------------------
+//   "type": "steady_solution"  Globs at sigmoid quantile positions (exact at t=0).
+//                             Fields: a, x_center
+//   "type": "nonsmooth"       Linear-ramp IC. Fields: a, x_center, half_width
+//   "type": "discontinuous"   Heaviside / Dirac delta IC. Fields: a, x_center
 //
 // NOTE: spatial diffusion (D * u_xx) requires diff_constant > 0.
-//       Set diff_constant = 0.0 for a pure-ODE system with no spatial coupling.
 
 {
   "equation_type": "fitzhugh-nagumo",
   "domain_type": "Finite",
-  "domain_size": 100.0,
+  "domain_size": 30.0,
 
   "boundary_conditions": {
     "LEFT":  { "type": "Neumann", "value": 0.0 },
     "RIGHT": { "type": "Neumann", "value": 0.0 }
   },
 
-  "diff_constant": 0.0,     // spatial diffusivity D; 0.0 = no spatial coupling
+  "diff_constant": 0.5,
   "time_step": 0.01,
-  "total_time": 50.0,
-  "num_points": 400,
+  "total_time": 9.0,
+  "num_points": 500,
   "reaction_term": false,
 
-  "a": 0.7,
-  "b": 0.8,
-  "tau": 12.5,
+  "a": 0.25,
+  "b": 1.0,
+  "tau": 1.0,
 
   "fhn_initial_condition": {
-    "stimulated_region": [45.0, 55.0],   // [x_start, x_end]; omit for rest IC
-    "stimulus_magnitude": 2.0
+    "type": "steady_solution",
+    "a": 0.25,
+    "x_center": 15.0
   }
 }
