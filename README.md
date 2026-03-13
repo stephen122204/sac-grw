@@ -281,7 +281,6 @@ heat_burgers_fhn/
 |   +-- fhn_grw_discontinuous.json       FHN scalar GRW, Heaviside IC
 |   +-- fitzhugh_nagumo_pulse.json       Legacy two-component GRW
 |   +-- fhn_oscillatory.json             Legacy two-component GRW
-+-- json_tests/                Legacy test configs (still compatible)
 +-- output/                    Generated figures and metrics (auto-created)
 ```
 
