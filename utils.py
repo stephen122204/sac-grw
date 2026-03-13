@@ -324,13 +324,13 @@ def plot_results(results, equation_type: str, cfg=None):
     Plotting entry point used by main.py.
 
     Heat routing:
-    - Dirichlet–Dirichlet BCs → reconstruct u(x,t) by cumulative sum of signed glob values
-    - Neumann or mixed BCs → plot weighted glob density (≈ u_x); values used as histogram
+    - Dirichlet–Dirichlet BCs -> reconstruct u(x,t) by cumulative sum of signed glob values
+    - Neumann or mixed BCs -> plot weighted glob density (approx. u_x). Values used as histogram
                                 weights so anti-symmetric Neumann reflections are visible
 
     Other equations:
-    - Burgers → plot u(x,t)
-    - FitzHugh–Nagumo → plot u(x,t) and v(x,t)
+    - Burgers -> plot u(x,t)
+    - FitzHugh–Nagumo -> plot u(x,t) and v(x,t)
     """
     eq = (equation_type or "").strip().lower()
 

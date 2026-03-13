@@ -29,7 +29,7 @@ _ALLOWED_BURGERS_IC_TYPES = {
 
 _ALLOWED_BURGERS_MODES = {
     "cole_hopf_grw",  # Cole-Hopf GRW (only supported mode)
-    "cole_hopf",      # alias
+    "cole_hopf",  # alias
 }
 
 
@@ -198,8 +198,7 @@ class SimulationConfig:
 # Initial condition generators
 # ---------------------------
 
-def generate_gaussian_particle_cloud(domain_size, num_points, center=None, sigma=None,
-                                      jump_height=1.0):
+def generate_gaussian_particle_cloud(domain_size, num_points, center=None, sigma=None, jump_height=1.0):
     """
     GRW globs drawn from a Gaussian distribution (exploratory IC).
 
