@@ -402,8 +402,7 @@ def generate_burgers_initial_conditions(domain_size, num_points, condition_type=
     return list(zip(positions, values))
 
 
-def generate_burgers_stationary_shock_ic(domain_size, num_points, nu, x_center=None,
-                                         amplitude=1.0):
+def generate_burgers_stationary_shock_ic(domain_size, num_points, nu, x_center=None, amplitude=1.0):
     """
     Stationary-shock initial condition for Burgers' equation.
 
