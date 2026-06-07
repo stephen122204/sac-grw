@@ -1,0 +1,130 @@
+{
+  "params": {
+    "alpha": 0.5,
+    "T": 0.5,
+    "L": 4.0,
+    "x0": 2.0,
+    "uL": 1.0,
+    "uR": 0.0,
+    "dt": 0.005,
+    "S": 30,
+    "N_seq": [
+      500,
+      1000,
+      2000,
+      5000,
+      10000,
+      20000,
+      50000
+    ]
+  },
+  "no_dt_study_reason": "Heat GRW is exact in time: Brownian increments are drawn exactly from N(0, 2*alpha*dt), with no discretization error in the stochastic dynamics. The only approximation is in the initial condition (number of particles N) and the histogram reconstruction. Therefore, the convergence study only needs N-refinement.",
+  "fit": {
+    "total_slope": -0.45680758867457416,
+    "total_ci": [
+      -0.4829525678879075,
+      -0.4252825998720734
+    ],
+    "bias_slope": -0.2617111452609177,
+    "bias_ci": [
+      -0.35446596731648927,
+      -0.10105932233408511
+    ],
+    "spread_slope": -0.4676266965741426,
+    "spread_ci": [
+      -0.4927525691865262,
+      -0.44194279114600293
+    ]
+  },
+  "per_N": [
+    {
+      "N": 500,
+      "S": 30,
+      "E_bias": 0.005298270583085264,
+      "E_spread": 0.028500716975802223,
+      "E_total": 0.028989007214914545,
+      "E_total_from_identity": 0.02898900721491455,
+      "identity_residual": 1.196814684349942e-16,
+      "l2_ref_mean": 0.02765859646708799,
+      "l2_ref_std": 0.008573750744280998,
+      "mean_runtime_s": 0.009369277705748877
+    },
+    {
+      "N": 1000,
+      "S": 30,
+      "E_bias": 0.0026129517157660515,
+      "E_spread": 0.02040304889787179,
+      "E_total": 0.020569684513814794,
+      "E_total_from_identity": 0.02056968451381479,
+      "identity_residual": 1.6866797104367356e-16,
+      "l2_ref_mean": 0.01895791473703851,
+      "l2_ref_std": 0.007951741365994662,
+      "mean_runtime_s": 0.025578441703692077
+    },
+    {
+      "N": 2000,
+      "S": 30,
+      "E_bias": 0.0021137403140022676,
+      "E_spread": 0.013927623722951627,
+      "E_total": 0.014087107605295114,
+      "E_total_from_identity": 0.01408710760529511,
+      "identity_residual": 2.462852594843178e-16,
+      "l2_ref_mean": 0.013607953861626406,
+      "l2_ref_std": 0.003625653392091691,
+      "mean_runtime_s": 0.04082085279126962
+    },
+    {
+      "N": 5000,
+      "S": 30,
+      "E_bias": 0.0019358471659781202,
+      "E_spread": 0.008798094021177897,
+      "E_total": 0.009008549420162595,
+      "E_total_from_identity": 0.009008549420162593,
+      "identity_residual": 1.925641293696202e-16,
+      "l2_ref_mean": 0.008485999621521512,
+      "l2_ref_std": 0.0030198539875855588,
+      "mean_runtime_s": 0.08390174169714253
+    },
+    {
+      "N": 10000,
+      "S": 30,
+      "E_bias": 0.0021968403424467466,
+      "E_spread": 0.007027310030630522,
+      "E_total": 0.007362689301933219,
+      "E_total_from_identity": 0.00736268930193322,
+      "identity_residual": 1.1780501694681868e-16,
+      "l2_ref_mean": 0.006873413881367934,
+      "l2_ref_std": 0.0026379986817156448,
+      "mean_runtime_s": 0.16559739167181153
+    },
+    {
+      "N": 20000,
+      "S": 30,
+      "E_bias": 0.001559791551103414,
+      "E_spread": 0.0048614120880116655,
+      "E_total": 0.005105514388615465,
+      "E_total_from_identity": 0.005105514388615464,
+      "identity_residual": 1.6988723798771204e-16,
+      "l2_ref_mean": 0.004797662377176221,
+      "l2_ref_std": 0.0017455464066411356,
+      "mean_runtime_s": 0.33299382214124
+    },
+    {
+      "N": 50000,
+      "S": 30,
+      "E_bias": 0.0011252360289331455,
+      "E_spread": 0.0033019839096747636,
+      "E_total": 0.003488445765747301,
+      "E_total_from_identity": 0.0034884457657473004,
+      "identity_residual": 1.2431922355006082e-16,
+      "l2_ref_mean": 0.0032115500303197208,
+      "l2_ref_std": 0.0013620573641787898,
+      "mean_runtime_s": 0.8504300596192479
+    }
+  ],
+  "nbins_study": [
+    {
+      "note": "nbins=N in production solver; see N-sweep results"
+    }
+  ]
+}

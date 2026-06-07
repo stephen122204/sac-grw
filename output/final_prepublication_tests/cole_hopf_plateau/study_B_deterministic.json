@@ -1,0 +1,9 @@
+{
+  "exact_phi_exact_ratio": 0.0,
+  "exact_phi_num_grad": 0.0007078950587756901,
+  "exact_phi_central_2nd": 0.0007078950587756901,
+  "exact_phi_central_4th": 0.0007074898659399243,
+  "perturbed_phi_noise_1e-03": 0.3746793736655244,
+  "perturbed_phi_noise_1e-02": 3.9925801835142707,
+  "perturbed_phi_noise_1e-01": 10659139973.065079
+}

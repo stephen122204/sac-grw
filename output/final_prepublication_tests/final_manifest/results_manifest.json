@@ -1,0 +1,161 @@
+{
+  "figures": {
+    "total": 38,
+    "complete": 38,
+    "missing": []
+  },
+  "timings_s": {},
+  "task1_gbmc_dt_bias": {
+    "status": "complete",
+    "N": 800,
+    "S": 5,
+    "bias_slope": 0.08627095256983144,
+    "bias_slope_ci_lo": -0.4516928303004956,
+    "bias_slope_ci_hi": 0.32603939431556794,
+    "conclusion": "bias_below_spread: E_bias < 2*E_spread at all dt; bias remains below ensemble-estimation noise"
+  },
+  "task2_traveling_shock": {
+    "status": "complete",
+    "stop_reasons": [],
+    "N_slope": -0.5690019876281801,
+    "N_slope_ci_lo": -0.6044026773393347,
+    "N_slope_ci_hi": -0.5192017653193522,
+    "params": {
+      "nu": 0.5,
+      "A": 1.0,
+      "c": 0.5,
+      "a": 2.0,
+      "L": 8.0,
+      "x0": 3.0,
+      "u_L": 1.5,
+      "u_R": -0.5,
+      "output_times": [
+        0.25,
+        0.5,
+        1.0
+      ],
+      "S": 30
+    }
+  },
+  "task3_cole_hopf_plateau": {
+    "status": "complete",
+    "plateau_l2_observed": 0.4,
+    "primary_cause": "combination_particle_reconstruction_and_differentiation",
+    "differentiation_error": 0.0007078950587756901,
+    "differentiation_conclusion": "transform_differentiation_negligible",
+    "boundary_mismatch_conclusion": "boundary_mismatch"
+  },
+  "task4_heat_extended": {
+    "status": "complete",
+    "total_slope": -0.45680758867457416,
+    "total_ci_lo": -0.4829525678879075,
+    "total_ci_hi": -0.4252825998720734,
+    "bias_slope": -0.2617111452609177,
+    "spread_slope": -0.4676266965741426,
+    "no_dt_study_reason": "Heat GRW is exact in time: Brownian increments are drawn exactly from N(0, 2*alpha*dt), with no discretization error in the stochastic dynamics. The only approximation is in the initial condition (number of particles N) and the histogram reconstruction. Therefore, the convergence study only needs N-refinement.",
+    "N_seq": [
+      500,
+      1000,
+      2000,
+      5000,
+      10000,
+      20000,
+      50000
+    ],
+    "S": 30
+  },
+  "task5_fhn_extended": {
+    "status": "complete",
+    "profile_l2_slope": -0.47885387964655,
+    "profile_l2_ci": [
+      -0.5022624636956721,
+      -0.45735862223853774
+    ],
+    "center_err_slope": -0.5238445495601154,
+    "center_err_ci": [
+      -0.5938032002226261,
+      -0.4467295170816562
+    ],
+    "speed_err_slope": -0.5238445495601153,
+    "aligned_err_slope": -0.4701819853069751,
+    "N_seq": [
+      100,
+      200,
+      500,
+      1000,
+      2000,
+      5000
+    ],
+    "S": 30
+  },
+  "task6_gbmc_production_n_refinement": {
+    "spread_slope": -0.5099203498810043,
+    "spread_r2": 0.9946806807198103,
+    "spread_ci_lo": -0.5390624017960933,
+    "spread_ci_hi": -0.47938929458619245,
+    "bias_slope": -0.511038662248493,
+    "bias_r2": 0.9399418082785452,
+    "total_slope": -0.5095656655753349,
+    "total_r2": 0.9944107096147043,
+    "xc_std_slope": -0.5043259920091583,
+    "nu_std_slope": -0.28137729494037805,
+    "adjacent_rates": [
+      {
+        "N_lo": 100,
+        "N_hi": 200,
+        "rate": -0.4863159130182896
+      },
+      {
+        "N_lo": 200,
+        "N_hi": 400,
+        "rate": -0.6347577442408314
+      },
+      {
+        "N_lo": 400,
+        "N_hi": 800,
+        "rate": -0.41902440877112107
+      },
+      {
+        "N_lo": 800,
+        "N_hi": 1600,
+        "rate": -0.6027721013735972
+      },
+      {
+        "N_lo": 1600,
+        "N_hi": 3200,
+        "rate": -0.5275134310867912
+      },
+      {
+        "N_lo": 3200,
+        "N_hi": 6400,
+        "rate": -0.29222904003561145
+      }
+    ],
+    "compatible_with_minus_half": true,
+    "overlap_with_earlier_ci": true,
+    "earlier_slope": -0.507,
+    "earlier_ci": [
+      -0.534,
+      -0.479
+    ],
+    "S": 50,
+    "N_seq": [
+      100,
+      200,
+      400,
+      800,
+      1600,
+      3200,
+      6400
+    ],
+    "N_out": 400,
+    "A": 1.0,
+    "nu": 0.5,
+    "a_rel": 2.0,
+    "T": 0.5,
+    "dt": 0.0025,
+    "L": 4.0,
+    "xc": 2.0,
+    "base_seed": 42
+  }
+}

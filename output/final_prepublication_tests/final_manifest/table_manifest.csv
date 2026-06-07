@@ -1,0 +1,11 @@
+table,task,metric,value,ci_lo,ci_hi,note
+convergence_rates,T1_GBMC_dt_bias,E_bias_vs_dt_slope,,-0.4516928303004956,0.32603939431556794,E_bias ~ dt^slope; CI from polyfit residuals
+convergence_rates,T2_traveling_shock,L2_vs_N_slope,-0.5690019876281801,-0.6044026773393347,-0.5192017653193522,L2 at T=1 ~ N^slope
+convergence_rates,T4_heat_extended,E_total_vs_N_slope,-0.45680758867457416,-0.4829525678879075,-0.4252825998720734,E_total ~ N^slope; bias dominated by spread
+convergence_rates,T4_heat_extended,E_spread_vs_N_slope,-0.4676266965741426,,,Spread ~ N^slope (dominates total)
+convergence_rates,T5_fhn_extended,profile_L2_vs_N_slope,-0.47885387964655,,,Profile L2 ~ N^slope
+convergence_rates,T5_fhn_extended,center_err_vs_N_slope,-0.5238445495601154,,,Front center error ~ N^slope
+negative_findings,T1_GBMC_dt_bias,bias_below_spread,,,,E_bias < 2*E_spread at all dt; dt-bias sub-dominant
+negative_findings,T3_cole_hopf_plateau,plateau_primary_cause,combination_particle_reconstruction_and_differentiation,,,Cole-Hopf L2 plateau: does not converge with N
+negative_findings,T4_heat_extended,E_bias_flat,-0.2617111452609177,,,Bias flat; total convergence driven entirely by spread
+convergence_rates,T6_GBMC_production_N_refinement,E_spread_vs_N_slope,-0.5099203498810043,-0.5390624017960933,-0.47938929458619245,Production GBMC dispatcher; E_spread ~ N^slope; stationary shock benchmark
