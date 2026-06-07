@@ -51,15 +51,26 @@ def exact_stationary_shock(x, nu, x_center, amplitude):
     return -amplitude * np.tanh(amplitude * (x - x_center) / (2.0 * nu))
 
 
+def generate_run_seeds(base_seed, repeats):
+    """Return [base_seed, base_seed+1, ..., base_seed+repeats-1].
+
+    Paired-seed design: repeat index i uses seed base_seed+i for every N value,
+    so comparisons across particle counts use the same stochastic realisations.
+    Does not use Python hash() so results are stable across processes.
+    """
+    return [base_seed + i for i in range(repeats)]
+
+
 def _run_rbmc_one(N, nu, T, dt, L, amplitude, seed=None):
     """
     Run one RBMC experiment for the stationary-shock IC.
 
     Returns (x_out, u_out, u_exact, metrics_dict).
+    seed is forwarded to SimulationConfig.seed so the solver's private RNG
+    (np.random.default_rng(config.seed)) is reproducibly seeded.  The global
+    NumPy RNG (np.random.seed) is NOT set here; the relaxation solver does not
+    use it.
     """
-    if seed is not None:
-        np.random.seed(seed)
-
     xc = L / 2.0
     x0 = np.linspace(0.0, L, N)
     u0 = exact_stationary_shock(x0, nu, xc, amplitude)
@@ -83,6 +94,7 @@ def _run_rbmc_one(N, nu, T, dt, L, amplitude, seed=None):
         burgers_ic_type='stationary_shock',
         burgers_ic_amplitude=amplitude,
         relaxation_speed_a=2.0,
+        seed=seed,
     )
 
     globs = [{'position': float(p), 'value': [float(v)]} for p, v in ic]
@@ -101,7 +113,7 @@ def _run_rbmc_one(N, nu, T, dt, L, amplitude, seed=None):
 
     return x_out, u_out, u_exact, {
         'N': N, 'l2': l2, 'linf': linf, 'rel_l2': rel_l2,
-        'l2_ref': l2_ref,
+        'l2_ref': l2_ref, 'seed': seed,
     }
 
 
@@ -144,22 +156,35 @@ def main():
     print(f"  T={T}, dt={dt}  ({int(T/dt)} steps), domain [0, {L}]")
     print(f"  N values: {n_seq}")
     print(f"  Repeats per N: {args.repeats}")
+    if args.seed is not None:
+        _example_seeds = generate_run_seeds(args.seed, args.repeats)
+        print(f"  Base seed: {args.seed}")
+        print(f"  Repeat seeds: {', '.join(str(s) for s in _example_seeds)}")
+        print(f"  Seed pairing across N: enabled  (repeat i => seed {args.seed}+i)")
+    else:
+        print(f"  Seed: None  (non-reproducible runs)")
     print(f"{'='*62}\n")
 
     results = []
+    base_seed = args.seed
 
     for N in n_seq:
         l2_runs, linf_runs, rel_l2_runs = [], [], []
+        run_seeds = (generate_run_seeds(base_seed, args.repeats)
+                     if base_seed is not None else [None] * args.repeats)
         for rep in range(args.repeats):
-            seed = (args.seed + rep) if args.seed is not None else None
-            print(f"  N={N:5d}, repeat={rep+1}/{args.repeats} ...", flush=True)
-            _, _, _, m = _run_rbmc_one(N, nu, T, dt, L, A, seed=seed)
+            run_seed = run_seeds[rep]
+            print(f"  N={N:5d}, repeat={rep+1}/{args.repeats}, seed={run_seed} ...",
+                  flush=True)
+            _, _, _, m = _run_rbmc_one(N, nu, T, dt, L, A, seed=run_seed)
             l2_runs.append(m['l2'])
             linf_runs.append(m['linf'])
             rel_l2_runs.append(m['rel_l2'])
 
         row = {
             'N': N,
+            'base_seed':   base_seed,
+            'run_seeds':   run_seeds,
             'l2_mean':     float(np.mean(l2_runs)),
             'l2_std':      float(np.std(l2_runs)),
             'linf_mean':   float(np.mean(linf_runs)),
@@ -178,7 +203,9 @@ def main():
         json.dump({
             "parameters": {
                 "nu": nu, "T": T, "dt": dt, "L": L, "amplitude": A,
-                "repeats": args.repeats, "seed": args.seed,
+                "repeats": args.repeats,
+                "base_seed": args.seed,
+                "seed_policy": "base_seed + repeat_index (paired across N)",
             },
             "results": results,
         }, fh, indent=2)

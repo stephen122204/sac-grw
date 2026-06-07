@@ -610,3 +610,51 @@ class TestReconstructHelper:
         assert abs(total_recovered - total_before) < 1e-4
 
 
+# ---------------------------------------------------------------------------
+# Test: seed reproducibility  (spec §10, seed propagation fix)
+# ---------------------------------------------------------------------------
+
+class TestReproducibility:
+    """Verify that seed propagation through SimulationConfig makes runs reproducible."""
+
+    def test_identical_seeds_produce_identical_results(self):
+        """Two runs with identical parameters and seed must produce bit-identical output."""
+        from run_n_refinement import _run_rbmc_one
+        kwargs = dict(N=50, nu=0.5, T=0.01, dt=0.005, L=4.0, amplitude=1.0, seed=77)
+        x1, u1, _, m1 = _run_rbmc_one(**kwargs)
+        x2, u2, _, m2 = _run_rbmc_one(**kwargs)
+        np.testing.assert_array_equal(x1, x2, err_msg="Output positions differ for identical seed")
+        np.testing.assert_array_equal(u1, u2, err_msg="Output profiles differ for identical seed")
+        assert m1['l2'] == m2['l2'], "L2 error differs for identical seed"
+        assert m1['rel_l2'] == m2['rel_l2'], "rel-L2 error differs for identical seed"
+        assert m1['seed'] == 77
+
+    def test_different_seeds_differ_stochastically(self):
+        """Two runs with different seeds must produce different profiles, while
+        the run seed is correctly recorded in the metrics dict."""
+        from run_n_refinement import _run_rbmc_one
+        _, u1, _, m1 = _run_rbmc_one(N=50, nu=0.5, T=0.01, dt=0.005,
+                                      L=4.0, amplitude=1.0, seed=77)
+        _, u2, _, m2 = _run_rbmc_one(N=50, nu=0.5, T=0.01, dt=0.005,
+                                      L=4.0, amplitude=1.0, seed=99)
+        assert not np.array_equal(u1, u2), (
+            "Different seeds produced bit-identical profiles (astronomically unlikely)"
+        )
+        assert m1['seed'] == 77
+        assert m2['seed'] == 99
+
+    def test_generate_run_seeds_deterministic(self):
+        """generate_run_seeds(base, repeats) returns [base, base+1, ..., base+repeats-1]."""
+        from run_n_refinement import generate_run_seeds
+        assert generate_run_seeds(42, 3) == [42, 43, 44]
+        assert generate_run_seeds(0, 1) == [0]
+        assert generate_run_seeds(100, 5) == [100, 101, 102, 103, 104]
+
+    def test_seed_none_runs_without_error(self):
+        """seed=None must still complete; metrics dict records seed as None."""
+        from run_n_refinement import _run_rbmc_one
+        _, _, _, m = _run_rbmc_one(N=50, nu=0.5, T=0.01, dt=0.005,
+                                    L=4.0, amplitude=1.0, seed=None)
+        assert m['seed'] is None
+        assert np.isfinite(m['l2'])
+

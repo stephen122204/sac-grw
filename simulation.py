@@ -806,12 +806,11 @@ def simulate_burgers(globs, config):
     :param config: SimulationConfig with burgers_mode attribute
     :return: updated globs
     """
-    from relaxation_gbmc import simulate_burgers_relaxation_gbmc
-
     mode = (getattr(config, 'burgers_mode', None) or 'cole_hopf_grw').strip().lower()
     diag_dir = getattr(config, '_diag_dir', None)
 
     if mode == 'relaxation_gbmc':
+        from relaxation_gbmc import simulate_burgers_relaxation_gbmc
         return simulate_burgers_relaxation_gbmc(globs, config, _diag_dir=diag_dir)
 
     if mode not in ('cole_hopf_grw', 'cole_hopf'):
