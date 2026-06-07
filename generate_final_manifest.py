@@ -67,6 +67,14 @@ EXPECTED_FIGURES = {
         'fhn_profiles_selected_N',
         'fhn_runtime_vs_N',
     ],
+    'task6': [
+        'production_gbmc_spread_vs_N',
+        'production_gbmc_bias_spread_total_vs_N',
+        'production_gbmc_center_width_std_vs_N',
+        'production_gbmc_profiles_selected_N',
+        'production_gbmc_fitted_viscosity_vs_N',
+        'production_gbmc_runtime_vs_N',
+    ],
 }
 
 TASK_DIRS = {
@@ -75,6 +83,7 @@ TASK_DIRS = {
     'task3': os.path.join(BASE, 'cole_hopf_plateau'),
     'task4': os.path.join(BASE, 'heat_extended'),
     'task5': os.path.join(BASE, 'fhn_extended'),
+    'task6': os.path.join(BASE, 'gbmc_production_n_refinement'),
 }
 
 
@@ -106,6 +115,7 @@ def generate_manifest(results=None, timings=None, tasks_run=None):
     t3 = _load_json_safe(os.path.join(TASK_DIRS['task3'], 'plateau_decomposition.json'))
     t4 = _load_json_safe(os.path.join(TASK_DIRS['task4'], 'summary.json'))
     t5 = _load_json_safe(os.path.join(TASK_DIRS['task5'], 'summary.json'))
+    t6 = _load_json_safe(os.path.join(TASK_DIRS['task6'], 'rates.json'))
 
     # ---- Figure manifest ----
     fig_rows = []
@@ -138,6 +148,7 @@ def generate_manifest(results=None, timings=None, tasks_run=None):
         'task3_cole_hopf_plateau': _extract_t3(t3),
         'task4_heat_extended': _extract_t4(t4),
         'task5_fhn_extended': _extract_t5(t5),
+        'task6_gbmc_production_n_refinement': t6 or {},
     }
 
     with open(os.path.join(OUT, 'results_manifest.json'), 'w') as f:
@@ -151,6 +162,7 @@ def generate_manifest(results=None, timings=None, tasks_run=None):
         ('task3', 'Cole-Hopf plateau', manifest['task3_cole_hopf_plateau']),
         ('task4', 'Heat extended', manifest['task4_heat_extended']),
         ('task5', 'FHN extended', manifest['task5_fhn_extended']),
+        ('task6', 'GBMC production N-refinement', manifest.get('task6_gbmc_production_n_refinement', {})),
     ]:
         for metric, value in (val_dict or {}).items():
             csv_rows.append({'task': task, 'study': key, 'metric': metric, 'value': value})
@@ -215,6 +227,12 @@ def generate_manifest(results=None, timings=None, tasks_run=None):
          'ci_lo': (manifest['task4_heat_extended'] or {}).get('bias_ci_lo', ''),
          'ci_hi': (manifest['task4_heat_extended'] or {}).get('bias_ci_hi', ''),
          'note': 'Bias flat; total convergence driven entirely by spread'},
+        {'table': 'convergence_rates', 'task': 'T6_GBMC_production_N_refinement',
+         'metric': 'E_spread_vs_N_slope',
+         'value': manifest.get('task6_gbmc_production_n_refinement', {}).get('spread_slope', ''),
+         'ci_lo': manifest.get('task6_gbmc_production_n_refinement', {}).get('spread_ci_lo', ''),
+         'ci_hi': manifest.get('task6_gbmc_production_n_refinement', {}).get('spread_ci_hi', ''),
+         'note': 'Production GBMC dispatcher; E_spread ~ N^slope; stationary shock benchmark'},
     ]
 
     table_csv = os.path.join(OUT, 'table_manifest.csv')
