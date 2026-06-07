@@ -45,14 +45,19 @@ def _savefig(fig, path_noext):
 
 
 def _run_heat_one(N, alpha, T, dt, L, x0, uL, uR, seed):
-    """Single Heat GRW run; return (x_out, u_out, elapsed)."""
+    """Single Heat GRW run; return (x_sorted, u_sorted, elapsed).
+
+    GRW convention: globs carry gradient mass (u_x * dx). For a step IC,
+    u_x = (uL-uR)*delta(x-x0), so all N particles start at x0 with weight
+    (uL-uR)/N each. After diffusion, u is recovered by sorting particles and
+    computing the cumulative sum of weights, offset by u_{-inf}=uR.
+    """
     from simulation import simulate_heat_equation
     np.random.seed(seed)
 
-    # Step IC: u=uR for x<x0, u=uL for x>x0
-    x_ic = np.linspace(0.0, L, N)
-    u_ic = np.where(x_ic < x0, uR, uL)  # step function (discontinuity at x0)
-    ic = list(zip(x_ic.tolist(), u_ic.tolist()))
+    # Correct GRW IC: N gradient-mass particles at x0, each with weight (uL-uR)/N
+    weight = (uL - uR) / N
+    ic = [(x0, weight)] * N
 
     cfg = SimulationConfig(
         equation_type='heat',
@@ -67,13 +72,18 @@ def _run_heat_one(N, alpha, T, dt, L, x0, uL, uR, seed):
         initial_conditions=ic,
         reaction_term=False,
     )
-    globs = [{'position': float(p), 'value': [float(v)]} for p, v in ic]
+    globs = [{'position': float(p), 'value': float(w)} for p, w in ic]
     t0 = time.perf_counter()
     result = simulate_heat_equation(globs, cfg)
     elapsed = time.perf_counter() - t0
-    x_out = np.array([g['position'] for g in result])
-    u_out = np.array([g['value'][0] for g in result])
-    return x_out, u_out, elapsed
+
+    # Reconstruct u: sort by position, cumsum of weights + u_{-inf}=uR
+    x_pos = np.array([g['position'] for g in result])
+    w_arr = np.array([g['value']    for g in result])
+    order    = np.argsort(x_pos)
+    x_sorted = x_pos[order]
+    u_sorted = float(uR) + np.cumsum(w_arr[order])
+    return x_sorted, u_sorted, elapsed
 
 
 def _bootstrap_slope_ci(x_arr, y_arr, n_boot=2000, ci=0.95, rng=None):
@@ -126,12 +136,15 @@ def run_task4(N_seq=None, S=30, base_seed=42,
     # Reference grid: use the largest N as a fixed reference
     N_max = max(N_seq)
     x_ref = np.linspace(0.0, L, N_max)
-    u_exact_ref = exact_heat_step(x_ref, T, x0, uL, uR, alpha)
+    # GRW IC: particles at x0 with weight=(uL-uR)/N>0, u_inf=uR=0
+    # → reconstructed profile is step-UP (uR at left, uL at right)
+    # exact_heat_step(x, T, x0, left_val, right_val, alpha), so use (uR, uL)
+    u_exact_ref = exact_heat_step(x_ref, T, x0, uR, uL, alpha)
     dx_ref = float(x_ref[1] - x_ref[0])
 
     for N in N_seq:
         x_grid = np.linspace(0.0, L, N)
-        u_exact = exact_heat_step(x_grid, T, x0, uL, uR, alpha)
+        u_exact = exact_heat_step(x_grid, T, x0, uR, uL, alpha)
         dx = float(x_grid[1] - x_grid[0])
 
         print(f"\n  N={N}")
@@ -143,7 +156,8 @@ def run_task4(N_seq=None, S=30, base_seed=42,
             try:
                 x_out, u_out, elapsed = _run_heat_one(N, alpha, T, dt, L, x0, uL, uR, seed)
                 if len(x_out) != N or not np.allclose(x_out, x_grid, atol=1e-10):
-                    u_out = np.interp(x_grid, x_out, u_out)
+                    u_out = np.interp(x_grid, x_out, u_out,
+                                      left=float(uR), right=float(uL))
                 u_runs.append(u_out)
                 runtimes.append(elapsed)
                 l2 = float(np.sqrt(np.sum((u_out - u_exact)**2 * dx)))

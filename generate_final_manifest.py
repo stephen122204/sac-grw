@@ -160,6 +160,68 @@ def generate_manifest(results=None, timings=None, tasks_run=None):
         w = csv.DictWriter(f, fieldnames=['task', 'study', 'metric', 'value'])
         w.writeheader(); w.writerows(csv_rows)
 
+    # ---- Table manifest ----
+    # Collects fitted-rate rows for inclusion in paper tables
+    table_rows = [
+        {'table': 'convergence_rates', 'task': 'T1_GBMC_dt_bias',
+         'metric': 'E_bias_vs_dt_slope',
+         'value': (manifest['task1_gbmc_dt_bias'] or {}).get('bias_slope_vs_dt', ''),
+         'ci_lo': (manifest['task1_gbmc_dt_bias'] or {}).get('bias_slope_ci_lo', ''),
+         'ci_hi': (manifest['task1_gbmc_dt_bias'] or {}).get('bias_slope_ci_hi', ''),
+         'note': 'E_bias ~ dt^slope; CI from polyfit residuals'},
+        {'table': 'convergence_rates', 'task': 'T2_traveling_shock',
+         'metric': 'L2_vs_N_slope',
+         'value': (manifest['task2_traveling_shock'] or {}).get('N_slope', ''),
+         'ci_lo': (manifest['task2_traveling_shock'] or {}).get('N_slope_ci_lo', ''),
+         'ci_hi': (manifest['task2_traveling_shock'] or {}).get('N_slope_ci_hi', ''),
+         'note': 'L2 at T=1 ~ N^slope'},
+        {'table': 'convergence_rates', 'task': 'T4_heat_extended',
+         'metric': 'E_total_vs_N_slope',
+         'value': (manifest['task4_heat_extended'] or {}).get('total_slope', ''),
+         'ci_lo': (manifest['task4_heat_extended'] or {}).get('total_ci_lo', ''),
+         'ci_hi': (manifest['task4_heat_extended'] or {}).get('total_ci_hi', ''),
+         'note': 'E_total ~ N^slope; bias dominated by spread'},
+        {'table': 'convergence_rates', 'task': 'T4_heat_extended',
+         'metric': 'E_spread_vs_N_slope',
+         'value': (manifest['task4_heat_extended'] or {}).get('spread_slope', ''),
+         'ci_lo': (manifest['task4_heat_extended'] or {}).get('spread_ci_lo', ''),
+         'ci_hi': (manifest['task4_heat_extended'] or {}).get('spread_ci_hi', ''),
+         'note': 'Spread ~ N^slope (dominates total)'},
+        {'table': 'convergence_rates', 'task': 'T5_fhn_extended',
+         'metric': 'profile_L2_vs_N_slope',
+         'value': (manifest['task5_fhn_extended'] or {}).get('profile_l2_slope', ''),
+         'ci_lo': (manifest['task5_fhn_extended'] or {}).get('profile_l2_ci_lo', ''),
+         'ci_hi': (manifest['task5_fhn_extended'] or {}).get('profile_l2_ci_hi', ''),
+         'note': 'Profile L2 ~ N^slope'},
+        {'table': 'convergence_rates', 'task': 'T5_fhn_extended',
+         'metric': 'center_err_vs_N_slope',
+         'value': (manifest['task5_fhn_extended'] or {}).get('center_err_slope', ''),
+         'ci_lo': (manifest['task5_fhn_extended'] or {}).get('center_err_ci_lo', ''),
+         'ci_hi': (manifest['task5_fhn_extended'] or {}).get('center_err_ci_hi', ''),
+         'note': 'Front center error ~ N^slope'},
+        {'table': 'negative_findings', 'task': 'T1_GBMC_dt_bias',
+         'metric': 'bias_below_spread',
+         'value': (manifest['task1_gbmc_dt_bias'] or {}).get('bias_below_spread', ''),
+         'ci_lo': '', 'ci_hi': '',
+         'note': 'E_bias < 2*E_spread at all dt; dt-bias sub-dominant'},
+        {'table': 'negative_findings', 'task': 'T3_cole_hopf_plateau',
+         'metric': 'plateau_primary_cause',
+         'value': (manifest['task3_cole_hopf_plateau'] or {}).get('primary_cause', ''),
+         'ci_lo': '', 'ci_hi': '',
+         'note': 'Cole-Hopf L2 plateau: does not converge with N'},
+        {'table': 'negative_findings', 'task': 'T4_heat_extended',
+         'metric': 'E_bias_flat',
+         'value': (manifest['task4_heat_extended'] or {}).get('bias_slope', ''),
+         'ci_lo': (manifest['task4_heat_extended'] or {}).get('bias_ci_lo', ''),
+         'ci_hi': (manifest['task4_heat_extended'] or {}).get('bias_ci_hi', ''),
+         'note': 'Bias flat; total convergence driven entirely by spread'},
+    ]
+
+    table_csv = os.path.join(OUT, 'table_manifest.csv')
+    with open(table_csv, 'w', newline='') as f:
+        w = csv.DictWriter(f, fieldnames=['table', 'task', 'metric', 'value', 'ci_lo', 'ci_hi', 'note'])
+        w.writeheader(); w.writerows(table_rows)
+
     # ---- Write FINAL_TESTING_SUMMARY.md ----
     _write_summary_md(manifest, missing_figs, timings or {})
 
