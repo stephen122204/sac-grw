@@ -28,8 +28,9 @@ _ALLOWED_BURGERS_IC_TYPES = {
 }
 
 _ALLOWED_BURGERS_MODES = {
-    "cole_hopf_grw",  # Cole-Hopf GRW (only supported mode)
-    "cole_hopf",  # alias
+    "cole_hopf_grw",    # Cole-Hopf GRW (Burgers -> heat via phi transform)
+    "cole_hopf",        # alias for cole_hopf_grw
+    "relaxation_gbmc",  # BPC relaxation transport + Gradient GBMC diffusion
 }
 
 
@@ -170,6 +171,10 @@ class SimulationConfig:
         burgers_ic_type=None,
         burgers_ic_amplitude=None,
         fhn_ic_type=None,
+        relaxation_speed_a=None,
+        relaxation_domain_mode=None,
+        seed=None,
+        burgers_ic_center=None,
     ):
         self.equation_type = equation_type
         self.domain_type = domain_type
@@ -192,6 +197,14 @@ class SimulationConfig:
         self.burgers_ic_amplitude = float(burgers_ic_amplitude) if burgers_ic_amplitude is not None else None
         # FHN IC type: "steady_solution" | "nonsmooth" | "discontinuous" | "" (legacy)
         self.fhn_ic_type = (fhn_ic_type or "").strip().lower()
+        # Relaxation GBMC: fixed two-speed relaxation parameter a > max|u|.
+        self.relaxation_speed_a = float(relaxation_speed_a) if relaxation_speed_a is not None else None
+        # relaxation_gbmc domain mode: 'whole_line' only in production.
+        self.relaxation_domain_mode = (relaxation_domain_mode or 'whole_line').strip().lower()
+        # RNG seed: if set, used by relaxation_gbmc for its private generator.
+        self.seed = int(seed) if seed is not None else None
+        # Center of the stationary-shock IC (x_c).
+        self.burgers_ic_center = float(burgers_ic_center) if burgers_ic_center is not None else None
 
 
 # ---------------------------
@@ -648,6 +661,23 @@ def load_config_from_json(path: str) -> SimulationConfig:
     # burgers_ic_type_stored and burgers_shock_amplitude are set only for burgers ICs.
     b_ic_type_out = locals().get("burgers_ic_type_stored", "")
     b_ic_amplitude_out = locals().get("burgers_shock_amplitude", None)
+    # relaxation_speed_a: required for relaxation_gbmc mode, optional otherwise.
+    relaxation_speed_a_out = data.get("relaxation_speed_a", None)
+    if relaxation_speed_a_out is not None:
+        relaxation_speed_a_out = float(relaxation_speed_a_out)
+    # relaxation_domain_mode: 'whole_line' is the only supported mode.
+    relaxation_domain_mode_out = str(
+        data.get("relaxation_domain_mode", "whole_line")
+    ).strip().lower()
+    # seed: used by relaxation_gbmc for its private RNG.
+    seed_raw = data.get("seed", None)
+    seed_out = int(seed_raw) if seed_raw is not None else None
+    # burgers_ic_center: extracted from burgers_initial_condition.x_center.
+    b_ic_center_raw = None
+    if equation_type == "burgers":
+        b_ic = data.get("burgers_initial_condition", {})
+        b_ic_center_raw = b_ic.get("x_center", None)
+    b_ic_center_out = float(b_ic_center_raw) if b_ic_center_raw is not None else None
 
     return SimulationConfig(
         equation_type, domain_type, domain_size, boundary_conditions,
@@ -657,6 +687,10 @@ def load_config_from_json(path: str) -> SimulationConfig:
         burgers_ic_type=b_ic_type_out,
         burgers_ic_amplitude=b_ic_amplitude_out,
         fhn_ic_type=locals().get('fhn_ic_type_stored', ''),
+        relaxation_speed_a=relaxation_speed_a_out,
+        relaxation_domain_mode=relaxation_domain_mode_out,
+        seed=seed_out,
+        burgers_ic_center=b_ic_center_out,
     )
 
 

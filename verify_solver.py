@@ -71,6 +71,7 @@ from simulation import (
 _DEFAULT_CONFIGS = {
     "heat": "configs/heat_step_dirichlet.json",
     "burgers": "configs/burgers_stationary_shock.json",
+    "burgers_rbmc": "configs/burgers_relaxation_gbmc.json",
     "fhn": "configs/fhn_grw_steady.json",
 }
 
@@ -454,9 +455,120 @@ def plot_burgers_cole_hopf(
     print(f"  [verify] Saved plot    -> {output_path}")
 
 
+# ---------------------------------------------------------------------------
+# Burgers verification: relaxation GBMC
+# ---------------------------------------------------------------------------
+
+def _run_burgers_rbmc(cfg, output_dir, do_save_data):
+    """
+    Run relaxation GBMC verification for Burgers vs exact stationary-shock solution.
+
+    Only stationary_shock IC is supported (solver raises NotImplementedError otherwise).
+    Metrics are calculated from the raw cumulative-sum output (no smoothing).
+    """
+    from relaxation_gbmc import simulate_burgers_relaxation_gbmc
+
+    ic_type = getattr(cfg, 'burgers_ic_type', '') or ''
+    if ic_type != 'stationary_shock':
+        print(f"  [Burgers RBMC] Only stationary_shock IC is supported "
+              f"for relaxation_gbmc.  Got ic_type={ic_type!r}.  Exiting.")
+        return
+
+    print("\n" + "=" * 68)
+    print("  Burgers -- Relaxation GBMC (BPC transport + Gradient Brownian MC)")
+    print("  Reference: exact stationary shock  (unsmoothed raw-cumsum output)")
+    print("=" * 68)
+
+    N = cfg.num_points
+    dt = cfg.time_step
+    nu = cfg.diff_constant
+    T = cfg.total_time
+    L = cfg.domain_size
+    amplitude = (float(cfg.burgers_ic_amplitude)
+                 if getattr(cfg, 'burgers_ic_amplitude', None) is not None
+                 else 1.0)
+    xc = L / 2.0
+
+    print(f"\n  Parameters")
+    print(f"    nu = {nu},  T = {T},  dt = {dt}  ({int(T / dt)} steps)")
+    print(f"    N = {N},  domain [0, {L}],  IC: stationary shock")
+    print(f"    A = {amplitude:.4g},  x_c = {xc:.4g}")
+    print(f"    Exact: u(x,t) = -A*tanh(A*(x-xc)/(2*nu))  [all t]")
+    print(f"    Output: raw cumulative-sum reconstruction (no smoothing)")
+
+    print(f"\n  Running Burgers relaxation GBMC ...", flush=True)
+    grw_diag_dir = output_dir
+    cfg._diag_dir = grw_diag_dir
+    globs = [{"position": float(pos), "value": [float(val)]}
+             for pos, val in cfg.initial_conditions]
+    result = simulate_burgers_relaxation_gbmc(globs, cfg, _diag_dir=grw_diag_dir)
+    if hasattr(cfg, '_diag_dir'):
+        del cfg._diag_dir
+    x_num = np.array([g["position"] for g in result])
+    u_num = np.array([g["value"][0] for g in result])
+    order = np.argsort(x_num)
+    x_num, u_num = x_num[order], u_num[order]
+    print("  Done.")
+
+    x_grid = np.linspace(0.0, L, N)
+    dx_grid = float(x_grid[1] - x_grid[0])
+
+    u_ref = exact_burgers_stationary_shock(x_grid, nu,
+                                           x_center=xc,
+                                           amplitude=amplitude)
+    ref_description = (f"exact stationary shock  "
+                       f"(A={amplitude:.4g}, 2nu/A={2*nu/amplitude:.4g})")
+    metrics_label = "Error metrics  (RBMC raw-cumsum vs exact stationary shock)"
+
+    # Metrics from raw-cumsum output (no interpolation needed: output is on uniform grid)
+    u_num_on_grid = np.interp(x_grid, x_num, u_num)
+    metrics = compute_metrics(u_num_on_grid, u_ref, dx_grid)
+
+    u_mid = 0.0  # stationary shock is antisymmetric about 0
+    wave_loc_num = float(x_grid[np.argmin(np.abs(u_num_on_grid - u_mid))])
+    wave_loc_ref = float(x_grid[np.argmin(np.abs(u_ref - u_mid))])
+    wave_loc_diff = abs(wave_loc_num - wave_loc_ref)
+
+    metrics.update({
+        "wave_location_rbmc": wave_loc_num,
+        "wave_location_ref": wave_loc_ref,
+        "wave_location_diff": wave_loc_diff,
+        "u_min": float(np.min(u_num_on_grid)),
+        "u_max": float(np.max(u_num_on_grid)),
+        "burgers_mode": "relaxation_gbmc",
+        "burgers_ic_type": "stationary_shock",
+        "output_smoothing": "none (raw cumulative-sum)",
+    })
+
+    _print_metrics(metrics, metrics_label)
+    print(f"\n  Shock center")
+    print(f"    RBMC: {wave_loc_num:.4f}")
+    print(f"    Ref : {wave_loc_ref:.4f}")
+    print(f"    Diff: {wave_loc_diff:.6f}")
+
+    num_label = f"Relaxation GBMC  (N={N}, nu={nu}, dt={dt}, raw cumsum)"
+    fig_title = (f"Burgers: Relaxation GBMC vs exact  (T={T}, nu={nu}, N={N})")
+    plot_burgers_cole_hopf(
+        x_grid, u_num_on_grid, u_ref,
+        title=fig_title,
+        num_label=num_label,
+        ref_label=ref_description,
+        metrics=metrics,
+        output_path=os.path.join(output_dir, "comparison_plot.png"),
+        ref_is_exact=True,
+    )
+    save_metrics(metrics, os.path.join(output_dir, "metrics.json"))
+    if do_save_data:
+        save_npz(x_grid, u_num_on_grid, u_ref,
+                 os.path.join(output_dir, "comparison_data"))
+
+
 def run_burgers(cfg, output_dir, do_save_data, ref_factor):
     mode = (getattr(cfg, 'burgers_mode', 'cole_hopf_grw') or 'cole_hopf_grw').lower()
     ic_type = getattr(cfg, 'burgers_ic_type', '') or ''
+
+    if mode == 'relaxation_gbmc':
+        return _run_burgers_rbmc(cfg, output_dir, do_save_data)
 
     # Only Cole-Hopf GRW is supported. Other modes are not routed.
     if mode != 'cole_hopf_grw' and mode != 'cole_hopf':
@@ -949,9 +1061,9 @@ def main():
     )
     parser.add_argument(
         "--equation", "-e",
-        choices=["heat", "burgers", "fhn", "all"],
+        choices=["heat", "burgers", "burgers_rbmc", "fhn", "all"],
         default="all",
-        help="Equation to verify (default: all)",
+        help="Equation to verify (default: all; burgers_rbmc uses relaxation GBMC)",
     )
     parser.add_argument(
         "--config", "-c",
@@ -980,18 +1092,21 @@ def main():
     )
     args = parser.parse_args()
 
-    equations = ["heat", "burgers", "fhn"] if args.equation == "all" else [args.equation]
+    equations = (["heat", "burgers", "fhn"]
+                 if args.equation == "all"
+                 else [args.equation])
 
     for eq in equations:
-        cfg_path = args.config or _DEFAULT_CONFIGS[eq]
-        output_dir = args.output_dir or os.path.join("output", "verify", eq)
+        cfg_path = args.config or _DEFAULT_CONFIGS.get(eq, _DEFAULT_CONFIGS["burgers"])
+        output_dir = args.output_dir or os.path.join("output", "verify",
+                                                      eq.replace("_rbmc", ""))
 
         print(f"\nLoading config: {cfg_path}")
         loaded_cfg = cfg_module.load_config_from_json(cfg_path)
 
         if eq == "heat":
             run_heat(loaded_cfg, output_dir, args.save_data)
-        elif eq == "burgers":
+        elif eq in ("burgers", "burgers_rbmc"):
             run_burgers(loaded_cfg, output_dir, args.save_data, args.ref_factor)
         elif eq == "fhn":
             run_fhn(loaded_cfg, output_dir, args.save_data, args.ref_factor)

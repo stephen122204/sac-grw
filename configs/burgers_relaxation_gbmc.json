@@ -1,0 +1,30 @@
+{
+  "equation_type": "burgers",
+  "domain_type": "Finite",
+  "domain_size": 4.0,
+
+  "relaxation_domain_mode": "whole_line",
+  "seed": 42,
+
+  "boundary_conditions": {
+    "_note": "BCs are not used by relaxation_gbmc (whole_line mode); present only to satisfy the config validator for finite domains.",
+    "LEFT":  { "type": "Dirichlet", "value": 0.0 },
+    "RIGHT": { "type": "Dirichlet", "value": 0.0 }
+  },
+
+  "diff_constant": 0.5,
+  "time_step": 0.005,
+  "total_time": 0.5,
+  "num_points": 400,
+  "reaction_term": false,
+
+  "burgers_mode": "relaxation_gbmc",
+  "relaxation_speed_a": 2.0,
+
+  "burgers_initial_condition": {
+    "type": "stationary_shock",
+    "nu": 0.5,
+    "x_center": 2.0,
+    "amplitude": 1.0
+  }
+}

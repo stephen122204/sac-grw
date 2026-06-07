@@ -794,17 +794,26 @@ def simulate_burgers_cole_hopf_grw(globs, config, _diag_dir=None):
 
 def simulate_burgers(globs, config):
     """
-    Cole-Hopf GRW solver for Burgers' equation.
+    Dispatcher for Burgers solvers.
 
-    Reduces Burgers to a heat equation via the Cole-Hopf transformation.
-    phi_t = nu*phi_xx is solved by GRW; u = -2*nu*phi_x/phi.
+    Supported modes (config.burgers_mode):
+      'cole_hopf_grw' / 'cole_hopf' — Cole-Hopf GRW: phi_t = nu*phi_xx via GRW,
+                                       then u = -2*nu*phi_x/phi.
+      'relaxation_gbmc'             — BPC relaxation transport + Gradient GBMC:
+                                       gradient particles advanced by Lie splitting.
 
     :param globs: list of dicts 'position' and 'value' = [u_i]
-    :param config: SimulationConfig with burgers_mode attribute (cole_hopf_grw)
+    :param config: SimulationConfig with burgers_mode attribute
     :return: updated globs
     """
+    from relaxation_gbmc import simulate_burgers_relaxation_gbmc
+
     mode = (getattr(config, 'burgers_mode', None) or 'cole_hopf_grw').strip().lower()
     diag_dir = getattr(config, '_diag_dir', None)
+
+    if mode == 'relaxation_gbmc':
+        return simulate_burgers_relaxation_gbmc(globs, config, _diag_dir=diag_dir)
+
     if mode not in ('cole_hopf_grw', 'cole_hopf'):
         print(f"  [Burgers] WARNING: unrecognised mode '{mode}'; "
               f"using cole_hopf_grw.")
