@@ -1,0 +1,63 @@
+{
+  "heat_n_refinement": {
+    "json": "output/convergence_study/heat/n_refinement.json",
+    "plot": "output/convergence_study/heat/n_refinement_plot.png",
+    "l2_slope": -0.3545051425291618,
+    "l2_slope_ci": [
+      -0.5483117116922617,
+      -0.1868065832166287
+    ]
+  },
+  "cole_hopf_n_refinement": {
+    "json": "output/convergence_study/cole_hopf/n_refinement.json",
+    "plot": "output/convergence_study/cole_hopf/n_refinement_plot.png",
+    "l2_slope": -0.3146193023969897,
+    "l2_slope_ci": [
+      -0.7334522555490334,
+      0.0023237974036745238
+    ]
+  },
+  "cole_hopf_traveling_wave": {
+    "json": "output/convergence_study/cole_hopf/traveling_wave_verification.json",
+    "plot": "output/convergence_study/cole_hopf/traveling_wave_plot.png",
+    "l2": 1.2454236761062576,
+    "wave_speed_error": 0.6015037593984971
+  },
+  "gbmc_n_refinement": {
+    "json": "output/convergence_study/gbmc/n_refinement.json",
+    "plot": "output/convergence_study/gbmc/n_refinement_plot.png",
+    "l2_slope": -0.4574878899775502,
+    "l2_slope_ci": [
+      -0.5466214316347335,
+      -0.3601095761980547
+    ]
+  },
+  "gbmc_dt_refinement": {
+    "json": "output/convergence_study/gbmc/dt_refinement.json",
+    "plot": "output/convergence_study/gbmc/dt_refinement_plot.png",
+    "l2_slope_vs_dt": 0.07692333313032908,
+    "l2_slope_ci": [
+      -0.12392438184550345,
+      0.25209138139276355
+    ],
+    "interpretation": "Near-zero slope means dominant error is particle noise (dt-insensitive). Positive slope (error increases with dt) would indicate Lie-splitting bias."
+  },
+  "fhn_n_refinement": {
+    "json": "output/convergence_study/fhn/n_refinement.json",
+    "plot": "output/convergence_study/fhn/n_refinement_plot.png",
+    "front_error_slope": -0.6492073512891117,
+    "slope_ci": [
+      -0.8733312341072973,
+      -0.27405221067540636
+    ]
+  },
+  "cole_hopf_vs_gbmc": {
+    "json": "output/convergence_study/comparison/cole_hopf_vs_gbmc.json",
+    "plot": "output/convergence_study/comparison/cole_hopf_vs_gbmc_plot.png"
+  },
+  "_meta": {
+    "total_runtime_s": 34.2,
+    "base_seed": 42,
+    "repeats": 10
+  }
+}

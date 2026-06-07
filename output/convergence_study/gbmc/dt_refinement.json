@@ -1,0 +1,79 @@
+{
+  "method": "relaxation_gbmc",
+  "study": "dt_refinement",
+  "parameters": {
+    "nu": 0.5,
+    "T": 0.5,
+    "L": 4.0,
+    "N_fixed": 800,
+    "amplitude": 1.0,
+    "a": 2.0,
+    "repeats": 10,
+    "base_seed": 42
+  },
+  "results": [
+    {
+      "dt": 0.05,
+      "n_steps": 10,
+      "l2_mean": 0.06825939152892545,
+      "l2_std": 0.017287216114786022,
+      "linf_mean": 0.07944558971783675,
+      "linf_std": 0.011197712090784304,
+      "rel_l2_mean": 0.04736812564011202,
+      "rel_l2_std": 0.011996342284210872,
+      "repeats": 10
+    },
+    {
+      "dt": 0.025,
+      "n_steps": 20,
+      "l2_mean": 0.038145219601547806,
+      "l2_std": 0.012592645561863493,
+      "linf_mean": 0.048404070993500574,
+      "linf_std": 0.010084359495633638,
+      "rel_l2_mean": 0.02647060740191489,
+      "rel_l2_std": 0.00873857800011273,
+      "repeats": 10
+    },
+    {
+      "dt": 0.01,
+      "n_steps": 50,
+      "l2_mean": 0.04549441643927593,
+      "l2_std": 0.01475598356368319,
+      "linf_mean": 0.05862663376673061,
+      "linf_std": 0.017090921936464096,
+      "rel_l2_mean": 0.0315705309635819,
+      "rel_l2_std": 0.010239811222046749,
+      "repeats": 10
+    },
+    {
+      "dt": 0.005,
+      "n_steps": 100,
+      "l2_mean": 0.04603867888912904,
+      "l2_std": 0.012142485615819515,
+      "linf_mean": 0.06058491729649007,
+      "linf_std": 0.010213922408697342,
+      "rel_l2_mean": 0.03194821807048956,
+      "rel_l2_std": 0.008426192665219706,
+      "repeats": 10
+    },
+    {
+      "dt": 0.0025,
+      "n_steps": 200,
+      "l2_mean": 0.04599643784096001,
+      "l2_std": 0.015262748167098935,
+      "linf_mean": 0.059376732908635065,
+      "linf_std": 0.014501641486458201,
+      "rel_l2_mean": 0.03191890519160178,
+      "rel_l2_std": 0.010591476961615878,
+      "repeats": 10
+    }
+  ],
+  "fit": {
+    "l2_slope_vs_dt": 0.07692333313032908,
+    "l2_slope_ci_lo": -0.12392438184550345,
+    "l2_slope_ci_hi": 0.25209138139276355,
+    "C": 0.067724584047649,
+    "r2": 0.18711086991241488,
+    "interpretation": "Near-zero slope means dominant error is particle noise (dt-insensitive). Positive slope (error increases with dt) would indicate Lie-splitting bias."
+  }
+}

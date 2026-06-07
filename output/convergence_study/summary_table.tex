@@ -1,0 +1,29 @@
+% TABLE 1: N-refinement for all four methods
+\begin{table}[htbp]
+\centering
+\caption{N-refinement convergence study: mean $L^2$ error ($\pm$ one standard deviation over 10 independent runs) vs particle count $N$.  Heat GRW: step IC on $[0,10]$, $\alpha=0.1$, $T=0.5$; Cole-Hopf GRW: stationary-shock IC on $[0,4]$, $\nu=0.5$, $T=0.5$; Relaxation GBMC: stationary-shock IC on $[0,4]$, $\nu=0.5$, $a=2$, $T=0.5$; FHN GRW: steady-wave IC on $[0,30]$, $D=0.5$, $a=0.25$, $T=9$.  FHN metric is absolute front-location error; all others are $L^2$ field error.}
+\label{tab:n_refinement}
+\small
+\begin{tabular}{r c c c c}
+\hline
+$N$ & Heat GRW & Cole-Hopf GRW & Relax.\ GBMC & FHN GRW \\
+    & $L^2$ error & $L^2$ error & $L^2$ error & Front error \\
+\hline
+$50$ & \textemdash & $1.6500 \pm 0.1059$ & $0.1642 \pm 0.0465$ & \textemdash \\
+$100$ & \textemdash & $0.5080 \pm 0.0536$ & $0.1023 \pm 0.0225$ & $0.6211 \pm 0.3767$ \\
+$200$ & \textemdash & $0.4256 \pm 0.0659$ & $0.0741 \pm 0.0142$ & $0.2191 \pm 0.1857$ \\
+$400$ & \textemdash & $0.3907 \pm 0.0399$ & $0.0634 \pm 0.0190$ & \textemdash \\
+$500$ & $0.0231 \pm 0.0096$ & \textemdash & \textemdash & $0.1664 \pm 0.0691$ \\
+$800$ & \textemdash & $0.4214 \pm 0.0393$ & $0.0460 \pm 0.0121$ & \textemdash \\
+$1000$ & $0.0264 \pm 0.0099$ & \textemdash & \textemdash & $0.1410 \pm 0.1163$ \\
+$1600$ & \textemdash & $0.4080 \pm 0.0259$ & $0.0297 \pm 0.0105$ & \textemdash \\
+$2000$ & $0.0266 \pm 0.0051$ & \textemdash & \textemdash & $0.0644 \pm 0.0363$ \\
+$5000$ & $0.0125 \pm 0.0037$ & \textemdash & \textemdash & \textemdash \\
+$10000$ & $0.0092 \pm 0.0034$ & \textemdash & \textemdash & \textemdash \\
+$20000$ & $0.0081 \pm 0.0015$ & \textemdash & \textemdash & \textemdash \\
+\hline
+\multicolumn{5}{l}{\textit{Fitted log-log slope vs $N$ (bootstrap 95\% CI)}} \\
+& $-0.355$ [-0.548, -0.187] & $-0.315$ [-0.733, 0.002] & $-0.457$ [-0.547, -0.360] & $-0.649$ [-0.873, -0.274] \\
+\hline
+\end{tabular}
+\end{table}

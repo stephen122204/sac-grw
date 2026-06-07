@@ -1,0 +1,19 @@
+% TABLE 2: GBMC dt-refinement
+\begin{table}[htbp]
+\centering
+\caption{Relaxation GBMC $\Delta t$-refinement: mean $L^2$ error vs time-step $\Delta t$ at fixed $N=800$.  Parameters: stationary-shock IC, $\nu=0.5$, $a=2$, $T=0.5$, $L=4$, 10 independent runs per $\Delta t$.  A near-zero fitted slope (95\% CI includes zero) indicates that particle-noise dominates over Lie-splitting temporal bias at these $N$.}
+\label{tab:gbmc_dt}
+\begin{tabular}{r c c}
+\hline
+$\Delta t$ & Steps & $L^2$ error (mean $\pm$ std) \\
+\hline
+$0.05000$ & $10$ & $0.06826 \pm 0.01729$ \\
+$0.02500$ & $20$ & $0.03815 \pm 0.01259$ \\
+$0.01000$ & $50$ & $0.04549 \pm 0.01476$ \\
+$0.00500$ & $100$ & $0.04604 \pm 0.01214$ \\
+$0.00250$ & $200$ & $0.04600 \pm 0.01526$ \\
+\hline
+\multicolumn{3}{l}{\textit{Fitted log-log slope vs $\Delta t$: $0.077$, 95\% CI [-0.124, 0.252]}} \\
+\hline
+\end{tabular}
+\end{table}

@@ -1,0 +1,55 @@
+{
+  "study": "cole_hopf_vs_gbmc",
+  "parameters": {
+    "nu": 0.5,
+    "T": 0.5,
+    "dt": 0.005,
+    "L": 4.0,
+    "amplitude": 1.0,
+    "a": 2.0,
+    "repeats": 10,
+    "base_seed": 42
+  },
+  "results": [
+    {
+      "N": 100,
+      "cole_hopf_l2_mean": 0.5080067213226395,
+      "cole_hopf_l2_std": 0.053593098009490324,
+      "cole_hopf_linf_mean": 0.4888368567903455,
+      "gbmc_l2_mean": 0.10233921135337307,
+      "gbmc_l2_std": 0.022453678380945995,
+      "gbmc_linf_mean": 0.1399989275284055,
+      "repeats": 10
+    },
+    {
+      "N": 200,
+      "cole_hopf_l2_mean": 0.42558670254295927,
+      "cole_hopf_l2_std": 0.06587953073328683,
+      "cole_hopf_linf_mean": 0.5063405862915576,
+      "gbmc_l2_mean": 0.07408513946327634,
+      "gbmc_l2_std": 0.01424803821699164,
+      "gbmc_linf_mean": 0.09373625832903794,
+      "repeats": 10
+    },
+    {
+      "N": 400,
+      "cole_hopf_l2_mean": 0.3906814614668086,
+      "cole_hopf_l2_std": 0.0399139170986379,
+      "cole_hopf_linf_mean": 0.47447702420716,
+      "gbmc_l2_mean": 0.06340515840597465,
+      "gbmc_l2_std": 0.019035222956018897,
+      "gbmc_linf_mean": 0.07981638583782948,
+      "repeats": 10
+    },
+    {
+      "N": 800,
+      "cole_hopf_l2_mean": 0.4213770793871393,
+      "cole_hopf_l2_std": 0.03932382972415395,
+      "cole_hopf_linf_mean": 0.543565271660967,
+      "gbmc_l2_mean": 0.04603867888912904,
+      "gbmc_l2_std": 0.012142485615819515,
+      "gbmc_linf_mean": 0.06058491729649007,
+      "repeats": 10
+    }
+  ]
+}
