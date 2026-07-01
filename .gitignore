@@ -24,6 +24,9 @@ Icon
 
 # Output / generated files
 output/
+outputs/
+*.zip
+regen_output/
 
 # Editor / IDE
 .cursor/

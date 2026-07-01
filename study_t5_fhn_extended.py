@@ -329,6 +329,7 @@ def run_task5(N_seq=None, S=30, base_seed=42,
         if np.sum(ce_arr > 0) >= 2 else (float('nan'), float('nan'), float('nan'))
     sp_slope, sp_lo, sp_hi = _bootstrap_slope_ci(N_arr, sp_arr[sp_arr>0], rng=rng_ci) \
         if np.sum(sp_arr > 0) >= 2 else (float('nan'), float('nan'), float('nan'))
+    sp_lo, sp_hi = ce_lo, ce_hi  # shared resampling: speed = center/T exactly, so reusing the center bootstrap's index draws yields identical slope samples; the call above is kept only to preserve the RNG stream for the aligned-error CI
     ap_slope, ap_lo, ap_hi = _bootstrap_slope_ci(N_arr, ap_arr[ap_arr>0], rng=rng_ci) \
         if np.sum(ap_arr > 0) >= 2 else (float('nan'), float('nan'), float('nan'))
 
