@@ -46,8 +46,34 @@ particle counts. Function defaults inside the study scripts are exploration
 settings; the paper configurations live in the `reproduce.py` entry points.
 Study outputs are under `output/final_prepublication_tests/`, and
 `regen_data/` holds the corrected tanh-fit data behind Table 6 and the
-fitted-viscosity figure. Single exploratory runs:
-`python main.py configs/burgers_stationary_shock.json`.
+fitted-viscosity figure.
+
+## Running Your Own Experiments
+
+The section above is for convenience in reproducing the paper. To run the
+solvers with your own inputs, copy a JSON config from `configs/`, edit it,
+and run:
+
+```bash
+python main.py configs/burgers_relaxation_gbmc.json   # RB-GBMC solver
+python main.py configs/heat_step_dirichlet.json       # heat GRW
+python main.py configs/fhn_grw_steady.json            # scalar FHN GRW
+```
+
+The main fields are `diff_constant` (α, D, or ν), `time_step`, `total_time`,
+`num_points` (particle count), `domain_size`, and `boundary_conditions`
+(Dirichlet reflects particles and keeps their mass; Neumann reflects and
+negates it). Each equation adds an initial-condition block: heat takes a
+step, uniform-gradient, or Gaussian-cloud profile; FHN takes the logistic
+front (`steady_solution`), a linear ramp, or a Heaviside step; Burgers takes
+a stationary shock, traveling wave, or step, with `burgers_mode` selecting
+`cole_hopf_grw` or `relaxation_gbmc`. The RB-GBMC solver additionally needs
+`relaxation_speed_a` (must exceed the shock amplitude), runs on the whole
+line, and currently supports the stationary-shock initialization only.
+`config_template.jsonc` documents every field with comments; comparison
+figures are saved under `output/`. To check a custom run against an exact
+solution where one exists, use `python verify_solver.py --equation burgers
+--config <your_config>.json`.
 
 ## Citation
 
