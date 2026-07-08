@@ -60,20 +60,10 @@ python main.py configs/heat_step_dirichlet.json       # heat GRW
 python main.py configs/fhn_grw_steady.json            # scalar FHN GRW
 ```
 
-The main fields are `diff_constant` (α, D, or ν), `time_step`, `total_time`,
-`num_points` (particle count), `domain_size`, and `boundary_conditions`
-(Dirichlet reflects particles and keeps their mass; Neumann reflects and
-negates it). Each equation adds an initial-condition block: heat takes a
-step, uniform-gradient, or Gaussian-cloud profile; FHN takes the logistic
-front (`steady_solution`), a linear ramp, or a Heaviside step; Burgers takes
-a stationary shock, traveling wave, or step, with `burgers_mode` selecting
-`cole_hopf_grw` or `relaxation_gbmc`. The RB-GBMC solver additionally needs
-`relaxation_speed_a` (must exceed the shock amplitude), runs on the whole
-line, and currently supports the stationary-shock initialization only.
-`config_template.jsonc` documents every field with comments; comparison
-figures are saved under `output/`. To check a custom run against an exact
-solution where one exists, use `python verify_solver.py --equation burgers
---config <your_config>.json`.
+Every config field is documented with comments in `config_template.jsonc`.
+Comparison figures are saved under `output/`, and a custom run can be
+checked against an exact solution where one exists via
+`python verify_solver.py --equation burgers --config <your_config>.json`.
 
 ## Citation
 
