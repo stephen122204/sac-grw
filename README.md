@@ -92,6 +92,6 @@ before use).
 
 ## References
 
-The GRW method builds on M. R. Lindstrom's TAMU thesis, available from the
+The GRW method builds on G. S. Lindstrom's TAMU thesis, available from the
 Texas A&M OAKTrust repository, handle
 [`1969.1/ETD-TAMU-1993-THESIS-L7533`](https://hdl.handle.net/1969.1/ETD-TAMU-1993-THESIS-L7533).
