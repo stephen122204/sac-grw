@@ -19,21 +19,21 @@ import sys
 ROOT = os.path.dirname(os.path.abspath(__file__))
 
 TARGETS = {
-    't1': ('study_t1_gbmc_dt_bias.py',
+    't1': ('studies/study_t1_gbmc_dt_bias.py',
            'T1  GBMC dt-bias at N=6400 (5 dt values, S=40)  -> Table 7'),
-    't2': ('run_t2_S30.py',
+    't2': ('studies/run_t2_S30.py',
            'T2  traveling-shock validation at S=30 (PAPER config; the S=10 '
            'default inside run_task2() is an exploration setting)  -> Table 8 + figures'),
-    't3': ('study_t3_cole_hopf_plateau.py',
+    't3': ('studies/study_t3_cole_hopf_plateau.py',
            'T3  Cole-Hopf plateau decomposition (deterministic diagnostic, S=10)  '
            '-> Section 6 numbers + decomposition figure'),
-    't4': ('study_t4_heat_extended.py',
+    't4': ('studies/study_t4_heat_extended.py',
            'T4  extended heat GRW N-refinement (7 N values, S=30)  -> Table 1'),
-    't5': ('study_t5_fhn_extended.py',
+    't5': ('studies/study_t5_fhn_extended.py',
            'T5  extended FHN N-refinement + dt quartet (S=30)  -> Table 2'),
-    't6': ('study_gbmc_production_n_refinement.py',
+    't6': ('studies/study_gbmc_production_n_refinement.py',
            'T6  production GBMC N-refinement (N=100..6400, S=50)  -> Tables 5-6 + figures'),
-    'all': ('run_prepublication_studies.py',
+    'all': ('studies/run_prepublication_studies.py',
             'T1-T5 in sequence via the master runner (T2 at S=30), then the '
             'final manifest. T6 is NOT included; run it separately.'),
 }
@@ -52,10 +52,10 @@ notes:
     E_bias/E_spread/E_total error columns do not depend on the fit.
   * Function defaults inside the study modules are exploration settings.
     The paper configurations are exactly what these targets invoke
-    (in particular, the T2 paper run is S=30 via run_t2_S30.py).
+    (in particular, the T2 paper run is S=30 via studies/run_t2_S30.py).
   * Rerunning t1/t3/t4/t5/t6 overwrites output/final_prepublication_tests/.
-    t2 (run_t2_S30.py) and `all`'s manifest step write as documented in
-    those scripts (run_t2_S30.py writes to ../regen_output/).
+    t2 (studies/run_t2_S30.py) and `all`'s manifest step write as documented in
+    those scripts (studies/run_t2_S30.py writes to ../regen_output/).
   * Seeds: base seed 42, consecutive per ensemble member, paired across N.
 """
 

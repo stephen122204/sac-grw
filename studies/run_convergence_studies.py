@@ -22,7 +22,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from config import SimulationConfig
 from verify_solver import (
@@ -821,7 +821,10 @@ def main():
     parser.add_argument('--method', default='all',
                         choices=['heat', 'cole_hopf', 'gbmc', 'gbmc_dt', 'fhn', 'compare', 'all'],
                         help='Which study to run (default: all)')
-    parser.add_argument('--output-dir', default='output/convergence_study')
+    parser.add_argument('--output-dir',
+                        default=os.path.join(
+                            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                            'output', 'convergence_study'))
     parser.add_argument('--repeats', type=int, default=10)
     parser.add_argument('--seed', type=int, default=42)
     # Heat params

@@ -19,7 +19,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-BASE = os.path.dirname(os.path.abspath(__file__))
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REGEN = os.path.join(BASE, '..', 'regen_output')
 OUT   = os.path.join(BASE, '..', 'figuresv3_regen')
 

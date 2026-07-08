@@ -8,10 +8,10 @@ run_task2() defaults match everything except S (default 10).
 Base seed = 42, same as T4/T5/T6 studies. Seeds are 42, 43, ..., 71.
 """
 import os, sys, time
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import study_t2_traveling_shock as m
 
-m.OUT_BASE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+m.OUT_BASE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                           '..', 'regen_output', 't2_traveling_S30')
 os.makedirs(m.OUT_BASE, exist_ok=True)
 

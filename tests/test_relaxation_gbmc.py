@@ -23,7 +23,7 @@ import numpy as np
 import pytest
 
 import sys, os
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from relaxation_gbmc import simulate_burgers_relaxation_gbmc, _reconstruct_u_on_grid
 from config import SimulationConfig

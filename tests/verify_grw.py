@@ -22,7 +22,7 @@ else:
     matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import config as config_module
 from simulation import simulate_heat_equation
 

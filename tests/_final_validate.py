@@ -1,7 +1,8 @@
 """Final validation of all production run outputs."""
 import json, os, math
 
-base = 'output/final_prepublication_tests'
+base = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                    'output', 'final_prepublication_tests')
 issues = []
 
 # ---- Task 1: 5 dt values x 40 seeds ----

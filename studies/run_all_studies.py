@@ -1,7 +1,7 @@
 """Sequentially run studies T2, T4, T5, T1, T3, each writing into ../regen_output/."""
 import sys, os, time
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-REGEN = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+REGEN = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                      '..', 'regen_output')
 os.makedirs(REGEN, exist_ok=True)
 

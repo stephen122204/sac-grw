@@ -1,9 +1,13 @@
 """Pre-run verification checks for all 5 study scripts."""
+import os
 import sys
+
+STUDIES = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                       'studies')
 
 checks = {}
 
-with open('study_t1_gbmc_dt_bias.py') as f:
+with open(os.path.join(STUDIES, 'study_t1_gbmc_dt_bias.py')) as f:
     src1 = f.read()
 checks['t1_bias_formula']   = 'u_mean - u_exact' in src1
 checks['t1_spread_formula'] = 'u_arr - u_mean' in src1
@@ -11,7 +15,7 @@ checks['t1_total_formula']  = 'u_arr - u_exact' in src1
 checks['t1_identity_check'] = 'identity' in src1
 checks['t1_no_smoothing']   = 'convolve' not in src1 and 'gradient' not in src1
 
-with open('study_t2_traveling_shock.py') as f:
+with open(os.path.join(STUDIES, 'study_t2_traveling_shock.py')) as f:
     src2 = f.read()
 checks['t2_H1_transport']  = 'x_p = x_p + v * dt' in src2
 checks['t2_H2_sort']       = 'argsort(x_p' in src2
@@ -24,14 +28,14 @@ checks['t2_no_smoothing']  = 'convolve' not in src2 and 'gradient' not in src2
 checks['t2_u_inf_c_plus_A'] = 'u_inf = c + A' in src2
 checks['t2_mass_conservation'] = 'mass_change' in src2 or 'mass_outside' in src2
 
-with open('study_t4_heat_extended.py') as f:
+with open(os.path.join(STUDIES, 'study_t4_heat_extended.py')) as f:
     src4 = f.read()
 checks['t4_N_max_50000']   = '50000' in src4
 checks['t4_default_S30']   = 'S=30' in src4
 checks['t4_bias_decomp']   = 'E_bias' in src4 and 'E_spread' in src4 and 'E_total' in src4
 checks['t4_no_dt_reason']  = 'exact in time' in src4 or 'no_dt_study_reason' in src4
 
-with open('study_t5_fhn_extended.py') as f:
+with open(os.path.join(STUDIES, 'study_t5_fhn_extended.py')) as f:
     src5 = f.read()
 checks['t5_l1']          = "'l1'" in src5
 checks['t5_l2']          = "'l2'" in src5

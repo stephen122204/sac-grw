@@ -42,7 +42,7 @@ etc.) are **exploration settings, not the paper configurations**. The paper
 configurations live in the `reproduce.py` entry points (and the wrapper
 scripts they call). In particular, the **T2 traveling-shock paper run is
 S=30 seeds** — `run_task2()`'s S=10 default is exploration only; use
-`python reproduce.py t2` (which calls `run_t2_S30.py`).
+`python reproduce.py t2` (which calls `studies/run_t2_S30.py`).
 
 ---
 
@@ -53,12 +53,13 @@ S=30 seeds** — `run_task2()`'s S=10 default is exploration only; use
 | `reproduce.py` | Entry points for the paper runs + `verify` (no-rerun check against `expected_values.json`) |
 | `expected_values.json` | Pinned expected values backing `reproduce.py verify` |
 | `MANIFEST.md` | Manuscript table/figure → study → data mapping |
-| `study_t1_gbmc_dt_bias.py` … `study_t5_fhn_extended.py` | Pre-publication studies T1–T5 |
-| `study_gbmc_production_n_refinement.py` | Production GBMC N-refinement (T6) |
-| `run_t2_S30.py`, `run_prepublication_studies.py`, `run_all_studies.py` | Wrapper / master runners |
+| `studies/study_t1_gbmc_dt_bias.py` … `studies/study_t5_fhn_extended.py` | Pre-publication studies T1–T5 |
+| `studies/study_gbmc_production_n_refinement.py` | Production GBMC N-refinement (T6) |
+| `studies/run_t2_S30.py`, `studies/run_prepublication_studies.py`, `studies/run_all_studies.py` | Wrapper / master runners (rest of `studies/`: earlier convergence/N-refinement runners) |
 | `simulation.py`, `relaxation_gbmc.py` | Solvers: GRW dispatchers and the RB-GBMC Burgers scheme |
 | `config.py`, `configs/`, `main.py` | Exploration CLI: run one simulation from a JSON config |
-| `verify_solver.py`, `verify_grw.py`, `test_relaxation_gbmc.py` | Verification harnesses and unit tests |
+| `verify_solver.py`, `tests/verify_grw.py`, `tests/test_relaxation_gbmc.py` | Verification harnesses and unit tests |
+| `tools/` | Manifest / paper-table / figure-fix generators |
 | `output/final_prepublication_tests/` | Checked-in study outputs backing the manuscript |
 | `output/convergence_study/` | Earlier exploration outputs (not used by the paper; see `RELEASE_NOTES.md`) |
 | `regen_data/` | Corrected tanh-fit regeneration (Table 6 fitted columns, dt-study viscosities, three `_fixed` draft figures); see `regen_data/PROVENANCE.md` |
@@ -82,7 +83,7 @@ Single simulations from JSON configs (interactive prompts if no config given):
 ```bash
 python main.py configs/burgers_stationary_shock.json
 python verify_solver.py --equation all      # solver verification harness
-python verify_grw.py                        # heat-only GRW checks
+python tests/verify_grw.py                  # heat-only GRW checks
 ```
 
 `config_template.jsonc` documents the config fields (strip `//` comments

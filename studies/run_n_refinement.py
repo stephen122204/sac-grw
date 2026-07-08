@@ -21,7 +21,7 @@ else:
     matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from relaxation_gbmc import simulate_burgers_relaxation_gbmc
 from config import SimulationConfig
@@ -115,8 +115,12 @@ def main():
                         help="Base RNG seed (default: random); each repeat gets seed+rep")
     parser.add_argument("--repeats", type=int, default=1,
                         help="Number of runs per N to average over (default: 1)")
-    parser.add_argument("--output-dir", default="output/n_refinement_rbmc",
-                        help="Output directory (default: output/n_refinement_rbmc)")
+    parser.add_argument("--output-dir",
+                        default=os.path.join(
+                            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                            "output", "n_refinement_rbmc"),
+                        help="Output directory (default: output/n_refinement_rbmc "
+                             "under the repo root)")
     args = parser.parse_args()
 
     os.makedirs(args.output_dir, exist_ok=True)

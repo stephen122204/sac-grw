@@ -134,9 +134,9 @@ Particles that exit the output window $[0, L]$ are **not removed**.  They:
 | File | Purpose |
 |------|---------|
 | `relaxation_gbmc.py` | Core solver (`simulate_burgers_relaxation_gbmc`) |
-| `test_relaxation_gbmc.py` | Pytest suite (spec §10 tests A–J) |
+| `tests/test_relaxation_gbmc.py` | Pytest suite (spec §10 tests A–J) |
 | `configs/burgers_relaxation_gbmc.json` | Stationary-shock benchmark config |
-| `run_n_refinement.py` | N-refinement convergence study |
+| `studies/run_n_refinement.py` | N-refinement convergence study |
 
 ---
 
@@ -144,7 +144,7 @@ Particles that exit the output window $[0, L]$ are **not removed**.  They:
 
 ```bash
 # Run tests
-pytest test_relaxation_gbmc.py -v
+pytest tests/test_relaxation_gbmc.py -v
 
 # End-to-end pipeline
 python main.py configs/burgers_relaxation_gbmc.json
@@ -153,7 +153,7 @@ python main.py configs/burgers_relaxation_gbmc.json
 python verify_solver.py --equation burgers_rbmc
 
 # N-refinement convergence study
-python run_n_refinement.py
+python studies/run_n_refinement.py
 ```
 
 ---
