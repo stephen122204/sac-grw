@@ -2,7 +2,6 @@
 import sys, os, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import study_gbmc_production_n_refinement as m
-# override in-place
 m.N_SEQ = [100, 200]
 m.S = 3
 m.OUT_BASE = os.path.join(os.path.dirname(os.path.abspath(__file__)),

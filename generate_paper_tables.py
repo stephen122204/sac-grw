@@ -1,14 +1,7 @@
-"""
-generate_paper_tables.py
-========================
-Reads convergence study JSON output and produces:
-  - output/convergence_study/summary_table.tex   (main LaTeX table, all methods)
-  - output/convergence_study/gbmc_dt_table.tex   (GBMC dt-refinement)
-  - output/convergence_study/comparison_table.tex (Cole-Hopf vs GBMC head-to-head)
-  - output/convergence_study/results_summary.md  (human-readable markdown)
+"""Read convergence-study JSON and write LaTeX tables + markdown summary.
 
-Run:
-    python generate_paper_tables.py
+Outputs (in output/convergence_study/): summary_table.tex, gbmc_dt_table.tex,
+comparison_table.tex, results_summary.md.
 """
 import json, os, sys
 
@@ -34,9 +27,7 @@ def main():
     tw  = load(f"{base}/cole_hopf/traveling_wave_verification.json")
     cmp = load(f"{base}/comparison/cole_hopf_vs_gbmc.json")
 
-    # ------------------------------------------------------------------
     # TABLE 1 — N-refinement for all methods
-    # ------------------------------------------------------------------
     lines = []
     lines.append(r"\begin{table}[htbp]")
     lines.append(r"\centering")
@@ -56,7 +47,6 @@ def main():
     lines.append(r"    & $L^2$ error & $L^2$ error & $L^2$ error & Front error \\")
     lines.append(r"\hline")
 
-    # Build per-N dicts for each method
     def by_N(results, key):
         return {r['N']: r for r in results}
 
@@ -65,7 +55,6 @@ def main():
     gb_d  = by_N(gb['results'],  None)
     fhn_d = by_N(fhn['results'], None)
 
-    # All N values across all methods
     all_Ns = sorted(set(
         list(h_d.keys()) + list(ch_d.keys()) + list(gb_d.keys()) + list(fhn_d.keys())
     ))
@@ -101,9 +90,7 @@ def main():
 
     table1 = "\n".join(lines)
 
-    # ------------------------------------------------------------------
     # TABLE 2 — GBMC dt-refinement
-    # ------------------------------------------------------------------
     lines2 = []
     lines2.append(r"\begin{table}[htbp]")
     lines2.append(r"\centering")
@@ -136,9 +123,7 @@ def main():
     lines2.append(r"\end{table}")
     table2 = "\n".join(lines2)
 
-    # ------------------------------------------------------------------
     # TABLE 3 — Cole-Hopf vs GBMC comparison
-    # ------------------------------------------------------------------
     lines3 = []
     lines3.append(r"\begin{table}[htbp]")
     lines3.append(r"\centering")
@@ -166,9 +151,6 @@ def main():
     lines3.append(r"\end{table}")
     table3 = "\n".join(lines3)
 
-    # ------------------------------------------------------------------
-    # Write LaTeX files
-    # ------------------------------------------------------------------
     os.makedirs(base, exist_ok=True)
     with open(f"{base}/summary_table.tex", "w") as f:
         f.write("% TABLE 1: N-refinement for all four methods\n")
@@ -188,9 +170,7 @@ def main():
         f.write("\n")
     print(f"[written] {base}/comparison_table.tex")
 
-    # ------------------------------------------------------------------
     # Markdown summary
-    # ------------------------------------------------------------------
     md = []
     md.append("# Convergence Study Results")
     md.append("")

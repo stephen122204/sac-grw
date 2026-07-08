@@ -1,7 +1,4 @@
-"""Sequentially launch T2 (traveling), T4 (heat_extended), T5 (fhn_extended),
-T1 (dt-bias). Each writes into regen_output/. T3 (cole-hopf plateau) is
-skipped here — it's a deterministic single-run diagnostic driven by
-different figure code."""
+"""Sequentially run studies T2, T4, T5, T1, T3, each writing into ../regen_output/."""
 import sys, os, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 REGEN = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -18,12 +15,10 @@ for tag, mod_name in [
     print(f"\n=========== {tag} ===========")
     t0 = time.perf_counter()
     m = __import__(mod_name)
-    # override OUT_BASE if present
     if hasattr(m, 'OUT_BASE'):
         base = os.path.join(REGEN, mod_name.replace('study_', ''))
         m.OUT_BASE = base
         os.makedirs(base, exist_ok=True)
-    # find its run function
     fn = None
     for name in ('run_study', 'run_task1', 'run_task2', 'run_task3', 'run_task4', 'run_task5', 'main'):
         fn = getattr(m, name, None)

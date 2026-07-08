@@ -2,9 +2,7 @@ import json
 import numpy as np
 
 
-# ---------------------------
 # Allowed-value registries
-# ---------------------------
 _ALLOWED_EQUATIONS = {"heat", "burgers", "fitzhugh-nagumo"}
 
 _ALLOWED_DOMAIN_TYPES = {"finite", "semi-infinite", "infinite"}
@@ -49,7 +47,7 @@ def validate_config_dict(data: dict) -> None:
 
     Raises ValueError with a descriptive message on the first violation found.
     """
-    # --- required global fields ---
+    # required global fields
     required_global = [
         "equation_type", "domain_type", "domain_size",
         "diff_constant", "time_step", "total_time", "num_points",
@@ -73,7 +71,7 @@ def validate_config_dict(data: dict) -> None:
             f"'domain_type' must be one of {sorted(_ALLOWED_DOMAIN_TYPES)}, got {dt!r}."
         )
 
-    # --- boundary_conditions (required for finite domains) ---
+    # boundary_conditions (required for finite domains)
     if dt == "finite":
         bc = data.get("boundary_conditions")
         if not isinstance(bc, dict) or "LEFT" not in bc or "RIGHT" not in bc:
@@ -94,7 +92,7 @@ def validate_config_dict(data: dict) -> None:
                     f"{sorted(_ALLOWED_BC_TYPES)}, got {bc_type!r}."
                 )
 
-    # --- numeric ranges ---
+    # numeric ranges
     domain_size = float(data["domain_size"])
     if domain_size <= 0:
         raise ValueError(f"'domain_size' must be > 0, got {domain_size}.")
@@ -120,7 +118,7 @@ def validate_config_dict(data: dict) -> None:
     if num_points < 1:
         raise ValueError(f"'num_points' must be >= 1, got {num_points}.")
 
-    # --- equation-specific validation ---
+    # equation-specific validation
     if eq == "fitzhugh-nagumo":
         for param in ("a", "b", "tau"):
             if data.get(param) is None:
@@ -207,9 +205,7 @@ class SimulationConfig:
         self.burgers_ic_center = float(burgers_ic_center) if burgers_ic_center is not None else None
 
 
-# ---------------------------
 # Initial condition generators
-# ---------------------------
 
 def generate_gaussian_particle_cloud(domain_size, num_points, center=None, sigma=None, jump_height=1.0):
     """
@@ -470,9 +466,7 @@ def generate_burgers_traveling_wave_ic(domain_size, num_points, nu, x_center=Non
     return list(zip(positions.tolist(), values.tolist()))
 
 
-# ---------------------------
 # Load config from JSON
-# ---------------------------
 
 def load_config_from_json(path: str) -> SimulationConfig:
     """
@@ -694,9 +688,7 @@ def load_config_from_json(path: str) -> SimulationConfig:
     )
 
 
-# ---------------------------
 # Existing interactive input
-# ---------------------------
 
 def get_user_input():
     print("Welcome to the Gradient Random Walk Simulation Setup")

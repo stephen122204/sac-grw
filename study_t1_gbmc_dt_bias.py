@@ -1,16 +1,11 @@
-"""
-study_t1_gbmc_dt_bias.py
-========================
-Task 1: High-N GBMC time-step bias study.
+"""Task 1: High-N GBMC time-step bias study.
 
-Decompose total error into:
+Decomposes total error per dt into
   E_bias(dt)   = ||mean_u_dt - u_exact||_2
   E_spread(dt) = [mean_s ||u_s - mean_u_dt||_2^2]^(1/2)
   E_total(dt)  = [mean_s ||u_s - u_exact||_2^2]^(1/2)
-  Verify: E_total^2 = E_bias^2 + E_spread^2.
-
-Also fits: nu_fit(dt), x_center_fit(dt) from ensemble mean profile.
-
+with the identity E_total^2 = E_bias^2 + E_spread^2 verified, and fits
+nu_fit(dt), x_center_fit(dt) from the ensemble-mean profile.
 Output: output/final_prepublication_tests/gbmc_dt_bias/
 """
 import argparse
@@ -179,7 +174,6 @@ def run_task1(N_vals=None, dt_seq=None, S=40, base_seed=42,
             for s_idx, seed in enumerate(seeds):
                 try:
                     x_out, u_run, elapsed = _run_one(N, nu, T, dt, L, A, xc, a, seed)
-                    # Interpolate to x_grid if needed
                     if len(x_out) != N or not np.allclose(x_out, x_grid, atol=1e-10):
                         u_run = np.interp(x_grid, x_out, u_run)
                     u_runs.append(u_run)
@@ -197,22 +191,17 @@ def run_task1(N_vals=None, dt_seq=None, S=40, base_seed=42,
             S_actual = len(u_arr)
             u_mean = u_arr.mean(axis=0)
 
-            # Error decomposition
-            # E_bias = ||u_mean - u_exact||_2 * sqrt(dx)
+            # Error decomposition (definitions in module docstring)
             E_bias = float(np.sqrt(np.sum((u_mean - u_exact)**2) * dx))
-            # E_spread = sqrt(mean_s ||u_s - u_mean||_2^2 * dx)
             E_spread = float(np.sqrt(np.mean(
                 np.sum((u_arr - u_mean[None, :])**2 * dx, axis=1)
             )))
-            # E_total = sqrt(mean_s ||u_s - u_exact||_2^2 * dx)
             E_total = float(np.sqrt(np.mean(
                 np.sum((u_arr - u_exact[None, :])**2 * dx, axis=1)
             )))
-            # Verify identity
             E_total_check = float(np.sqrt(E_bias**2 + E_spread**2))
             identity_err = abs(E_total - E_total_check) / max(E_total, 1e-15)
 
-            # Per-run L2 stats
             l2_runs = [float(np.sqrt(np.sum((u_arr[i] - u_exact)**2) * dx))
                        for i in range(S_actual)]
 
@@ -229,7 +218,6 @@ def run_task1(N_vals=None, dt_seq=None, S=40, base_seed=42,
                   f"center_err={center_err:.5f}  nu_err={nu_err:.5f}")
             print(f"    S_actual={S_actual}  mean_rt={mean_rt:.3f}s")
 
-            # Save per-run CSV
             csv_path = _mk(OUT_BASE, f'per_run_N{N}_dt{dt:.8f}.csv')
             with open(csv_path, 'w', newline='') as f:
                 w = csv.writer(f)
@@ -237,11 +225,9 @@ def run_task1(N_vals=None, dt_seq=None, S=40, base_seed=42,
                 for i, (seed, l2, rt) in enumerate(zip(seeds[:S_actual], l2_runs, runtimes)):
                     w.writerow([seed, f'{l2:.8f}', f'{rt:.6f}'])
 
-            # Save ensemble mean profile
             np.save(_mk(OUT_BASE, f'profile_N{N}_dt{dt:.8f}.npy'),
                     np.stack([x_grid, u_mean, u_exact]))
 
-            # Per-run records
             for i, (seed, l2, rt) in enumerate(zip(seeds[:S_actual], l2_runs, runtimes)):
                 all_per_run.append({
                     'N': N, 'dt': dt, 'seed': seed,
@@ -288,7 +274,6 @@ def run_task1(N_vals=None, dt_seq=None, S=40, base_seed=42,
 
         print(f"\n  Fitted E_bias slope vs dt: {bias_slope:.4f}  CI=[{b_lo:.4f},{b_hi:.4f}]")
 
-        # Conclusion
         if np.isnan(bias_slope):
             conclusion = "bias_unresolved: insufficient data points with E_bias > noise floor"
         elif bias_arr.max() < 2 * spr_arr.min():

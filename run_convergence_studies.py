@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
-"""
-run_convergence_studies.py
-==========================
-Systematic N-refinement and dt-refinement convergence studies for all four
+"""Systematic N-refinement and dt-refinement convergence studies for all four
 GRW/GBMC methods:
 
   1. Heat GRW             -- N-refinement vs exact error-function solution
@@ -10,15 +7,8 @@ GRW/GBMC methods:
   3. Relaxation GBMC      -- N-refinement + dt-refinement vs exact stationary-shock
   4. FitzHugh-Nagumo GRW  -- N-refinement of front-location error vs exact traveling-wave
 
-All results are written to --output-dir (default: output/convergence_study/).
-
-Usage:
-    python run_convergence_studies.py                  # all studies, default params
-    python run_convergence_studies.py --method heat    # heat only
-    python run_convergence_studies.py --repeats 20 --seed 42
-    python run_convergence_studies.py --output-dir output/paper_data
-
-Methods flags: heat, cole_hopf, gbmc, fhn, gbmc_dt, all (default: all)
+Results go to --output-dir (default: output/convergence_study/); see --help.
+Method flags: heat, cole_hopf, gbmc, fhn, gbmc_dt, all (default: all).
 """
 
 import argparse
@@ -41,10 +31,6 @@ from verify_solver import (
 )
 
 
-# ---------------------------------------------------------------------------
-# Shared helpers
-# ---------------------------------------------------------------------------
-
 def _fit_loglog(x_arr, y_arr):
     """Fit y = C * x^alpha in log-log space. Return (alpha, C, r2)."""
     valid = np.isfinite(x_arr) & np.isfinite(y_arr) & (x_arr > 0) & (y_arr > 0)
@@ -55,7 +41,6 @@ def _fit_loglog(x_arr, y_arr):
     coeffs = np.polyfit(lx, ly, 1)
     alpha = float(coeffs[0])
     C = float(10.0 ** coeffs[1])
-    # R^2
     ly_fit = np.polyval(coeffs, lx)
     ss_res = float(np.sum((ly - ly_fit) ** 2))
     ss_tot = float(np.sum((ly - ly.mean()) ** 2))
@@ -131,9 +116,7 @@ def _convergence_plot(
     print(f"  [plot] {output_path}")
 
 
-# ---------------------------------------------------------------------------
 # 1. Heat GRW N-refinement
-# ---------------------------------------------------------------------------
 
 def _run_heat_one(N, alpha, T, dt, L, x0, uL, uR, seed):
     """Run one Heat GRW instance; return error metrics dict."""
@@ -243,9 +226,7 @@ def run_heat_n_refinement(output_dir, n_seq, repeats, base_seed, alpha, T, dt, L
     return out
 
 
-# ---------------------------------------------------------------------------
 # 2. Cole-Hopf Burgers N-refinement
-# ---------------------------------------------------------------------------
 
 def _run_cole_hopf_one(N, nu, T, dt, L, amplitude, seed):
     """Run one Cole-Hopf GRW instance on the stationary shock."""
@@ -354,9 +335,7 @@ def run_cole_hopf_n_refinement(output_dir, n_seq, repeats, base_seed, nu, T, dt,
     return out
 
 
-# ---------------------------------------------------------------------------
 # 3a. Relaxation GBMC N-refinement
-# ---------------------------------------------------------------------------
 
 def _run_gbmc_one(N, nu, T, dt, L, amplitude, seed, relaxation_a=2.0):
     """Run one Relaxation GBMC instance on the stationary shock."""
@@ -468,9 +447,7 @@ def run_gbmc_n_refinement(output_dir, n_seq, repeats, base_seed, nu, T, dt, L, a
     return out
 
 
-# ---------------------------------------------------------------------------
 # 3b. Relaxation GBMC dt-refinement
-# ---------------------------------------------------------------------------
 
 def run_gbmc_dt_refinement(output_dir, dt_seq, repeats, base_seed,
                             nu, T, L, N_fixed, amplitude, a=2.0):
@@ -572,9 +549,7 @@ def run_gbmc_dt_refinement(output_dir, dt_seq, repeats, base_seed,
     return out
 
 
-# ---------------------------------------------------------------------------
 # 4. FHN GRW N-refinement
-# ---------------------------------------------------------------------------
 
 def _run_fhn_one(N, D, T, dt, L, a_param, x_center, seed):
     """Run one FHN scalar GRW instance; return front-location error at t=T."""
@@ -690,9 +665,7 @@ def run_fhn_n_refinement(output_dir, n_seq, repeats, base_seed, D, T, dt, L, a_p
     return out
 
 
-# ---------------------------------------------------------------------------
 # 5. Cole-Hopf traveling-wave verification (not a convergence study)
-# ---------------------------------------------------------------------------
 
 def run_cole_hopf_traveling_wave(output_dir, nu, T, dt, L, N):
     """Single run of Cole-Hopf GRW on the traveling-wave IC; save comparison plot."""
@@ -753,7 +726,6 @@ def run_cole_hopf_traveling_wave(output_dir, nu, T, dt, L, N):
 
     _save_json(m, os.path.join(output_dir, 'cole_hopf', 'traveling_wave_verification.json'))
 
-    # Plot
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
     ax1.plot(x_grid, u_exact, 'k-', lw=2, label='Exact traveling wave')
     ax1.plot(x_grid, u_num, 'r--', lw=1.5, label=f'Cole-Hopf GRW (N={N})')
@@ -773,9 +745,7 @@ def run_cole_hopf_traveling_wave(output_dir, nu, T, dt, L, N):
     return m
 
 
-# ---------------------------------------------------------------------------
 # 6. Cole-Hopf vs GBMC comparison at matched N
-# ---------------------------------------------------------------------------
 
 def run_method_comparison(output_dir, n_seq, nu, T, dt, L, amplitude, repeats, base_seed, a=2.0):
     """Compare Cole-Hopf GRW vs Relaxation GBMC on the stationary shock at matched N."""
@@ -844,10 +814,6 @@ def run_method_comparison(output_dir, n_seq, nu, T, dt, L, amplitude, repeats, b
     return out
 
 
-# ---------------------------------------------------------------------------
-# Main
-# ---------------------------------------------------------------------------
-
 def main():
     parser = argparse.ArgumentParser(
         description="Systematic convergence studies for all GRW/GBMC methods",
@@ -894,7 +860,7 @@ def main():
 
     results_manifest = {}
 
-    # --- Heat ---
+    # Heat
     if run_all or args.method == 'heat':
         r = run_heat_n_refinement(
             out, args.heat_n_seq, args.repeats, args.seed,
@@ -907,7 +873,7 @@ def main():
             'l2_slope_ci': [r['fit']['l2_slope_ci_lo'], r['fit']['l2_slope_ci_hi']],
         }
 
-    # --- Cole-Hopf Burgers ---
+    # Cole-Hopf Burgers
     if run_all or args.method == 'cole_hopf':
         r = run_cole_hopf_n_refinement(
             out, args.burgers_n_seq, args.repeats, args.seed,
@@ -927,7 +893,7 @@ def main():
             'l2': r_tw['l2'], 'wave_speed_error': r_tw['wave_speed_error'],
         }
 
-    # --- Relaxation GBMC N-refinement ---
+    # Relaxation GBMC N-refinement
     if run_all or args.method == 'gbmc':
         r = run_gbmc_n_refinement(
             out, args.burgers_n_seq, args.repeats, args.seed,
@@ -941,7 +907,7 @@ def main():
             'l2_slope_ci': [r['fit']['l2_slope_ci_lo'], r['fit']['l2_slope_ci_hi']],
         }
 
-    # --- Relaxation GBMC dt-refinement ---
+    # Relaxation GBMC dt-refinement
     if run_all or args.method == 'gbmc_dt':
         r = run_gbmc_dt_refinement(
             out, args.gbmc_dt_seq, args.repeats, args.seed,
@@ -956,7 +922,7 @@ def main():
             'interpretation': r['fit']['interpretation'],
         }
 
-    # --- FHN ---
+    # FHN
     if run_all or args.method == 'fhn':
         r = run_fhn_n_refinement(
             out, args.fhn_n_seq, args.repeats, args.seed,
@@ -970,7 +936,7 @@ def main():
             'slope_ci': [r['fit']['slope_ci_lo'], r['fit']['slope_ci_hi']],
         }
 
-    # --- Method comparison ---
+    # Method comparison
     if run_all or args.method == 'compare':
         r = run_method_comparison(
             out, args.compare_n_seq,

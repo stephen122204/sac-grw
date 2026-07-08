@@ -41,7 +41,6 @@ fit4 = d4.get('fit', {})
 for k, v in fit4.items():
     if isinstance(v, (int, float)) and (math.isnan(float(v)) or math.isinf(float(v))):
         issues.append(f'T4 fit.{k}={v}')
-# Check spread slope is negative (converging)
 spread_slope = fit4.get('spread_slope', 0)
 if spread_slope >= 0:
     issues.append(f'T4 spread_slope={spread_slope:.4f} is non-negative (not converging)')

@@ -23,10 +23,9 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 REGEN = os.path.join(BASE, '..', 'regen_output')
 OUT   = os.path.join(BASE, '..', 'figuresv3_regen')
 
-# ---------------------------------------------------------------------------
 # Fix 1: production_gbmc_bias_spread_total_vs_N
-# ---------------------------------------------------------------------------
 def slope_ci(x, y, n_boot=10000, seed=42):
+    """Log-log slope, R^2, and bootstrap 95% CI."""
     lx, ly = np.log(x), np.log(y)
     s, b = np.polyfit(lx, ly, 1)
     R2 = 1 - np.sum((ly - (s*lx + b))**2) / np.sum((ly - ly.mean())**2)
@@ -61,7 +60,6 @@ ax.loglog(N, Eb, '^-', color='firebrick',
           lw=2, ms=7,
           label=(f'$E_\\mathrm{{bias}}$ (small, non-monotone; '
                  f'slope reported for reference only)'))
-# Add a N^{-1/2} reference
 N_grid = np.array([N.min(), N.max()])
 ax.loglog(N_grid, Es[0] * (N_grid/N[0])**(-0.5),
           'k:', lw=1.2, label=r'$N^{-1/2}$ reference')
@@ -70,7 +68,6 @@ ax.set_title('RB--GBMC production: bias--spread--total decomposition')
 ax.grid(True, which='both', alpha=0.3)
 ax.legend(loc='lower left', fontsize=8, framealpha=0.9)
 
-# Annotate the non-monotonicity in a text box
 txt = (f'Note: $E_\\mathrm{{bias}}$ column is non-monotone\n'
        f'(0.00261 at $N=3200$; 0.00336 at $N=6400$).\n'
        f'Bias fit: slope $= {s_b:.3f}$, $R^2 = {r2_b:.3f}$, '
@@ -90,9 +87,7 @@ plt.close(fig)
 print(f'wrote production_gbmc_bias_spread_total_vs_N_fixed.pdf')
 
 
-# ---------------------------------------------------------------------------
-# Fix 2: heat_bias_spread_total_vs_N  headlines spread, not total
-# ---------------------------------------------------------------------------
+# Fix 2: heat_bias_spread_total_vs_N headlines spread, not total
 rows = list(csv.DictReader(open(f'{REGEN}/t4_heat_extended/summary_by_N.csv')))
 N  = np.array([int(r['N']) for r in rows])
 Eb = np.array([float(r['E_bias']) for r in rows])
@@ -110,7 +105,6 @@ N_ref = np.array([N.min(), N.max()])
 c0 = Et[0] * N[0]**0.5
 ax.loglog(N_ref, c0 * N_ref**(-0.5), 'k--', lw=1.2, label=r'$O(N^{-1/2})$')
 
-# HEADLINE the spread rate; total is secondary
 ci_s_str = f'[{ci_s[0]:.3f},{ci_s[1]:.3f}]'
 ci_t_str = f'[{ci_t[0]:.3f},{ci_t[1]:.3f}]'
 ax.set_title(f'Heat GRW: bias--spread--total vs N\n'

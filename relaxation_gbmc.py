@@ -1,7 +1,4 @@
-"""
-relaxation_gbmc.py
-==================
-BPC Relaxation + Gradient Brownian Monte Carlo (GBMC) for viscous Burgers.
+"""BPC Relaxation + Gradient Brownian Monte Carlo (GBMC) for viscous Burgers.
 
 PDE:  u_t + u * u_x = nu * u_xx
 
@@ -73,10 +70,6 @@ import os
 
 import numpy as np
 
-
-# ---------------------------------------------------------------------------
-# Internal helpers
-# ---------------------------------------------------------------------------
 
 def _reflect(x, m, bc_left, bc_right, L, n_passes=4):
     """
@@ -163,10 +156,6 @@ def _reconstruct_u_on_grid(x_p, m_p, u_left, x_out, sigma_bins=4):
     return u_out
 
 
-# ---------------------------------------------------------------------------
-# Diagnostic figure
-# ---------------------------------------------------------------------------
-
 def _save_rbmc_diagnostics(diag_dir, mass_t, u_min_t, u_max_t, snaps,
                             x_out, u_final, u_left, dt, n_steps):
     """Save a 2x2 diagnostic figure for the relaxation GBMC run."""
@@ -225,10 +214,6 @@ def _save_rbmc_diagnostics(diag_dir, mass_t, u_min_t, u_max_t, snaps,
     print(f"  [RBMC] Saved diagnostics -> {out_path}")
 
 
-# ---------------------------------------------------------------------------
-# Main solver
-# ---------------------------------------------------------------------------
-
 def simulate_burgers_relaxation_gbmc(globs, config, _diag_dir=None):
     """
     Viscous Burgers solver: BPC two-speed relaxation + Gradient Brownian MC.
@@ -241,9 +226,7 @@ def simulate_burgers_relaxation_gbmc(globs, config, _diag_dir=None):
     :return: updated globs, positions on uniform [0,L] grid, values = [u_i].
              Always raises (never returns original globs) on any failure.
     """
-    # ---------------------------------------------------------------------- #
     # 1. Domain mode
-    # ---------------------------------------------------------------------- #
     domain_mode = (
         getattr(config, 'relaxation_domain_mode', None) or 'whole_line'
     ).strip().lower()
@@ -253,9 +236,7 @@ def simulate_burgers_relaxation_gbmc(globs, config, _diag_dir=None):
             f"Got {domain_mode!r}."
         )
 
-    # ---------------------------------------------------------------------- #
     # 2. Initial condition type
-    # ---------------------------------------------------------------------- #
     ic_type = (getattr(config, 'burgers_ic_type', '') or '').strip().lower()
     if ic_type != 'stationary_shock':
         raise NotImplementedError(
@@ -264,9 +245,7 @@ def simulate_burgers_relaxation_gbmc(globs, config, _diag_dir=None):
             f"Got burgers_ic_type={ic_type!r}."
         )
 
-    # ---------------------------------------------------------------------- #
     # 3. Relaxation speed -- must be explicit, no silent fallback
-    # ---------------------------------------------------------------------- #
     a_raw = getattr(config, 'relaxation_speed_a', None)
     if a_raw is None:
         raise ValueError(
@@ -278,9 +257,7 @@ def simulate_burgers_relaxation_gbmc(globs, config, _diag_dir=None):
     if a <= 0.0:
         raise ValueError(f"relaxation_speed_a must be > 0, got {a}.")
 
-    # ---------------------------------------------------------------------- #
     # 4. Shock amplitude
-    # ---------------------------------------------------------------------- #
     A_raw = getattr(config, 'burgers_ic_amplitude', None)
     if A_raw is None:
         raise ValueError(
@@ -296,9 +273,7 @@ def simulate_burgers_relaxation_gbmc(globs, config, _diag_dir=None):
             f"burgers_ic_amplitude (A={A:.6g}) to satisfy  a > A > max|u_i|."
         )
 
-    # ---------------------------------------------------------------------- #
     # 5. Physical parameters
-    # ---------------------------------------------------------------------- #
     nu = float(config.diff_constant)
     dt = float(config.time_step)
     T  = float(config.total_time)
@@ -308,9 +283,7 @@ def simulate_burgers_relaxation_gbmc(globs, config, _diag_dir=None):
     xc_raw = getattr(config, 'burgers_ic_center', None)
     xc = float(xc_raw) if xc_raw is not None else L / 2.0
 
-    # ---------------------------------------------------------------------- #
     # 6. Parameter validation
-    # ---------------------------------------------------------------------- #
     if N < 2:
         raise ValueError(f"num_points must be >= 2, got {N}.")
     if nu <= 0.0:
@@ -331,20 +304,16 @@ def simulate_burgers_relaxation_gbmc(globs, config, _diag_dir=None):
             "Adjust either so their ratio is exactly integral."
         )
 
-    # ---------------------------------------------------------------------- #
     # 7. Private RNG
-    # ---------------------------------------------------------------------- #
     seed = getattr(config, 'seed', None)
     rng = np.random.default_rng(int(seed) if seed is not None else None)
 
-    # ---------------------------------------------------------------------- #
     # 8. Quantile initialisation for stationary shock
     #
     #   r_i = (i - 1/2) / N   for i = 1..N
     #   X_i = x_c + (2*nu/A) * arctanh(2*r_i - 1)
     #   m_i = -2*A/N  (all equal; sum = -2A = u(+inf) - u(-inf))
     #   u_{-inf} = A
-    # ---------------------------------------------------------------------- #
     i_arr = np.arange(1, N + 1, dtype=float)
     r     = (i_arr - 0.5) / float(N)
     x_p   = xc + (2.0 * nu / A) * np.arctanh(2.0 * r - 1.0)
@@ -367,9 +336,7 @@ def simulate_burgers_relaxation_gbmc(globs, config, _diag_dir=None):
     print(f"  [RBMC] particle x range at t=0: "
           f"[{float(x_p.min()):.4g}, {float(x_p.max()):.4g}]")
 
-    # ---------------------------------------------------------------------- #
     # 9. Initialise velocity labels (steps 2-6; transport step 1 is skipped)
-    # ---------------------------------------------------------------------- #
     order = np.argsort(x_p, kind='stable')
     x_p = x_p[order]
     m_p = m_p[order]
@@ -397,7 +364,6 @@ def simulate_burgers_relaxation_gbmc(globs, config, _diag_dir=None):
     print(f"  [RBMC] Subcharacteristic OK at t=0: "
           f"max|u|={max_u_init:.6g} < a={a:.6g}")
 
-    # Diagnostic setup.
     if _diag_dir is not None:
         _snap_at = {0, n_steps // 4, n_steps // 2, 3 * n_steps // 4, n_steps - 1}
         _snaps: dict = {}
@@ -405,13 +371,10 @@ def simulate_burgers_relaxation_gbmc(globs, config, _diag_dir=None):
         _u_min_t: list = []
         _u_max_t: list = []
 
-    # ---------------------------------------------------------------------- #
     # 10. Time loop
-    # ---------------------------------------------------------------------- #
     for step in range(n_steps):
 
-        # ---- A: BPC relaxation transport (NO reflection) ----------------- #
-
+        # A: BPC relaxation transport (NO reflection)
         # H1. Transport: X_i <- X_i + V_i * dt
         x_p = x_p + v * dt
 
@@ -453,12 +416,10 @@ def simulate_burgers_relaxation_gbmc(globs, config, _diag_dir=None):
         #     Labels resampled exactly ONCE here; NOT resampled after diffusion.
         v = np.where(rng.random(n_p) < p_plus, +a, -a)
 
-        # ---- B: Brownian diffusion (NO reflection) ----------------------- #
-
+        # B: Brownian diffusion (NO reflection)
         # H8. Diffuse.
         x_p = x_p + rng.normal(0.0, sigma, size=n_p)
 
-        # Diagnostics.
         if _diag_dir is not None:
             _mass_t.append(float(m_p.sum()))
             _u_min_t.append(float(u.min()))
@@ -466,9 +427,7 @@ def simulate_burgers_relaxation_gbmc(globs, config, _diag_dir=None):
             if step in _snap_at:
                 _snaps[step] = (x_p.copy(), m_p.copy())
 
-    # ---------------------------------------------------------------------- #
     # 11. Outside-window tracking
-    # ---------------------------------------------------------------------- #
     x_lo = 0.0
     x_hi = float(L)
     outside = (x_p < x_lo) | (x_p > x_hi)
@@ -482,12 +441,10 @@ def simulate_burgers_relaxation_gbmc(globs, config, _diag_dir=None):
           f"total_particle_mass={total_mass_final:.6e}  "
           f"(expected {-2.0 * A:.6e})")
 
-    # ---------------------------------------------------------------------- #
     # 12. Raw cumulative-sum reconstruction on output grid [0, L]
     #     No smoothing applied.  Particles outside [0, L] contribute correctly:
     #     those at X < 0 are counted for all output points;
     #     those at X > L are counted for none.
-    # ---------------------------------------------------------------------- #
     N_out = len(globs)
     x_out = np.linspace(0.0, L, N_out)
 
@@ -506,7 +463,6 @@ def simulate_burgers_relaxation_gbmc(globs, config, _diag_dir=None):
             x_out, u_out, u_inf, dt, n_steps,
         )
 
-    # Write back to globs.
     for i in range(N_out):
         globs[i]['position'] = float(x_out[i])
         globs[i]['value']    = [float(u_out[i])]

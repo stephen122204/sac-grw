@@ -1,14 +1,9 @@
-"""
-study_t3_cole_hopf_plateau.py
-==============================
-Task 3: Diagnose the Cole-Hopf error plateau.
+"""Task 3: Diagnose the Cole-Hopf error plateau via four controlled experiments.
 
-Four controlled experiments:
-  A: Domain sensitivity (fixed shock, varying domain size)
-  B: Deterministic transform control (exact phi, then differentiate/invert)
-  C: Particle-phi reconstruction control (compare methods)
-  D: Output/reference grid sensitivity
-
+  A: domain sensitivity (fixed shock, varying domain size)
+  B: deterministic transform control (exact phi, then differentiate/invert)
+  C: particle-phi reconstruction control (N vs 2N particles)
+  D: output/reference grid sensitivity
 Output: output/final_prepublication_tests/cole_hopf_plateau/
 """
 import csv
@@ -79,10 +74,10 @@ def study_A_domain_sensitivity(nu=0.5, A=1.0, T=0.5, dt=0.005,
     """Study A: vary domain size with shock at center."""
     print(f"\n{'='*60}\n  Study A: Domain sensitivity\n{'='*60}")
     domains = [(4.0, 100), (8.0, 200), (10.0, 250), (16.0, 400)]
-    # N proportional to domain so particle density is constant
-    # Also test: fixed N across domains (isolate domain from resolution)
-    results_prop = []  # proportional N
-    results_fixed = []  # fixed N = 400
+    # N proportional to domain keeps particle density constant; a fixed-N variant
+    # isolates domain-size effects from resolution effects.
+    results_prop = []
+    results_fixed = []
 
     N_fixed = 400
     rows = []
@@ -121,11 +116,9 @@ def study_A_domain_sensitivity(nu=0.5, A=1.0, T=0.5, dt=0.005,
                 print(f"  L={L:5.1f} N={N:5d} ({mode:15s}) "
                       f"sep={sep:.1f}  L2={row['l2_mean']:.4f}±{row['l2_std']:.4f}")
 
-    # Save
     with open(_mk(OUT_BASE, 'study_A_domain.json'), 'w') as f:
         json.dump(rows, f, indent=2)
 
-    # Figure
     fig, axes = plt.subplots(1, 2, figsize=(12, 4))
     for ax, recs, title in [
         (axes[0], results_prop, 'Proportional N (fixed density)'),
@@ -148,9 +141,8 @@ def study_A_domain_sensitivity(nu=0.5, A=1.0, T=0.5, dt=0.005,
 
 
 def study_B_deterministic_transform(nu=0.5, A=1.0, T=0.5, L=4.0, N_grid=400):
-    """
-    Study B: Use exact phi (no particles), then apply numerical differentiation/inversion.
-    This isolates the transform step from particle noise.
+    """Study B: exact phi (no particles) + numerical differentiation/inversion,
+    isolating the transform step from particle noise.
     """
     print(f"\n{'='*60}\n  Study B: Deterministic transform control\n{'='*60}")
 
@@ -210,21 +202,17 @@ def study_B_deterministic_transform(nu=0.5, A=1.0, T=0.5, L=4.0, N_grid=400):
         print(f"  Exact phi + noise({noise_level:.0e}) -> L2={err:.4f}")
         results[f'perturbed_phi_noise_{noise_level:.0e}'] = err
 
-    # Save
     with open(_mk(OUT_BASE, 'study_B_deterministic.json'), 'w') as f:
         json.dump(results, f, indent=2)
 
-    # Figure
     noise_levels = [1e-3, 1e-2, 1e-1]
     fig, axes = plt.subplots(1, 2, figsize=(12, 4))
-    # Panel 1: phi and exact ratio
     axes[0].plot(x_grid, phi_exact, 'k-', lw=2, label='Exact phi')
     axes[0].plot(x_grid, phi_x_grad / phi_safe * (2.0 * nu) * (-1), 'r--', lw=1.5,
                  label='u from num-grad')
     axes[0].plot(x_grid, u_exact, 'b:', lw=1.5, label='Exact u')
     axes[0].set_title('Exact phi → u reconstruction')
     axes[0].set_xlabel('x'); axes[0].legend(fontsize=8); axes[0].grid(alpha=0.3)
-    # Panel 2: error vs noise level
     nl_arr = np.array(noise_levels)
     err_arr = np.array([results[f'perturbed_phi_noise_{nl:.0e}'] for nl in noise_levels])
     axes[1].loglog(nl_arr, err_arr, 'rs-', lw=1.5, ms=6)
@@ -239,18 +227,14 @@ def study_B_deterministic_transform(nu=0.5, A=1.0, T=0.5, L=4.0, N_grid=400):
 
 def study_C_particle_phi_control(nu=0.5, A=1.0, T=0.5, dt=0.005, L=4.0,
                                   N_seq=None, S=5, base_seed=42):
-    """
-    Study C: Compare particle phi reconstruction methods.
-    Use particle approximation but vary: smoothing sigma, output grid resolution.
+    """Study C: particle-phi reconstruction control — standard N-particle runs
+    vs 2N-particle runs interpolated back to the N grid.
     """
     print(f"\n{'='*60}\n  Study C: Particle-phi reconstruction control\n{'='*60}")
     if N_seq is None:
         N_seq = [200, 400, 800, 1600]
     xc = L / 2.0
 
-    # We need to access the internal reconstruction — run the solver in diag mode
-    # to capture phi_out and compare methods
-    # But we can also just compare with finer output grid
     results = []
 
     for N in N_seq:
@@ -259,7 +243,6 @@ def study_C_particle_phi_control(nu=0.5, A=1.0, T=0.5, dt=0.005, L=4.0,
 
         for rep in range(S):
             seed = base_seed + rep
-            # Standard
             try:
                 x_out, u_out, _ = _run_cole_hopf(N, nu, T, dt, L, A, xc, seed)
                 u_exact = exact_burgers_stationary_shock(x_out, nu, x_center=xc, amplitude=A)
@@ -309,19 +292,16 @@ def study_C_particle_phi_control(nu=0.5, A=1.0, T=0.5, dt=0.005, L=4.0,
 
 def study_D_grid_sensitivity(nu=0.5, A=1.0, T=0.5, dt=0.005, L=4.0,
                               N_particles=800, S=5, base_seed=42):
-    """
-    Study D: Vary output/reference grid independently from particle count.
-    N_particles fixed; vary N_out.
+    """Study D: output/reference-grid sensitivity.
+
+    The solver couples the output grid to the particle count, so N_out cannot
+    be varied independently: each point runs with N = N_out particles.
     """
     print(f"\n{'='*60}\n  Study D: Output-grid sensitivity\n{'='*60}")
     xc = L / 2.0
     N_out_seq = [50, 100, 200, 400, 800, 1600]
     results = []
 
-    # We run with N=N_particles particles; then vary the reference grid resolution
-    # (the solver outputs N_out = N_particles grid points; we can't easily change
-    # the output grid without calling the solver differently)
-    # Strategy: run with N=N_out, then compare at the same reference grid
     for N_out in N_out_seq:
         l2_list = []
         for rep in range(S):
@@ -371,8 +351,7 @@ def run_task3(S=10, base_seed=42):
     C_results = study_C_particle_phi_control(S=S, base_seed=base_seed)
     D_results = study_D_grid_sensitivity(S=S, base_seed=base_seed)
 
-    # Plateau decomposition summary
-    # The plateau L2 is ~0.40 at N=200-1600, L=4
+    # Observed plateau: L2 ~ 0.40 at N=200-1600, L=4
     plateau_l2 = 0.40
 
     # From Study B: what is the error floor from transform differentiation alone?
@@ -382,7 +361,6 @@ def run_task3(S=10, base_seed=42):
     # From Study A: error at larger domains (domain mismatch contribution)
     domain_l2 = {r['L']: r['l2_mean'] for r in A_results if r['mode'] == 'fixed_N'}
 
-    # Determine primary cause
     if err_numgrad < 0.01:
         diff_cause = "transform_differentiation_negligible"
     elif err_numgrad > 0.2:
@@ -418,7 +396,6 @@ def run_task3(S=10, base_seed=42):
         },
     }
 
-    # Determine primary conclusion
     if err_numgrad > 0.3 * plateau_l2:
         primary_cause = "transform_differentiation_plus_particle_noise"
     elif domain_cause == "boundary_mismatch_significant":
@@ -434,9 +411,7 @@ def run_task3(S=10, base_seed=42):
     with open(_mk(OUT_BASE, 'plateau_decomposition.json'), 'w') as f:
         json.dump(decomposition, f, indent=2)
 
-    # Plateau decomposition figure
     fig, axes = plt.subplots(1, 2, figsize=(12, 4))
-    # Panel 1: error sources bar chart
     sources = ['Diff. only\n(exact phi)', '1% phi noise', 'Observed\nplateau']
     values = [max(err_numgrad, 0), max(err_noise_1pct, 0), plateau_l2]
     colors = ['steelblue', 'orange', 'red']
@@ -446,7 +421,6 @@ def run_task3(S=10, base_seed=42):
     for bar, val in zip(bars, values):
         axes[0].text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.005,
                      f'{val:.3f}', ha='center', fontsize=9)
-    # Panel 2: error vs domain size
     if domain_l2:
         L_vals = sorted(domain_l2.keys())
         axes[1].plot(L_vals, [domain_l2[L] for L in L_vals], 'gs-', lw=1.5, ms=6)

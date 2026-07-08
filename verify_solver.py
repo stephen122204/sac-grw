@@ -1,40 +1,20 @@
 #!/usr/bin/env python3
-"""
-verify_solver.py
-================
-Verification and benchmark comparison for the GRW solver suite.
+"""Verification and benchmark comparison for the GRW solver suite.
 
 For each equation the script runs the primary solver and compares output against
 a trusted benchmark:
 
-  heat -- exact analytical solution (error function), valid for step IC.
+  heat    -- exact analytical solution (error function), valid for step IC.
              Primary solver: direct GRW.
-
-  burgers -- Cole-Hopf GRW only. Comparison against exact stationary-shock or
-        traveling-wave solution. Supported ICs: stationary_shock, traveling_wave.
-
-  fhn -- exact traveling-wave solution (analytic, multi-time snapshots).
-             Primary solver: scalar GRW (simulate_fitzhugh_nagumo_grw).
-             Reference: exact solution u = 1/(1+exp(-(x+theta*t)/2)).
+  burgers -- Cole-Hopf GRW only, vs exact stationary-shock or traveling-wave
+             solution.  Supported ICs: stationary_shock, traveling_wave.
+  fhn     -- scalar GRW vs exact traveling-wave solution
+             u = 1/(1+exp(-(x+theta*t)/2)), multi-time snapshots.
 
 Burgers and FHN comparisons label exact vs reference solutions explicitly.
-The purpose of the error metrics on main is to quantify GRW feasibility and
-limitations, not to advertise accuracy.
-
-Usage examples:
-  python verify_solver.py # run all three
-  python verify_solver.py --equation heat
-  python verify_solver.py --equation burgers --config configs/burgers_stationary_shock.json
-  python verify_solver.py --equation burgers --config configs/burgers_traveling_wave.json
-  python verify_solver.py --equation burgers --config configs/burgers_shock.json
-  python verify_solver.py --equation fhn --output-dir output/fhn_check
-  python verify_solver.py --equation heat --save-data
-  python verify_solver.py --equation burgers --ref-factor 8
-
-Outputs per equation (written to --output-dir, default: output/verify/<equation>):
-  comparison_plot.png two-panel figure: numerical vs reference + pointwise error
-  metrics.json all computed error metrics and equation-specific diagnostics
-  comparison_data.npz (optional, with --save-data) x grid, solutions, error arrays
+The error metrics quantify GRW feasibility and limitations, not accuracy claims.
+Outputs per equation (default: output/verify/<equation>): comparison_plot.png,
+metrics.json, comparison_data.npz (with --save-data).  See --help for options.
 """
 
 import argparse
@@ -64,9 +44,7 @@ from simulation import (
 )
 
 
-# ---------------------------------------------------------------------------
 # Default config paths (relative to repo root)
-# ---------------------------------------------------------------------------
 
 _DEFAULT_CONFIGS = {
     "heat": "configs/heat_step_dirichlet.json",
@@ -75,10 +53,6 @@ _DEFAULT_CONFIGS = {
     "fhn": "configs/fhn_grw_steady.json",
 }
 
-
-# ---------------------------------------------------------------------------
-# Shared utilities
-# ---------------------------------------------------------------------------
 
 def _erf_vec(arr):
     """Element-wise erf using the stdlib scalar implementation (no scipy dependency)."""
@@ -282,9 +256,7 @@ def save_npz(x, numerical, reference, path):
     print(f"  [verify] Saved data    -> {path}.npz")
 
 
-# ---------------------------------------------------------------------------
 # Heat verification  (exact analytical benchmark)
-# ---------------------------------------------------------------------------
 
 def run_heat(cfg, output_dir, do_save_data):
     print("\n" + "=" * 62)
@@ -369,9 +341,7 @@ def run_heat(cfg, output_dir, do_save_data):
         save_npz(x_grid, u_num, u_exact, os.path.join(output_dir, "comparison_data"))
 
 
-# ---------------------------------------------------------------------------
 # Burgers verification (Cole-Hopf GRW only, exact benchmarks)
-# ---------------------------------------------------------------------------
 
 def _run_burgers_grw(cfg, diag_dir=None):
     """
@@ -455,9 +425,7 @@ def plot_burgers_cole_hopf(
     print(f"  [verify] Saved plot    -> {output_path}")
 
 
-# ---------------------------------------------------------------------------
 # Burgers verification: relaxation GBMC
-# ---------------------------------------------------------------------------
 
 def _run_burgers_rbmc(cfg, output_dir, do_save_data):
     """
@@ -692,12 +660,8 @@ def run_burgers(cfg, output_dir, do_save_data, ref_factor):
                  os.path.join(output_dir, "comparison_data"))
 
 
-# ---------------------------------------------------------------------------
-# FitzHugh-Nagumo verification
-# Primary solver: GRW-inspired particle method
-# ---------------------------------------------------------------------------
-# FHN helper: exact traveling wave and GRW runners
-# ---------------------------------------------------------------------------
+# FitzHugh-Nagumo verification (primary solver: GRW particle method)
+# FHN helpers: exact traveling wave and GRW runners
 
 def exact_fhn_traveling_wave(x, t, a, x_center=0.0):
     """
@@ -1042,10 +1006,6 @@ def _run_fhn_scalar(cfg, output_dir, do_save_data):
 
 
 
-
-# ---------------------------------------------------------------------------
-# Entry point
-# ---------------------------------------------------------------------------
 
 def main():
     parser = argparse.ArgumentParser(

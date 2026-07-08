@@ -4,9 +4,9 @@ import os
 import matplotlib
 
 if sys.platform.startswith("darwin"):
-    matplotlib.use("MacOSX")   # macOS native backend
+    matplotlib.use("MacOSX")
 else:
-    matplotlib.use("TkAgg")    # cross-platform fallback
+    matplotlib.use("TkAgg")
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -39,10 +39,7 @@ def _get_attr(obj, keys, default=None):
 
 
 def _bc_info(cfg=None):
-    """
-    Read BC info from cfg.boundary_conditions (preferred).
-    Fall back to legacy attribute names if needed.
-    """
+    """Read BC info from cfg.boundary_conditions, falling back to legacy attribute names."""
     source = cfg if cfg is not None else config_module
 
     L = float(_get_attr(source, ["domain_size", "L", "length"], 1.0))
@@ -72,6 +69,7 @@ def _bc_info(cfg=None):
 
     print(f"[plot] BCs detected -> left: {ltype} ({lval}), right: {rtype} ({rval}), L={L}")
     return L, ltype, lval, rtype, rval
+
 
 def _both_dirichlet(cfg=None):
     _, ltype, _, rtype, _ = _bc_info(cfg)
@@ -108,14 +106,12 @@ def _extract_positions(results):
     return positions
 
 
-# ---------------------- HEAT: gradient density (default) ---------------------- #
 def _plot_heat_density(results, title_extra=""):
-    """
-    Plot the weighted glob density, which approximates u_x(x, t).
+    """Plot the weighted glob density, which approximates u_x(x, t).
 
-    Each glob is weighted by its signed value when building the histogram, so the plot
-    shows the empirical gradient density rather than a raw position count. This is the
-    direct output of the GRW method before reconstruction.
+    Each glob is weighted by its signed value when building the histogram, so the
+    plot shows the empirical gradient density (the direct GRW output before
+    reconstruction) rather than a raw position count.
     """
     positions = _extract_positions(results)
     if positions is None:
@@ -167,18 +163,12 @@ def _plot_heat_density(results, title_extra=""):
     return True
 
 
-# ---------------------- HEAT: Dirichlet field ----------------------- #
 def _plot_heat_dirichlet_as_field(results, cfg=None):
-    """
-    Reconstruct u(x, t) for Dirichlet–Dirichlet BCs by numerically integrating the glob list.
+    """Reconstruct u(x, t) for Dirichlet–Dirichlet BCs by integrating the glob list.
 
-    The GRW method stores the heat solution as a list of gradient-side globs. The heat
-    solution u is reconstructed by sorting globs by position and cumulatively summing their
-    signed values — this is the discrete numerical integration of u_x. A left-boundary
-    offset uL is added so the Dirichlet condition u(0, t) = uL is satisfied.
-
-    The sorted-cumsum staircase is binned onto a uniform grid for a smooth plot, using each
-    bin's total weight (sum of values of globs inside it) before accumulating.
+    u is recovered by binning signed glob values onto a uniform grid and cumulatively
+    summing (discrete integration of u_x), plus a left-boundary offset uL so that
+    u(0, t) = uL.
     """
     positions = _extract_positions(results)
     if positions is None:
@@ -194,7 +184,6 @@ def _plot_heat_dirichlet_as_field(results, cfg=None):
     L = float(L)
     uL = float(uL)
 
-    # bin glob weights onto a fixed grid over [0, L]
     n = positions.size
     nbins = int(max(100, min(400, n // 10)))
     edges = np.linspace(0.0, L, nbins + 1)
@@ -223,8 +212,8 @@ def _plot_heat_dirichlet_as_field(results, cfg=None):
     return True
 
 
-# ---------------------- BURGERS: u(x,t) ---------------------- #
 def _plot_burgers_field(results):
+    """Plot the Burgers solution u(x,t) sorted by particle position."""
     positions = _extract_positions(results)
     if positions is None:
         return False
@@ -253,17 +242,12 @@ def _plot_burgers_field(results):
     return True
 
 
-# ---------------------- FHN: u(x,t) scalar GRW ---------------------- #
 def _plot_fhn_fields(results):
-    """
-    Plot the FHN solution u(x,t).
+    """Plot the FHN solution u(x,t).
 
-    Supports two result formats:
-      Scalar GRW: each glob has a scalar 'value' (= glob weight w_i).
-                         u(x) is reconstructed by sorting and taking a
-                         cumulative sum of the weights.
-      Legacy two-component: each glob has 'value' = [u_i, v_i]; both
-                         components are plotted.
+    Supports two result formats: scalar GRW (each glob has a scalar 'value' =
+    weight w_i; u is the cumulative sum of sorted weights) and legacy
+    two-component ('value' = [u_i, v_i]; both components plotted).
     """
     positions = _extract_positions(results)
     if positions is None:
@@ -320,17 +304,12 @@ def _plot_fhn_fields(results):
 
 
 def plot_results(results, equation_type: str, cfg=None):
-    """
-    Plotting entry point used by main.py.
+    """Plotting entry point used by main.py.
 
-    Heat routing:
-    - Dirichlet–Dirichlet BCs -> reconstruct u(x,t) by cumulative sum of signed glob values
-    - Neumann or mixed BCs -> plot weighted glob density (approx. u_x). Values used as histogram
-                                weights so anti-symmetric Neumann reflections are visible
-
-    Other equations:
-    - Burgers -> plot u(x,t)
-    - FitzHugh–Nagumo -> plot u(x,t) and v(x,t)
+    Heat routes on the BCs: Dirichlet–Dirichlet reconstructs u(x,t) by cumulative
+    sum of signed glob values; Neumann/mixed plots the weighted glob density
+    (approx. u_x, so anti-symmetric Neumann reflections stay visible).
+    Burgers plots u(x,t); FitzHugh–Nagumo plots u (and v if two-component).
     """
     eq = (equation_type or "").strip().lower()
 

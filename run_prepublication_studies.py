@@ -1,16 +1,7 @@
-"""
-run_prepublication_studies.py
-==============================
-Master runner for all 5 pre-publication numerical studies.
-Runs Tasks 1-5 in sequence and then generates the final manifest.
+"""Master runner for the 5 pre-publication studies (Tasks 1-5) + final manifest.
 
 Usage:
     python run_prepublication_studies.py [--tasks 1 2 3 4 5] [--seeds 30] [--fast]
-
-Flags:
-    --tasks    which tasks to run (default: all)
-    --seeds    number of seeds per N (default: 30)
-    --fast     run with reduced N and seeds for a quick check
 """
 import argparse
 import json

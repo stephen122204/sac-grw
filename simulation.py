@@ -50,7 +50,7 @@ def apply_boundary_conditions(globs, boundary_conditions, domain_size):
     :return: updated list of globs
     """
     for glob in globs:
-        # --- left boundary (x = 0) ---
+        # left boundary (x = 0)
         if glob['position'] < 0:
             bc_type = boundary_conditions['LEFT']['type'].lower()
             if bc_type == 'dirichlet':
@@ -61,7 +61,7 @@ def apply_boundary_conditions(globs, boundary_conditions, domain_size):
                 glob['position'] = -glob['position']
                 glob['value'] = -glob['value']
 
-        # --- right boundary (x = domain_size) ---
+        # right boundary (x = domain_size)
         elif glob['position'] > domain_size:
             bc_type = boundary_conditions['RIGHT']['type'].lower()
             if bc_type == 'dirichlet':
@@ -267,7 +267,7 @@ def _save_fhn_grw_diagnostics(diag_dir, front_t, front_loc, snaps,
     )
     ax = axes.flat
 
-    # --- Panel 0: Front location vs time ---
+    # Panel 0: Front location vs time
     t_arr = np.asarray(front_t)
     fl_arr = np.asarray(front_loc)
     exact_front = x_center_init - theta * t_arr
@@ -278,14 +278,14 @@ def _save_fhn_grw_diagnostics(diag_dir, front_t, front_loc, snaps,
     ax[0].legend(fontsize=9)
     ax[0].set_title('Front location vs time')
 
-    # --- Panel 1: Front location error vs time ---
+    # Panel 1: Front location error vs time
     ax[1].plot(t_arr, fl_arr - exact_front, 'g-', lw=0.8)
     ax[1].axhline(0, color='k', lw=0.5, ls='--')
     ax[1].set_xlabel('t')
     ax[1].set_ylabel('GRW front − exact front')
     ax[1].set_title('Front location error vs time')
 
-    # --- Panel 2: Weight profiles at snapshot times ---
+    # Panel 2: Weight profiles at snapshot times
     colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd']
     for k, (step, (xs, ws, uc)) in enumerate(sorted(snaps.items())):
         t_s = (step + 1) * T / max(len(front_t), 1)
@@ -296,7 +296,7 @@ def _save_fhn_grw_diagnostics(diag_dir, front_t, front_loc, snaps,
     ax[2].legend(fontsize=8)
     ax[2].set_title('Glob weights at snapshot times')
 
-    # --- Panel 3: Reconstructed u at snapshot times ---
+    # Panel 3: Reconstructed u at snapshot times
     for k, (step, (xs, ws, uc)) in enumerate(sorted(snaps.items())):
         t_s = (step + 1) * T / max(len(front_t), 1)
         ax[3].plot(xs, uc, '-', lw=1.0, color=colors[k % len(colors)],

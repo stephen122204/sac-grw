@@ -1,20 +1,13 @@
-"""
-study_t2_traveling_shock.py
-===========================
-Task 2: Traveling-shock validation for relaxation GBMC.
+"""Task 2: Traveling-shock validation for relaxation GBMC.
 
-Exact solution:
-  u(x, t) = c - A * tanh(A * (x - x0 - c*t) / (2*nu))
+Exact solution: u(x, t) = c - A * tanh(A * (x - x0 - c*t) / (2*nu)),
+asymptotic states u_L = c + A, u_R = c - A.
 
-Asymptotic states: u_L = c + A,  u_R = c - A
-
-This is a SEPARATE validation driver that does NOT modify the production solver.
-It reimplements the identical Lie-splitting time loop (copied exactly from
+SEPARATE validation driver that does NOT modify the production solver: it
+reimplements the identical Lie-splitting time loop (copied exactly from
 relaxation_gbmc.py) with the traveling-shock IC and reconstruction.
-
-Stop condition: report and abort if mean wave speed is wrong, mass fails,
-or subcharacteristic condition is violated.
-
+Stops (reports and aborts) on wrong mean wave speed, mass failure, or
+subcharacteristic violation.
 Output: output/final_prepublication_tests/gbmc_traveling_shock/
 """
 import csv
@@ -83,7 +76,6 @@ def _run_traveling(N, nu, T, dt, L, A, c, x0, a, seed, output_times=None):
     """
     rng = np.random.default_rng(int(seed))
 
-    # Quantile init
     x_p, m_p, u_inf = _quantile_init_traveling(N, nu, A, c, x0)
     if not np.all(np.isfinite(x_p)):
         raise RuntimeError("Non-finite particle positions at t=0.")
@@ -92,7 +84,6 @@ def _run_traveling(N, nu, T, dt, L, A, c, x0, a, seed, output_times=None):
     if abs(T / dt - n_steps_total) > 1e-8:
         raise ValueError(f"T/dt not integer: T={T}, dt={dt}")
 
-    # Determine output steps
     if output_times is None:
         output_times = [T]
     output_steps = {}
@@ -146,7 +137,6 @@ def _run_traveling(N, nu, T, dt, L, A, c, x0, a, seed, output_times=None):
         # H8 Brownian diffuse
         x_p = x_p + rng.normal(0.0, sigma, size=N)
 
-        # Check output
         if (step + 1) in output_steps:
             t_now = output_steps[step + 1]
             # Raw cumsum reconstruction on [0, L]
@@ -158,7 +148,6 @@ def _run_traveling(N, nu, T, dt, L, A, c, x0, a, seed, output_times=None):
             u_out = u_inf + cumm[idx]
             u_exact = exact_traveling_shock(x_grid, t_now, nu, A, c, x0)
             dx = float(x_grid[1] - x_grid[0])
-            # Exact center
             xc_exact = x0 + c * t_now
             # Measured center (zero-crossing of u - c)
             mid_val = float(c)
@@ -172,7 +161,6 @@ def _run_traveling(N, nu, T, dt, L, A, c, x0, a, seed, output_times=None):
             else:
                 xc_num = float(x_grid[np.argmin(np.abs(u_out - mid_val))])
 
-            # Mass
             total_mass_now = float(m_p.sum())
             outside = (x_p < 0.0) | (x_p > L)
             mass_outside = float(np.abs(m_p[outside]).sum())
@@ -245,7 +233,6 @@ def run_task2(nu=0.5, A=1.0, c=0.5, a=2.0, L=8.0, x0=3.0,
     # ---- N-refinement study (multiple seeds, dt=0.005, T_max) ----
     dt_nr = 0.005
     if dt_nr not in dt_seq:
-        # Check if it works
         n_steps_check = T_max / dt_nr
         if abs(n_steps_check - round(n_steps_check)) < 1e-9:
             dt_seq_nr = [dt_nr]
@@ -315,7 +302,6 @@ def run_task2(nu=0.5, A=1.0, c=0.5, a=2.0, L=8.0, x0=3.0,
         if stop_triggered:
             break
 
-        # Mean per T
         for t_out in output_times:
             if not l2_by_T[t_out]:
                 continue

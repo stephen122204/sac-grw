@@ -29,10 +29,6 @@ from relaxation_gbmc import simulate_burgers_relaxation_gbmc, _reconstruct_u_on_
 from config import SimulationConfig
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
 def _dirichlet_bc(u_left=0.0, u_right=0.0):
     return {
         'LEFT':  {'type': 'Dirichlet', 'value': u_left},
@@ -100,9 +96,7 @@ def _exact_stationary_shock(x, nu, xc, A):
     return -A * np.tanh(A * (x - xc) / (2.0 * nu))
 
 
-# ---------------------------------------------------------------------------
 # Test: output shape and grid
-# ---------------------------------------------------------------------------
 
 class TestOutputFormat:
     def test_output_length(self):
@@ -137,9 +131,7 @@ class TestOutputFormat:
             assert len(g['value']) == 1, "value should be length-1 list"
 
 
-# ---------------------------------------------------------------------------
 # Test: quantile initialisation properties
-# ---------------------------------------------------------------------------
 
 class TestQuantileInit:
     """Verify that the quantile IC correctly represents the stationary shock."""
@@ -178,9 +170,7 @@ class TestQuantileInit:
         )
 
 
-# ---------------------------------------------------------------------------
 # Test: stationary shock benchmark
-# ---------------------------------------------------------------------------
 
 class TestStationaryShock:
     """Stationary shock is an exact steady state; RBMC should reproduce it
@@ -224,9 +214,7 @@ class TestStationaryShock:
         assert u.max() <= +A + 1e-9, f"u.max()={u.max():.6f} > +A"
 
 
-# ---------------------------------------------------------------------------
 # Test: parameter validation
-# ---------------------------------------------------------------------------
 
 class TestParameterValidation:
     """Spec §7: descriptive errors for invalid parameters."""
@@ -275,9 +263,7 @@ class TestParameterValidation:
             simulate_burgers_relaxation_gbmc(globs, cfg)
 
 
-# ---------------------------------------------------------------------------
 # Test: unsupported IC raises NotImplementedError  (spec §5, §10 H)
-# ---------------------------------------------------------------------------
 
 class TestUnsupportedIC:
     """Spec §5: only stationary_shock is supported."""
@@ -312,9 +298,7 @@ class TestUnsupportedIC:
             simulate_burgers_relaxation_gbmc(globs, cfg)
 
 
-# ---------------------------------------------------------------------------
 # Test: unsupported domain mode raises NotImplementedError  (spec §10 I)
-# ---------------------------------------------------------------------------
 
 class TestUnsupportedDomainMode:
     """Spec §6: only whole_line domain mode is supported."""
@@ -336,9 +320,7 @@ class TestUnsupportedDomainMode:
             simulate_burgers_relaxation_gbmc(globs, cfg)
 
 
-# ---------------------------------------------------------------------------
 # Test: whole-line mode — no reflection  (spec §10 E)
-# ---------------------------------------------------------------------------
 
 class TestWholeLineMode:
     """Particles must travel freely; no reflection at x=0 or x=L."""
@@ -375,9 +357,7 @@ class TestWholeLineMode:
         assert max(out_x) <= L + 1e-12
 
 
-# ---------------------------------------------------------------------------
 # Test: BPC two-speed mechanics  (spec §10 A-D, F-G, J)
-# ---------------------------------------------------------------------------
 
 class TestBPCTwoSpeed:
     """Tests for the validated two-speed BPC relaxation method."""
@@ -494,9 +474,7 @@ class TestBPCTwoSpeed:
         assert cfg.relaxation_domain_mode == 'whole_line'
 
 
-# ---------------------------------------------------------------------------
 # Test: sorting integrity  (spec §10 G)
-# ---------------------------------------------------------------------------
 
 class TestSortingIntegrity:
     """Verify that (X, m, V) are sorted together with the same permutation."""
@@ -549,9 +527,7 @@ class TestSortingIntegrity:
         )
 
 
-# ---------------------------------------------------------------------------
 # Test: pure diffusion (nu > 0)
-# ---------------------------------------------------------------------------
 
 class TestPureDiffusion:
     """Solver must produce finite output for large nu."""
@@ -573,9 +549,7 @@ class TestPureDiffusion:
             simulate_burgers_relaxation_gbmc(globs, cfg)
 
 
-# ---------------------------------------------------------------------------
 # Test: reconstruction helper (_reconstruct_u_on_grid)
-# ---------------------------------------------------------------------------
 
 class TestReconstructHelper:
     """_reconstruct_u_on_grid is available for diagnostics/visualization;
@@ -610,9 +584,7 @@ class TestReconstructHelper:
         assert abs(total_recovered - total_before) < 1e-4
 
 
-# ---------------------------------------------------------------------------
 # Test: seed reproducibility  (spec §10, seed propagation fix)
-# ---------------------------------------------------------------------------
 
 class TestReproducibility:
     """Verify that seed propagation through SimulationConfig makes runs reproducible."""

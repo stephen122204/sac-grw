@@ -1,16 +1,8 @@
-"""
-generate_final_manifest.py
-==========================
-Reads all pre-publication study outputs and generates:
-  - results_manifest.json      (all numerical results, fitted rates, CIs)
-  - results_manifest.csv
-  - figure_manifest.csv        (all expected figures with existence check)
-  - table_manifest.csv
-  - FINAL_TESTING_SUMMARY.md   (human-readable summary for paper writing)
+"""Read all pre-publication study outputs and write the final manifest.
 
-Usage:
-    python generate_final_manifest.py
-or called programmatically from run_prepublication_studies.py.
+Outputs (in output/final_prepublication_tests/final_manifest/):
+results_manifest.{json,csv}, figure_manifest.csv, table_manifest.csv,
+FINAL_TESTING_SUMMARY.md.  Run standalone or via run_prepublication_studies.py.
 """
 import csv
 import glob
@@ -23,7 +15,6 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 BASE = 'output/final_prepublication_tests'
 OUT = os.path.join(BASE, 'final_manifest')
 
-# All expected figures (name -> study)
 EXPECTED_FIGURES = {
     'task1': [
         'gbmc_bias_vs_dt',
@@ -467,7 +458,6 @@ def _write_summary_md(manifest, missing_figs, timings):
         "| Task | Figure | PNG | PDF |",
         "|------|--------|-----|-----|",
     ]
-    # Re-check
     for task_key, figs_list in EXPECTED_FIGURES.items():
         for fig_name in figs_list:
             png_ok, pdf_ok = _check_figure(task_key, fig_name)

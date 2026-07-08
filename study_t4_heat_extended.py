@@ -1,15 +1,8 @@
-"""
-study_t4_heat_extended.py
-=========================
-Task 4: Extended Heat convergence study.
-  - N ∈ {500, 1000, 2000, 5000, 10000, 20000, 50000}
-  - 30 seeds per N, paired seeds
-  - Bias/spread/total decomposition
-  - Also vary nbins at fixed N
+"""Task 4: Extended Heat convergence study.
 
-NOTE: Heat GRW is exact in time (Brownian increments are exact for the Heat equation).
-      No dt-refinement study needed; this is documented in the output JSON.
-
+N in {500, ..., 50000}, 30 paired seeds per N, bias/spread/total decomposition.
+No dt-refinement study: Heat GRW is exact in time (Brownian increments are
+exact), which is documented in the output JSON.
 Output: output/final_prepublication_tests/heat_extended/
 """
 import csv
@@ -55,7 +48,6 @@ def _run_heat_one(N, alpha, T, dt, L, x0, uL, uR, seed):
     from simulation import simulate_heat_equation
     np.random.seed(seed)
 
-    # Correct GRW IC: N gradient-mass particles at x0, each with weight (uL-uR)/N
     weight = (uL - uR) / N
     ic = [(x0, weight)] * N
 
@@ -77,7 +69,6 @@ def _run_heat_one(N, alpha, T, dt, L, x0, uL, uR, seed):
     result = simulate_heat_equation(globs, cfg)
     elapsed = time.perf_counter() - t0
 
-    # Reconstruct u: sort by position, cumsum of weights + u_{-inf}=uR
     x_pos = np.array([g['position'] for g in result])
     w_arr = np.array([g['value']    for g in result])
     order    = np.argsort(x_pos)
@@ -117,7 +108,6 @@ def run_task4(N_seq=None, S=30, base_seed=42,
     if N_seq is None:
         N_seq = [500, 1000, 2000, 5000, 10000, 20000, 50000]
 
-    # Document why no dt study is needed
     no_dt_reason = (
         "Heat GRW is exact in time: Brownian increments are drawn exactly "
         "from N(0, 2*alpha*dt), with no discretization error in the stochastic "
@@ -175,7 +165,6 @@ def run_task4(N_seq=None, S=30, base_seed=42,
         S_actual = len(u_arr)
         u_mean = u_arr.mean(axis=0)
 
-        # Bias/spread/total
         E_bias   = float(np.sqrt(np.sum((u_mean - u_exact)**2 * dx)))
         E_spread = float(np.sqrt(np.mean(np.sum((u_arr - u_mean[None,:])**2 * dx, axis=1))))
         E_total  = float(np.sqrt(np.mean(np.sum((u_arr - u_exact[None,:])**2 * dx, axis=1))))
@@ -191,7 +180,6 @@ def run_task4(N_seq=None, S=30, base_seed=42,
         print(f"    E_bias={E_bias:.5f}  E_spread={E_spread:.5f}  "
               f"E_total={E_total:.5f}  identity_err={identity_err:.2e}")
 
-        # Save ensemble mean profile
         np.save(_mk(OUT_BASE, f'profile_N{N}.npy'),
                 np.stack([x_grid, u_mean, u_exact]))
 
@@ -217,12 +205,10 @@ def run_task4(N_seq=None, S=30, base_seed=42,
     rt_a    = np.array([r['mean_runtime_s'] for r in N_results])
 
     rng_ci = np.random.default_rng(303)
-    # Total slope
     tot_lo, tot_hi = _bootstrap_slope_ci(N_arr, tot_a, rng=rng_ci)
     tot_fit = np.polyfit(np.log10(N_arr[tot_a>0]), np.log10(tot_a[tot_a>0]), 1)
     tot_slope = float(tot_fit[0])
 
-    # Bias slope
     valid_b = bias_a > 1e-8
     if valid_b.sum() >= 2:
         bias_fit = np.polyfit(np.log10(N_arr[valid_b]), np.log10(bias_a[valid_b]), 1)
@@ -231,7 +217,6 @@ def run_task4(N_seq=None, S=30, base_seed=42,
     else:
         bias_slope = float('nan'); bias_lo = float('nan'); bias_hi = float('nan')
 
-    # Spread slope
     spr_fit = np.polyfit(np.log10(N_arr), np.log10(np.maximum(spr_a, 1e-12)), 1)
     spr_slope = float(spr_fit[0])
     spr_lo, spr_hi = _bootstrap_slope_ci(N_arr, spr_a, rng=rng_ci)
@@ -246,9 +231,7 @@ def run_task4(N_seq=None, S=30, base_seed=42,
         print(f"\n  nbins sensitivity study (N=5000, S=10)")
         N_bins_test = 5000
         nbins_seq = [100, 200, 500, 1000, 2000, 5000]
-        # Note: the heat simulation uses nbins internally determined by N.
-        # The only way to vary nbins independently is to vary N (they're coupled).
-        # So we document this coupling and use N directly.
+        # The heat solver couples nbins to N, so nbins cannot be varied independently.
         print(f"  (Heat GRW: nbins = N; varied via N sweep above. "
               f"No independent nbins parameter in production solver.)")
         nbins_results = [{'note': 'nbins=N in production solver; see N-sweep results'}]

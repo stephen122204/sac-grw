@@ -1,19 +1,13 @@
-"""
-study_gbmc_production_n_refinement.py
-======================================
-Production N-refinement study for the relaxation–Brownian GBMC solver.
+"""Production N-refinement study for the relaxation–Brownian GBMC solver.
 
-Routes exclusively through:
-  simulate_burgers(globs, config)   [simulation.py dispatcher]
-    -> simulate_burgers_relaxation_gbmc(globs, config)  [relaxation_gbmc.py]
+Routes exclusively through the production path:
+  simulate_burgers() [simulation.py dispatcher]
+    -> simulate_burgers_relaxation_gbmc() [relaxation_gbmc.py]
 
 Benchmark: stationary viscous Burgers shock
-  u_exact(x) = -A * tanh(A*(x - xc) / (2*nu))
-  A=1, nu=0.5, a=2, T=0.5, dt=0.0025, L=4, xc=2
-
-N in {100, 200, 400, 800, 1600, 3200, 6400}
-S=50 paired seeds (42 + s, s=0..49)
-Fixed output grid: N_out=400 points on [0, 4]
+  u_exact(x) = -A * tanh(A*(x - xc) / (2*nu)),
+  A=1, nu=0.5, a=2, T=0.5, dt=0.0025, L=4, xc=2.
+N in {100, ..., 6400}, S=50 paired seeds (42 + s), fixed N_out=400 output grid.
 """
 import csv
 import json
@@ -33,7 +27,7 @@ from simulation import simulate_burgers
 
 OUT_BASE = 'output/final_prepublication_tests/gbmc_production_n_refinement'
 
-# ── Fixed study parameters ────────────────────────────────────────────────── #
+# Fixed study parameters (paper configuration)
 A      = 1.0
 NU     = 0.5
 A_REL  = 2.0        # relaxation speed  (a > A always)
@@ -47,7 +41,6 @@ BASE_SEED = 42
 N_OUT  = 400        # fixed output grid size for all runs
 
 
-# ── Helpers ──────────────────────────────────────────────────────────────────#
 def _savefig(fig, path_noext):
     os.makedirs(os.path.dirname(os.path.abspath(path_noext + '.png')),
                 exist_ok=True)
@@ -130,20 +123,13 @@ def _fit_tanh(x, u, A_hint, xc_hint, nu_hint):
     return xc_f, max(nu_f, 0.01), A_hint
 
 
-# ── Exact solution ─────────────────────────────────────────────────────────── #
 def u_exact_fn(x):
     return -A * np.tanh(A * (x - XC) / (2.0 * NU))
 
 
-# ── Single run ────────────────────────────────────────────────────────────────#
 def _run_one(N, seed):
-    """
-    Run one GBMC production simulation.
-
-    Uses:
-      1. SimulationConfig with burgers_mode='relaxation_gbmc'
-      2. simulate_burgers() dispatcher  (simulation.py)
-      3. -> simulate_burgers_relaxation_gbmc() (relaxation_gbmc.py)
+    """Run one GBMC production simulation through the simulate_burgers()
+    dispatcher (burgers_mode='relaxation_gbmc').
 
     Returns dict of per-run quantities, or None on unrecoverable failure.
     """
@@ -226,11 +212,9 @@ def _run_one(N, seed):
     }
 
 
-# ── Main study ───────────────────────────────────────────────────────────────#
 def run_study():
     os.makedirs(OUT_BASE, exist_ok=True)
 
-    # Record metadata
     try:
         git_hash = subprocess.check_output(
             ['git', 'rev-parse', 'HEAD'], stderr=subprocess.DEVNULL
@@ -373,14 +357,13 @@ def run_study():
 
     rng_boot = np.random.default_rng(123)
 
-    # ── Spread slope (primary) ─────────────────────────────────────────── #
+    # Spread slope (primary)
     valid = (N_arr > 0) & (spr_arr > 0)
     lx = np.log10(N_arr[valid])
     ly = np.log10(spr_arr[valid])
     coeffs_spr = np.polyfit(lx, ly, 1)
     spr_slope  = float(coeffs_spr[0])
 
-    # R²
     ly_pred = np.polyval(coeffs_spr, lx)
     ss_res  = float(np.sum((ly - ly_pred)**2))
     ss_tot  = float(np.sum((ly - ly.mean())**2))
@@ -403,7 +386,7 @@ def run_study():
         S_=S,
     )
 
-    # ── Bias and total slopes ──────────────────────────────────────────── #
+    # Bias and total slopes
     def _slope_r2(N_a, E_a):
         v = (N_a > 0) & np.isfinite(E_a) & (E_a > 0)
         if v.sum() < 3:
@@ -432,7 +415,7 @@ def run_study():
     for ar in adj_rates:
         print(f"    N={ar['N_lo']}->{ar['N_hi']}: rate={ar['rate']:.4f}")
 
-    # ── Compatibility with -0.5 ─────────────────────────────────────────── #
+    # Compatibility with -0.5
     expected = -0.5
     compat   = (ci_lo <= expected <= ci_hi)
     earlier  = -0.507
@@ -441,7 +424,6 @@ def run_study():
     print(f"\n  Compatible with -1/2 (within 95% CI): {compat}")
     print(f"  Overlap with earlier CI [-0.534,-0.479]: {overlap}")
 
-    # ── Save per_run.csv ──────────────────────────────────────────────────#
     per_run_csv = os.path.join(OUT_BASE, 'per_run.csv')
     fieldnames  = ['N', 'seed', 'failed', 'reason', 'l1', 'l2', 'linf',
                    'rel_l2', 'xc_fit', 'nu_fit', 'A_fit', 'max_abs_u',
@@ -451,13 +433,11 @@ def run_study():
         w = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
         w.writeheader(); w.writerows(all_per_run)
 
-    # ── Save per_N_summary.csv ────────────────────────────────────────────#
     per_N_csv = os.path.join(OUT_BASE, 'per_N_summary.csv')
     with open(per_N_csv, 'w', newline='') as f:
         w = csv.DictWriter(f, fieldnames=list(N_results[0].keys()))
         w.writeheader(); w.writerows(N_results)
 
-    # ── Save rates.json ───────────────────────────────────────────────────#
     rates = {
         'spread_slope':   spr_slope,
         'spread_r2':      spr_r2,
@@ -481,7 +461,6 @@ def run_study():
     with open(os.path.join(OUT_BASE, 'rates.json'), 'w') as f:
         json.dump(rates, f, indent=2)
 
-    # ── Save metadata.json ────────────────────────────────────────────────#
     meta = {
         'git_commit': git_hash,
         'dispatcher': 'simulate_burgers() in simulation.py',
@@ -500,8 +479,7 @@ def run_study():
     with open(os.path.join(OUT_BASE, 'metadata.json'), 'w') as f:
         json.dump(meta, f, indent=2)
 
-    # ── Figures ──────────────────────────────────────────────────────────#
-
+    # Figures
     # 1. E_spread vs N (primary)
     fig, ax = plt.subplots(figsize=(7, 5))
     ax.loglog(N_arr, spr_arr, 'o-', color='steelblue', lw=2,
@@ -595,7 +573,6 @@ def run_study():
     return rates
 
 
-# ── Entry point ───────────────────────────────────────────────────────────── #
 if __name__ == '__main__':
     t0_wall = time.perf_counter()
     rates = run_study()

@@ -1,3 +1,4 @@
+"""Exploration CLI: run one simulation from a JSON config (or interactive prompts)."""
 import sys
 import config as config_module
 from utils import plot_results

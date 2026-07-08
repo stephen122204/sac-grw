@@ -1,15 +1,8 @@
-"""
-study_t5_fhn_extended.py
-=========================
-Task 5: Extended FHN convergence study.
-  - N ∈ {100, 200, 500, 1000, 2000, 5000}
-  - 30 seeds per N, paired seeds
-  - Full profile metrics: L1, L2, Linf, rel-L2
-  - Front center, front-speed error, aligned-profile error
-  - dt refinement (4+ values at large N)
-  - Front center vs time (tracked per simulation)
-  - Separate fitted rates for profile, center, speed, aligned-profile
+"""Task 5: Extended FHN convergence study.
 
+N in {100, ..., 5000}, 30 paired seeds per N; profile metrics (L1/L2/Linf/rel-L2),
+front center/speed/aligned-profile errors with separate fitted rates, a dt
+refinement at fixed N, and front center vs time.
 Output: output/final_prepublication_tests/fhn_extended/
 """
 import csv
@@ -44,10 +37,7 @@ def _savefig(fig, path_noext):
 
 
 def _run_fhn_one(N, a, nu, T, dt, L, xc, seed):
-    """
-    Single FHN GRW run.
-    Returns (x_sorted, u_cumsum, elapsed) where u = cumsum of sorted weights.
-    """
+    """Single FHN GRW run; returns (x_sorted, u_cumsum, elapsed), u = cumsum of sorted weights."""
     from simulation import simulate_fitzhugh_nagumo_grw
 
     np.random.seed(seed)
@@ -109,13 +99,11 @@ def _find_front_center(x, u, threshold=0.5):
 
 
 def _aligned_profile_error(x1, u1, x2, u2):
-    """
-    Align two profiles by their front centers, then compute L2 error.
-    Interpolates u2 to x1 after shifting by center difference.
+    """Align two profiles by their front centers (shift + interpolate u2 to x1),
+    then compute the L2 error.
     """
     c1 = _find_front_center(x1, u1)
     c2 = _find_front_center(x2, u2)
-    # Shift x2 so centers align
     x2_shifted = x2 + (c1 - c2)
     u2_interp = np.interp(x1, x2_shifted, u2, left=u2[0], right=u2[-1])
     dx = float(x1[1] - x1[0])
@@ -162,7 +150,6 @@ def run_task5(N_seq=None, S=30, base_seed=42,
     print(f"\n{'='*60}\n  Task 5: Extended FHN convergence\n"
           f"  N_seq={N_seq}  S={S}  T={T}\n{'='*60}")
 
-    # Exact front speed: theta = sqrt(2) * (0.5 - a)
     theta_exact = float(np.sqrt(2.0) * (0.5 - a))
     xc_exact_T = xc - theta_exact * T  # front position at time T
     print(f"  Exact front speed: theta={theta_exact:.4f}  "
@@ -171,7 +158,6 @@ def run_task5(N_seq=None, S=30, base_seed=42,
     per_run_records = []
     N_results = []
 
-    # Build reference solution (largest N, 10 seeds, averaged)
     N_max = max(N_seq)
     print(f"\n  Building reference solution (N={N_max}, 20 seeds)...")
     ref_runs = []
@@ -184,7 +170,6 @@ def run_task5(N_seq=None, S=30, base_seed=42,
     if not ref_runs:
         print("  ERROR: cannot build reference solution.")
         return {}
-    # Use the first run's grid as reference grid
     x_ref = ref_runs[0][0]
     u_ref = np.mean([np.interp(x_ref, r[0], r[1]) for r in ref_runs], axis=0)
     xc_ref = _find_front_center(x_ref, u_ref)
@@ -207,7 +192,6 @@ def run_task5(N_seq=None, S=30, base_seed=42,
                 x_out, u_out, elapsed = _run_fhn_one(N, a, nu, T, dt, L, xc, seed)
                 rt_list.append(elapsed)
 
-                # Interpolate to reference grid for profile metrics
                 u_interp = np.interp(x_ref, x_out, u_out)
                 diff = u_interp - u_ref
                 l1  = float(np.sum(np.abs(diff)) * dx_ref)
@@ -224,7 +208,6 @@ def run_task5(N_seq=None, S=30, base_seed=42,
                 speed_num = (xc_num - xc) / max(T, 1e-15)
                 speed_err = abs(speed_num - (-theta_exact))
 
-                # Aligned profile error
                 ap_err = _aligned_profile_error(x_ref, u_ref, x_out, u_out)
 
                 l1_list.append(l1); l2_list.append(l2); linf_list.append(linf)
@@ -258,7 +241,6 @@ def run_task5(N_seq=None, S=30, base_seed=42,
             'mean_rt': float(np.mean(rt_list)),
         }
         N_results.append(row)
-        # Save ensemble mean profile (recompute from per_run data via xc_num records)
         recs_N = [r for r in per_run_records if r['N'] == N]
         if recs_N:
             u_mean_approx = u_ref  # fallback: reference
@@ -329,7 +311,10 @@ def run_task5(N_seq=None, S=30, base_seed=42,
         if np.sum(ce_arr > 0) >= 2 else (float('nan'), float('nan'), float('nan'))
     sp_slope, sp_lo, sp_hi = _bootstrap_slope_ci(N_arr, sp_arr[sp_arr>0], rng=rng_ci) \
         if np.sum(sp_arr > 0) >= 2 else (float('nan'), float('nan'), float('nan'))
-    sp_lo, sp_hi = ce_lo, ce_hi  # shared resampling: speed = center/T exactly, so reusing the center bootstrap's index draws yields identical slope samples; the call above is kept only to preserve the RNG stream for the aligned-error CI
+    # Speed = center/T exactly, so the center bootstrap's index draws yield
+    # identical slope samples; the call above is kept only to preserve the
+    # RNG stream for the aligned-error CI.
+    sp_lo, sp_hi = ce_lo, ce_hi
     ap_slope, ap_lo, ap_hi = _bootstrap_slope_ci(N_arr, ap_arr[ap_arr>0], rng=rng_ci) \
         if np.sum(ap_arr > 0) >= 2 else (float('nan'), float('nan'), float('nan'))
 

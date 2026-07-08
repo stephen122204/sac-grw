@@ -1,26 +1,10 @@
 #!/usr/bin/env python3
-"""
-run_n_refinement.py
-===================
-N-refinement convergence study for the Relaxation GBMC Burgers solver.
+"""N-refinement convergence study for the Relaxation GBMC Burgers solver.
 
-For each N in a fixed sequence, runs the relaxation GBMC solver with the
-stationary-shock IC and measures the L2 / Linf / rel-L2 error against the
-exact stationary-shock solution.  Results are saved as JSON and plotted on a
-log-log grid so the empirical convergence rate can be compared with the
-theoretical O(1/sqrt(N)) Monte Carlo rate.
-
-Usage:
-    python run_n_refinement.py                     # default params
-    python run_n_refinement.py --nu 0.5 --T 0.5   # custom viscosity / time
-    python run_n_refinement.py --n-seq 50 100 200 400 800 1600
-    python run_n_refinement.py --output-dir output/n_refinement_rbmc
-    python run_n_refinement.py --seed 0             # fixed RNG seed per run
-    python run_n_refinement.py --repeats 5          # average over 5 runs per N
-
-Outputs (in --output-dir):
-    n_refinement_results.json   per-N metrics
-    n_refinement_plot.png       log-log convergence plot with fitted slope
+For each N, runs the stationary-shock IC, measures L2/Linf/rel-L2 error
+against the exact solution, and fits the empirical log-log rate against the
+O(1/sqrt(N)) Monte Carlo theory.  Writes n_refinement_results.json and
+n_refinement_plot.png to --output-dir; see --help for options.
 """
 
 import argparse
@@ -43,10 +27,6 @@ from relaxation_gbmc import simulate_burgers_relaxation_gbmc
 from config import SimulationConfig
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
 def exact_stationary_shock(x, nu, x_center, amplitude):
     return -amplitude * np.tanh(amplitude * (x - x_center) / (2.0 * nu))
 
@@ -62,14 +42,12 @@ def generate_run_seeds(base_seed, repeats):
 
 
 def _run_rbmc_one(N, nu, T, dt, L, amplitude, seed=None):
-    """
-    Run one RBMC experiment for the stationary-shock IC.
+    """Run one RBMC experiment for the stationary-shock IC.
 
-    Returns (x_out, u_out, u_exact, metrics_dict).
-    seed is forwarded to SimulationConfig.seed so the solver's private RNG
-    (np.random.default_rng(config.seed)) is reproducibly seeded.  The global
-    NumPy RNG (np.random.seed) is NOT set here; the relaxation solver does not
-    use it.
+    Returns (x_out, u_out, u_exact, metrics_dict).  seed is forwarded to
+    SimulationConfig.seed, which seeds the solver's private RNG
+    (np.random.default_rng); the global NumPy RNG is NOT set here and the
+    relaxation solver does not use it.
     """
     xc = L / 2.0
     x0 = np.linspace(0.0, L, N)
@@ -116,10 +94,6 @@ def _run_rbmc_one(N, nu, T, dt, L, amplitude, seed=None):
         'l2_ref': l2_ref, 'seed': seed,
     }
 
-
-# ---------------------------------------------------------------------------
-# Main
-# ---------------------------------------------------------------------------
 
 def main():
     parser = argparse.ArgumentParser(
@@ -197,7 +171,6 @@ def main():
         print(f"    L2={row['l2_mean']:.4f}  Linf={row['linf_mean']:.4f}  "
               f"relL2={row['rel_l2_mean']:.4f}  (std L2={row['l2_std']:.4f})")
 
-    # Save JSON
     out_json = os.path.join(args.output_dir, "n_refinement_results.json")
     with open(out_json, "w", encoding="utf-8") as fh:
         json.dump({
@@ -224,7 +197,6 @@ def main():
         print(f"\n  Empirical L2 slope (log-log): {slope:.4f}  "
               f"(MC theory: -0.50)")
 
-    # Plot
     fig, axes = plt.subplots(1, 2, figsize=(12, 5))
     fig.suptitle(
         f"Relaxation GBMC: N-refinement  (nu={nu}, T={T}, A={A})\n"
@@ -232,14 +204,12 @@ def main():
         fontsize=10,
     )
 
-    # [0] L2 error
     ax = axes[0]
     ax.loglog(N_arr, l2_arr, 'bo-', lw=1.5, ms=6, label='L2 error (mean)')
     if args.repeats > 1:
         l2_std = np.array([r['l2_std'] for r in results])
         ax.fill_between(N_arr, l2_arr - l2_std, l2_arr + l2_std,
                         alpha=0.25, color='blue', label='±1 std')
-    # Reference slope lines
     N_ref = np.array([N_arr[0], N_arr[-1]])
     for exp, ls, label in [(-0.5, '--', 'O(N^{-1/2})'), (-1.0, ':', 'O(N^{-1})')]:
         c = l2_arr[0] * (N_arr[0] ** (-exp))
@@ -250,7 +220,6 @@ def main():
     ax.legend(fontsize=8)
     ax.grid(True, which='both', alpha=0.3)
 
-    # [1] rel-L2 and Linf
     ax = axes[1]
     linf_arr = np.array([r['linf_mean'] for r in results])
     rel_arr  = np.array([r['rel_l2_mean'] for r in results])
