@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the paper below."
+title: >-
+  RB-GBMC companion code: Gradient Random Walk Methods for Diffusive PDEs
+  and a Relaxation-Brownian Particle Scheme for Viscous Burgers' Equation
+authors:
+  - family-names: Abkin
+    given-names: Stephen
+  - family-names: Daripa
+    given-names: Prabir
+# TODO(license): no license chosen yet; update before public release.
+license: NOASSERTION
+preferred-citation:
+  type: article
+  title: >-
+    Gradient Random Walk Methods for Diffusive PDEs and a Relaxation-Brownian
+    Particle Scheme for Viscous Burgers' Equation
+  authors:
+    - family-names: Abkin
+      given-names: Stephen
+    - family-names: Daripa
+      given-names: Prabir
+  year: 2026
+  notes: "arXiv identifier: TBD (placeholder until posted)"

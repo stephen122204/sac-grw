@@ -1,0 +1,636 @@
+{
+  "_meta": {
+    "description": "Pinned expected values for the Paper 2 (RB-GBMC) release. Checked by `python reproduce.py verify` against the checked-in summaries under output/final_prepublication_tests/ and regen_data/. Values were pinned by reading those files directly.",
+    "pinned_from_branch": "paper2-release-prep"
+  },
+  "checks": [
+    {
+      "id": "heat_summary_by_N_errors",
+      "study": "t4",
+      "file": "output/final_prepublication_tests/heat_extended/summary_by_N.csv",
+      "type": "csv_rows",
+      "key": "N",
+      "rows": {
+        "500": {
+          "E_bias": 0.00529827,
+          "E_spread": 0.02850072,
+          "E_total": 0.02898901
+        },
+        "1000": {
+          "E_bias": 0.00261295,
+          "E_spread": 0.02040305,
+          "E_total": 0.02056968
+        },
+        "2000": {
+          "E_bias": 0.00211374,
+          "E_spread": 0.01392762,
+          "E_total": 0.01408711
+        },
+        "5000": {
+          "E_bias": 0.00193585,
+          "E_spread": 0.00879809,
+          "E_total": 0.00900855
+        },
+        "10000": {
+          "E_bias": 0.00219684,
+          "E_spread": 0.00702731,
+          "E_total": 0.00736269
+        },
+        "20000": {
+          "E_bias": 0.00155979,
+          "E_spread": 0.00486141,
+          "E_total": 0.00510551
+        },
+        "50000": {
+          "E_bias": 0.00112524,
+          "E_spread": 0.00330198,
+          "E_total": 0.00348845
+        }
+      },
+      "rtol": 1e-06
+    },
+    {
+      "id": "heat_fit_slopes",
+      "study": "t4",
+      "file": "output/final_prepublication_tests/heat_extended/summary.json",
+      "type": "json_paths",
+      "values": {
+        "fit.total_slope": -0.45680758867457416,
+        "fit.total_ci": [
+          -0.4829525678879075,
+          -0.4252825998720734
+        ],
+        "fit.bias_slope": -0.2617111452609177,
+        "fit.bias_ci": [
+          -0.35446596731648927,
+          -0.10105932233408511
+        ],
+        "fit.spread_slope": -0.4676266965741426,
+        "fit.spread_ci": [
+          -0.4927525691865262,
+          -0.44194279114600293
+        ]
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "fhn_summary_by_N",
+      "study": "t5",
+      "file": "output/final_prepublication_tests/fhn_extended/summary_by_N.csv",
+      "type": "csv_rows",
+      "key": "N",
+      "rows": {
+        "100": {
+          "l2_mean": 0.35157141,
+          "l2_std": 0.14302685,
+          "ce_mean": 0.35982389,
+          "speed_err_mean": 0.07196478,
+          "ap_mean": 0.31055749
+        },
+        "200": {
+          "l2_mean": 0.23557776,
+          "l2_std": 0.0967131,
+          "ce_mean": 0.19504839,
+          "speed_err_mean": 0.03900968,
+          "ap_mean": 0.19457673
+        },
+        "500": {
+          "l2_mean": 0.15470451,
+          "l2_std": 0.04320587,
+          "ce_mean": 0.13711335,
+          "speed_err_mean": 0.02742267,
+          "ap_mean": 0.13720516
+        },
+        "1000": {
+          "l2_mean": 0.11406443,
+          "l2_std": 0.03805212,
+          "ce_mean": 0.0916116,
+          "speed_err_mean": 0.01832232,
+          "ap_mean": 0.09858244
+        },
+        "2000": {
+          "l2_mean": 0.07805269,
+          "l2_std": 0.02484226,
+          "ce_mean": 0.07058711,
+          "speed_err_mean": 0.01411742,
+          "ap_mean": 0.07581545
+        },
+        "5000": {
+          "l2_mean": 0.05361187,
+          "l2_std": 0.01815103,
+          "ce_mean": 0.04157277,
+          "speed_err_mean": 0.00831455,
+          "ap_mean": 0.04541676
+        }
+      },
+      "rtol": 1e-06
+    },
+    {
+      "id": "fhn_fit_slopes",
+      "study": "t5",
+      "file": "output/final_prepublication_tests/fhn_extended/summary.json",
+      "type": "json_paths",
+      "values": {
+        "fit.profile_l2_slope": -0.47885387964655,
+        "fit.profile_l2_ci": [
+          -0.5022624636956721,
+          -0.45735862223853774
+        ],
+        "fit.center_err_slope": -0.5238445495601154,
+        "fit.center_err_ci": [
+          -0.5938032002226261,
+          -0.4467295170816562
+        ],
+        "fit.speed_err_slope": -0.5238445495601153,
+        "fit.speed_err_ci": [
+          -0.5882350389911879,
+          -0.4467295170816562
+        ],
+        "fit.aligned_err_slope": -0.4701819853069751,
+        "fit.aligned_err_ci": [
+          -0.4983424242732755,
+          -0.4122508247573678
+        ]
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "fhn_dt_refinement_dt0.04",
+      "study": "t5",
+      "file": "output/final_prepublication_tests/fhn_extended/summary.json",
+      "type": "json_select",
+      "list_path": "dt_refinement",
+      "where": {
+        "dt": 0.04,
+        "N": 2000
+      },
+      "expect": {
+        "l2_mean": 0.0859981116134714,
+        "ce_mean": 0.08297444798018958
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "fhn_dt_refinement_dt0.02",
+      "study": "t5",
+      "file": "output/final_prepublication_tests/fhn_extended/summary.json",
+      "type": "json_select",
+      "list_path": "dt_refinement",
+      "where": {
+        "dt": 0.02,
+        "N": 2000
+      },
+      "expect": {
+        "l2_mean": 0.07772612585163799,
+        "ce_mean": 0.06945876142594383
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "fhn_dt_refinement_dt0.01",
+      "study": "t5",
+      "file": "output/final_prepublication_tests/fhn_extended/summary.json",
+      "type": "json_select",
+      "list_path": "dt_refinement",
+      "where": {
+        "dt": 0.01,
+        "N": 2000
+      },
+      "expect": {
+        "l2_mean": 0.08811457868291055,
+        "ce_mean": 0.08151940564594948
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "fhn_dt_refinement_dt0.005",
+      "study": "t5",
+      "file": "output/final_prepublication_tests/fhn_extended/summary.json",
+      "type": "json_select",
+      "list_path": "dt_refinement",
+      "where": {
+        "dt": 0.005,
+        "N": 2000
+      },
+      "expect": {
+        "l2_mean": 0.08087628283963588,
+        "ce_mean": 0.06191758157410145
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "gbmc_production_per_N_errors",
+      "study": "t6",
+      "file": "output/final_prepublication_tests/gbmc_production_n_refinement/per_N_summary.csv",
+      "type": "csv_rows",
+      "key": "N",
+      "rows": {
+        "100": {
+          "E_bias": 0.023268630395208958,
+          "E_spread": 0.13472135468633517,
+          "E_total": 0.1367160289395145
+        },
+        "200": {
+          "E_bias": 0.015862422228328524,
+          "E_spread": 0.09617025420828537,
+          "E_total": 0.09746965801435849
+        },
+        "400": {
+          "E_bias": 0.010543803640819815,
+          "E_spread": 0.06193835159653649,
+          "E_total": 0.06282938161172955
+        },
+        "800": {
+          "E_bias": 0.007779648461160033,
+          "E_spread": 0.04632556524196337,
+          "E_total": 0.0469742581119344
+        },
+        "1600": {
+          "E_bias": 0.0063823445888609165,
+          "E_spread": 0.030504804358861184,
+          "E_total": 0.03116532386200019
+        },
+        "3200": {
+          "E_bias": 0.0026106724190533073,
+          "E_spread": 0.02116269038392282,
+          "E_total": 0.021323111282488417
+        },
+        "6400": {
+          "E_bias": 0.0033576356916351475,
+          "E_spread": 0.017282285347326176,
+          "E_total": 0.017605428261310407
+        }
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "gbmc_production_spread_fit",
+      "study": "t6",
+      "file": "output/final_prepublication_tests/gbmc_production_n_refinement/rates.json",
+      "type": "json_paths",
+      "values": {
+        "spread_slope": -0.5099203498810043,
+        "spread_r2": 0.9946806807198103,
+        "spread_ci_lo": -0.5390624017960933,
+        "spread_ci_hi": -0.47938929458619245
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "gbmc_dt_bias_fit",
+      "study": "t1",
+      "file": "output/final_prepublication_tests/gbmc_dt_bias/dt_bias_summary_N6400.json",
+      "type": "json_paths",
+      "values": {
+        "fit.bias_slope": 0.5042993808922924,
+        "fit.bias_slope_ci_lo": 0.2494815285981458,
+        "fit.bias_slope_ci_hi": 0.8222198200730509
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "gbmc_dt_bias_errors_dt0.01",
+      "study": "t1",
+      "file": "output/final_prepublication_tests/gbmc_dt_bias/dt_bias_summary_N6400.json",
+      "type": "json_select",
+      "list_path": "per_dt",
+      "where": {
+        "dt": 0.01
+      },
+      "expect": {
+        "E_bias": 0.01145621736265175,
+        "E_spread": 0.016606840382497202,
+        "E_total": 0.02017503565672346
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "gbmc_dt_bias_errors_dt0.005",
+      "study": "t1",
+      "file": "output/final_prepublication_tests/gbmc_dt_bias/dt_bias_summary_N6400.json",
+      "type": "json_select",
+      "list_path": "per_dt",
+      "where": {
+        "dt": 0.005
+      },
+      "expect": {
+        "E_bias": 0.005893353962105021,
+        "E_spread": 0.016739714790495252,
+        "E_total": 0.017746821467231378
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "gbmc_dt_bias_errors_dt0.0025",
+      "study": "t1",
+      "file": "output/final_prepublication_tests/gbmc_dt_bias/dt_bias_summary_N6400.json",
+      "type": "json_select",
+      "list_path": "per_dt",
+      "where": {
+        "dt": 0.0025
+      },
+      "expect": {
+        "E_bias": 0.0037651065433198247,
+        "E_spread": 0.017546237127336647,
+        "E_total": 0.017945653083999945
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "gbmc_dt_bias_errors_dt0.00125",
+      "study": "t1",
+      "file": "output/final_prepublication_tests/gbmc_dt_bias/dt_bias_summary_N6400.json",
+      "type": "json_select",
+      "list_path": "per_dt",
+      "where": {
+        "dt": 0.00125
+      },
+      "expect": {
+        "E_bias": 0.0034987076680946367,
+        "E_spread": 0.01748962048911472,
+        "E_total": 0.017836136919188682
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "gbmc_dt_bias_errors_dt0.000625",
+      "study": "t1",
+      "file": "output/final_prepublication_tests/gbmc_dt_bias/dt_bias_summary_N6400.json",
+      "type": "json_select",
+      "list_path": "per_dt",
+      "where": {
+        "dt": 0.000625
+      },
+      "expect": {
+        "E_bias": 0.002589539127299367,
+        "E_spread": 0.016254580374909216,
+        "E_total": 0.0164595594125784
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "gbmc_traveling_T1_N100",
+      "study": "t2",
+      "file": "output/final_prepublication_tests/gbmc_traveling_shock/summary.json",
+      "type": "json_select",
+      "list_path": "N_refinement",
+      "where": {
+        "N": 100,
+        "t_out": 1.0
+      },
+      "expect": {
+        "l2_mean": 0.16592479030313792,
+        "ce_mean": 0.10927796483352033
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "gbmc_traveling_T1_N200",
+      "study": "t2",
+      "file": "output/final_prepublication_tests/gbmc_traveling_shock/summary.json",
+      "type": "json_select",
+      "list_path": "N_refinement",
+      "where": {
+        "N": 200,
+        "t_out": 1.0
+      },
+      "expect": {
+        "l2_mean": 0.11978733206336141,
+        "ce_mean": 0.07796708409773732
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "gbmc_traveling_T1_N400",
+      "study": "t2",
+      "file": "output/final_prepublication_tests/gbmc_traveling_shock/summary.json",
+      "type": "json_select",
+      "list_path": "N_refinement",
+      "where": {
+        "N": 400,
+        "t_out": 1.0
+      },
+      "expect": {
+        "l2_mean": 0.0746690955608181,
+        "ce_mean": 0.04890347562026765
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "gbmc_traveling_T1_N800",
+      "study": "t2",
+      "file": "output/final_prepublication_tests/gbmc_traveling_shock/summary.json",
+      "type": "json_select",
+      "list_path": "N_refinement",
+      "where": {
+        "N": 800,
+        "t_out": 1.0
+      },
+      "expect": {
+        "l2_mean": 0.0567524148772774,
+        "ce_mean": 0.037705465164790355
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "gbmc_traveling_T1_N1600",
+      "study": "t2",
+      "file": "output/final_prepublication_tests/gbmc_traveling_shock/summary.json",
+      "type": "json_select",
+      "list_path": "N_refinement",
+      "where": {
+        "N": 1600,
+        "t_out": 1.0
+      },
+      "expect": {
+        "l2_mean": 0.03586485697463877,
+        "ce_mean": 0.02053439484333981
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "gbmc_traveling_T1_N3200",
+      "study": "t2",
+      "file": "output/final_prepublication_tests/gbmc_traveling_shock/summary.json",
+      "type": "json_select",
+      "list_path": "N_refinement",
+      "where": {
+        "N": 3200,
+        "t_out": 1.0
+      },
+      "expect": {
+        "l2_mean": 0.022854988062406666,
+        "ce_mean": 0.012113441535138669
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "gbmc_traveling_N_slope",
+      "study": "t2",
+      "file": "output/final_prepublication_tests/gbmc_traveling_shock/summary.json",
+      "type": "json_paths",
+      "values": {
+        "N_slope_T_max": -0.5690019876281801,
+        "N_slope_ci": [
+          -0.6044026773393347,
+          -0.5192017653193522
+        ]
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "cole_hopf_deterministic_transform",
+      "study": "t3",
+      "file": "output/final_prepublication_tests/cole_hopf_plateau/study_B_deterministic.json",
+      "type": "json_paths",
+      "values": {
+        "exact_phi_num_grad": 0.0007078950587756901,
+        "perturbed_phi_noise_1e-02": 3.9925801835142707
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "cole_hopf_grid_Nout50",
+      "study": "t3",
+      "file": "output/final_prepublication_tests/cole_hopf_plateau/study_D_grid.json",
+      "type": "json_select",
+      "list_path": "",
+      "where": {
+        "N_out": 50
+      },
+      "expect": {
+        "l2_mean": 1.6499508791658228
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "cole_hopf_grid_Nout800",
+      "study": "t3",
+      "file": "output/final_prepublication_tests/cole_hopf_plateau/study_D_grid.json",
+      "type": "json_select",
+      "list_path": "",
+      "where": {
+        "N_out": 800
+      },
+      "expect": {
+        "l2_mean": 0.4213770793871392
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "cole_hopf_grid_Nout1600",
+      "study": "t3",
+      "file": "output/final_prepublication_tests/cole_hopf_plateau/study_D_grid.json",
+      "type": "json_select",
+      "list_path": "",
+      "where": {
+        "N_out": 1600
+      },
+      "expect": {
+        "l2_mean": 0.40799445756315117
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "cole_hopf_plateau_level",
+      "study": "t3",
+      "file": "output/final_prepublication_tests/cole_hopf_plateau/plateau_decomposition.json",
+      "type": "json_paths",
+      "values": {
+        "plateau_l2_observed": 0.4
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "regen_per_N_fitted_viscosity",
+      "study": "regen",
+      "file": "regen_data/per_N_summary.csv",
+      "type": "csv_rows",
+      "key": "N",
+      "rows": {
+        "100": {
+          "nu_mean": 0.5205669198939341,
+          "nu_std": 0.10695523463891318
+        },
+        "200": {
+          "nu_mean": 0.519711112336389,
+          "nu_std": 0.06737125160727671
+        },
+        "400": {
+          "nu_mean": 0.5086544442928065,
+          "nu_std": 0.04825755963472602
+        },
+        "800": {
+          "nu_mean": 0.5055470420622243,
+          "nu_std": 0.027701890117787748
+        },
+        "1600": {
+          "nu_mean": 0.5064800911034251,
+          "nu_std": 0.023911152957272436
+        },
+        "3200": {
+          "nu_mean": 0.5004615699358661,
+          "nu_std": 0.017319528547431587
+        },
+        "6400": {
+          "nu_mean": 0.5045224512886048,
+          "nu_std": 0.0118894424237263
+        }
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "regen_fitted_param_exponents",
+      "study": "regen",
+      "file": "regen_data/rates.json",
+      "type": "json_paths",
+      "values": {
+        "xc_std_slope": -0.5457774272697137,
+        "nu_std_slope": -0.5157250191674344,
+        "spread_slope": -0.5099203498810043
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "regen_dt_recovered_viscosities",
+      "study": "regen",
+      "file": "regen_data/dt_bias_perdt_N6400.csv",
+      "type": "csv_rows",
+      "key": "dt",
+      "rows": {
+        "0.01": {
+          "nu_fit": 0.508388
+        },
+        "0.005": {
+          "nu_fit": 0.504051
+        },
+        "0.0025": {
+          "nu_fit": 0.502519
+        },
+        "0.00125": {
+          "nu_fit": 0.50163
+        },
+        "0.000625": {
+          "nu_fit": 0.500482
+        }
+      },
+      "rtol": 1e-06
+    },
+    {
+      "id": "regen_E_columns_bit_identical",
+      "study": "regen",
+      "file": "regen_data/per_N_summary.csv",
+      "file_b": "output/final_prepublication_tests/gbmc_production_n_refinement/per_N_summary.csv",
+      "type": "csv_columns_identical",
+      "columns": [
+        "N",
+        "S_actual",
+        "n_failed",
+        "E_bias",
+        "E_spread",
+        "E_total",
+        "identity_err"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+numpy==2.4.2
+matplotlib==3.10.8
+# scipy is required for the tanh fits (recovered shock parameters xc, nu).
+# Without it the studies fall back to a cruder zero-crossing fit -- the
+# fallback is what produced the superseded viscosity columns in
+# output/final_prepublication_tests/gbmc_production_n_refinement/per_N_summary.csv
+# (corrected values live in regen_data/; see regen_data/PROVENANCE.md).
+scipy>=1.11

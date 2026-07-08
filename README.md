@@ -1,88 +1,97 @@
-# GRW Feasibility Study — Heat, Burgers, FitzHugh-Nagumo
+<!-- TODO(license): add a LICENSE file and update CITATION.cff before public release. -->
 
-How to run the code and view the results. For method details, code organization, and verification philosophy, see the accompanying document.
+# RB-GBMC companion code — Heat, Burgers, FitzHugh–Nagumo
+
+Companion code for:
+
+> **Gradient Random Walk Methods for Diffusive PDEs and a Relaxation–Brownian
+> Particle Scheme for Viscous Burgers' Equation.**
+> Stephen Abkin and Prabir Daripa, 2026. arXiv: TBD.
+
+Gradient random walk (GRW) particle solvers for the heat equation and the
+FitzHugh–Nagumo (FHN) system, and a relaxation–Brownian gradient Monte Carlo
+(RB-GBMC) particle scheme for viscous Burgers' equation, together with the
+studies behind every table and figure in the paper.
 
 ---
 
-## Setup
+## Quickstart
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate        # macOS / Linux
-# .venv\Scripts\activate         # Windows
-pip install numpy matplotlib
+source .venv/bin/activate          # macOS / Linux
+pip install -r requirements.txt    # numpy, matplotlib; scipy for full reruns
+
+# Check the checked-in paper numbers without rerunning anything (seconds):
+python reproduce.py verify
+
+# Rerun an individual study with the paper configuration (needs scipy; ~10-20 min each):
+python reproduce.py t6      # production GBMC N-refinement (Tables 5-6)
+python reproduce.py --help  # all targets and what they produce
 ```
+
+`MANIFEST.md` maps each manuscript table/figure to its study, script, and
+checked-in data.
 
 ---
 
-## Run simulations
+## WARNING: function defaults are exploration settings
+
+The default arguments of the study functions (`run_task1` … `run_task5`,
+etc.) are **exploration settings, not the paper configurations**. The paper
+configurations live in the `reproduce.py` entry points (and the wrapper
+scripts they call). In particular, the **T2 traveling-shock paper run is
+S=30 seeds** — `run_task2()`'s S=10 default is exploration only; use
+`python reproduce.py t2` (which calls `run_t2_S30.py`).
+
+---
+
+## Directory layout
+
+| Path | Contents |
+|------|----------|
+| `reproduce.py` | Entry points for the paper runs + `verify` (no-rerun check against `expected_values.json`) |
+| `expected_values.json` | Pinned expected values backing `reproduce.py verify` |
+| `MANIFEST.md` | Manuscript table/figure → study → data mapping |
+| `study_t1_gbmc_dt_bias.py` … `study_t5_fhn_extended.py` | Pre-publication studies T1–T5 |
+| `study_gbmc_production_n_refinement.py` | Production GBMC N-refinement (T6) |
+| `run_t2_S30.py`, `run_prepublication_studies.py`, `run_all_studies.py` | Wrapper / master runners |
+| `simulation.py`, `relaxation_gbmc.py` | Solvers: GRW dispatchers and the RB-GBMC Burgers scheme |
+| `config.py`, `configs/`, `main.py` | Exploration CLI: run one simulation from a JSON config |
+| `verify_solver.py`, `verify_grw.py`, `test_relaxation_gbmc.py` | Verification harnesses and unit tests |
+| `output/final_prepublication_tests/` | Checked-in study outputs backing the manuscript |
+| `output/convergence_study/` | Earlier exploration outputs (not used by the paper; see `RELEASE_NOTES.md`) |
+| `regen_data/` | Corrected tanh-fit regeneration (Table 6 fitted columns, dt-study viscosities, three `_fixed` draft figures); see `regen_data/PROVENANCE.md` |
+
+---
+
+## Seed scheme
+
+All ensemble studies use **base seed 42** with consecutive seeds per ensemble
+member (seed_i = 42 + i), and the **same seed list is paired across N** (run
+`i` at every N uses the same seed), so N-refinement comparisons are paired
+rather than independent. The production T6 study uses S=50 (seeds 42–91);
+T1 uses S=40; T2/T4/T5 use S=30; T3 uses S=10.
+
+---
+
+## Exploration CLI
+
+Single simulations from JSON configs (interactive prompts if no config given):
 
 ```bash
-python main.py configs/heat_step_dirichlet.json
-python main.py configs/heat_step_neumann.json
 python main.py configs/burgers_stationary_shock.json
-python main.py configs/burgers_shock.json
-python main.py configs/burgers_traveling_wave.json
-python main.py configs/fhn_grw_steady.json
+python verify_solver.py --equation all      # solver verification harness
+python verify_grw.py                        # heat-only GRW checks
 ```
 
-With no config file, `main.py` prompts for input interactively.
-
-**Outputs** (in `output/`):
-- Heat: `heat_density.png` or `heat_field_dirichlet.png`
-- Burgers: `burgers_u.png`
-- FHN: `fhn_uv.png`
+`config_template.jsonc` documents the config fields (strip `//` comments
+before use).
 
 ---
 
-## Run verification
+## References
 
-```bash
-# All equations
-python verify_solver.py --equation all
-
-# Single equation
-python verify_solver.py --equation heat
-python verify_solver.py --equation burgers --config configs/burgers_stationary_shock.json
-python verify_solver.py --equation burgers --config configs/burgers_shock.json
-python verify_solver.py --equation burgers --config configs/burgers_traveling_wave.json
-python verify_solver.py --equation fhn
-python verify_solver.py --equation fhn --config configs/fhn_grw_nonsmooth.json
-python verify_solver.py --equation fhn --config configs/fhn_grw_discontinuous.json
-
-# Heat-only GRW checks (glob stats, weight conservation)
-python verify_grw.py
-python verify_grw.py configs/heat_step_dirichlet.json
-```
-
-**Outputs** (in `output/verify/<equation>/`):
-- `comparison_plot.png` — numerical vs reference
-- `cole_hopf_diagnostics.png` — Burgers only: phi, phi_x, u, error decomposition
-- `metrics.json` — L1, L2, max error, relL2, RMSE
-
-**Heat-only verification** (`verify_grw.py`): writes `output/verify_grw_vs_exact.png`.
-
----
-
-## Config files
-
-| Config | Equation |
-|--------|----------|
-| `heat_step_dirichlet.json` | Heat, step IC, Dirichlet BC |
-| `heat_step_neumann.json` | Heat, step IC, Neumann BC |
-| `burgers_stationary_shock.json` | Burgers, A=1 |
-| `burgers_shock.json` | Burgers, A=0.5 |
-| `burgers_traveling_wave.json` | Burgers, traveling wave |
-| `fhn_grw_steady.json` | FHN, steady_solution IC |
-| `fhn_grw_nonsmooth.json` | FHN, linear-ramp IC |
-| `fhn_grw_discontinuous.json` | FHN, Heaviside IC |
-
-`config_template.jsonc` has annotated examples. Remove `//` comments before use.
-
-For the mixed-method branch (heat GRW + FD Burgers + FD FHN), see `mixed-solvers-validation`.
-
----
-
-## Changing parameters
-
-Edit the JSON config. Common fields: `time_step`, `total_time`, `num_points`, `diff_constant`, plus equation-specific IC options.
+The GRW method builds on M. R. Lindstrom's TAMU thesis, available from the
+Texas A&M OAKTrust repository, handle
+[`1969.1/ETD-TAMU-1993-THESIS-L7533`](https://hdl.handle.net/1969.1/ETD-TAMU-1993-THESIS-L7533).
