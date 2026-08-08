@@ -1,7 +1,7 @@
 {
   "_meta": {
-    "description": "Pinned expected values for the Paper 2 (RB-GBMC) release. Checked by `python reproduce.py verify` against the checked-in summaries under output/final_prepublication_tests/ and regen_data/. Values were pinned by reading those files directly.",
-    "pinned_from_branch": "paper2-release-prep"
+    "description": "Pinned expected values for the Paper 2 (RB-GBMC) release. Checked by `python reproduce.py verify` against the checked-in summaries under output/final_prepublication_tests/. Directly computed quantities (E_bias/E_spread/E_total, stored arrays, spread slope) use strict/bit-identical checks; quantities from the nonlinear tanh curve_fit (fitted viscosity and derived summaries) use rtol 1e-8 to absorb optimizer-level variation across SciPy/BLAS builds. Values were pinned by reading the canonical files directly.",
+    "pinned_from_branch": "rb-gbmc-paper2"
   },
   "checks": [
     {
@@ -81,46 +81,46 @@
       "key": "N",
       "rows": {
         "100": {
-          "l2_mean": 0.35157141,
-          "l2_std": 0.14302685,
+          "l2_mean": 0.12439817,
+          "l2_std": 0.04300572,
           "ce_mean": 0.35982389,
           "speed_err_mean": 0.07196478,
-          "ap_mean": 0.31055749
+          "ap_mean": 0.11186324
         },
         "200": {
-          "l2_mean": 0.23557776,
-          "l2_std": 0.0967131,
+          "l2_mean": 0.0810706,
+          "l2_std": 0.02832438,
           "ce_mean": 0.19504839,
           "speed_err_mean": 0.03900968,
-          "ap_mean": 0.19457673
+          "ap_mean": 0.07046514
         },
         "500": {
-          "l2_mean": 0.15470451,
-          "l2_std": 0.04320587,
+          "l2_mean": 0.0539753,
+          "l2_std": 0.01302949,
           "ce_mean": 0.13711335,
           "speed_err_mean": 0.02742267,
-          "ap_mean": 0.13720516
+          "ap_mean": 0.05086737
         },
         "1000": {
-          "l2_mean": 0.11406443,
-          "l2_std": 0.03805212,
+          "l2_mean": 0.04033547,
+          "l2_std": 0.01152514,
           "ce_mean": 0.0916116,
           "speed_err_mean": 0.01832232,
-          "ap_mean": 0.09858244
+          "ap_mean": 0.03701322
         },
         "2000": {
-          "l2_mean": 0.07805269,
-          "l2_std": 0.02484226,
+          "l2_mean": 0.02812895,
+          "l2_std": 0.0079625,
           "ce_mean": 0.07058711,
           "speed_err_mean": 0.01411742,
-          "ap_mean": 0.07581545
+          "ap_mean": 0.02832581
         },
         "5000": {
-          "l2_mean": 0.05361187,
-          "l2_std": 0.01815103,
+          "l2_mean": 0.02038168,
+          "l2_std": 0.00642536,
           "ce_mean": 0.04157277,
           "speed_err_mean": 0.00831455,
-          "ap_mean": 0.04541676
+          "ap_mean": 0.01842461
         }
       },
       "rtol": 1e-06
@@ -131,25 +131,25 @@
       "file": "output/final_prepublication_tests/fhn_extended/summary.json",
       "type": "json_paths",
       "values": {
-        "fit.profile_l2_slope": -0.47885387964655,
+        "fit.profile_l2_slope": -0.45981628525308377,
         "fit.profile_l2_ci": [
-          -0.5022624636956721,
-          -0.45735862223853774
+          -0.4955669927321972,
+          -0.42382595306777565
         ],
-        "fit.center_err_slope": -0.5238445495601154,
+        "fit.center_err_slope": -0.5238445495601161,
         "fit.center_err_ci": [
-          -0.5938032002226261,
-          -0.4467295170816562
+          -0.607235334425514,
+          -0.44129190717524247
         ],
-        "fit.speed_err_slope": -0.5238445495601153,
+        "fit.speed_err_slope": -0.5238445495601161,
         "fit.speed_err_ci": [
-          -0.5882350389911879,
-          -0.4467295170816562
+          -0.607235334425514,
+          -0.44129190717524247
         ],
-        "fit.aligned_err_slope": -0.4701819853069751,
+        "fit.aligned_err_slope": -0.44397305641192963,
         "fit.aligned_err_ci": [
-          -0.4983424242732755,
-          -0.4122508247573678
+          -0.4746437933211153,
+          -0.41376451435206524
         ]
       },
       "rtol": 1e-12
@@ -165,8 +165,8 @@
         "N": 2000
       },
       "expect": {
-        "l2_mean": 0.0859981116134714,
-        "ce_mean": 0.08297444798018958
+        "l2_mean": 0.03250085544899779,
+        "ce_mean": 0.08297444798018869
       },
       "rtol": 1e-12
     },
@@ -181,8 +181,8 @@
         "N": 2000
       },
       "expect": {
-        "l2_mean": 0.07772612585163799,
-        "ce_mean": 0.06945876142594383
+        "l2_mean": 0.026509102374232457,
+        "ce_mean": 0.06945876142594312
       },
       "rtol": 1e-12
     },
@@ -197,8 +197,8 @@
         "N": 2000
       },
       "expect": {
-        "l2_mean": 0.08811457868291055,
-        "ce_mean": 0.08151940564594948
+        "l2_mean": 0.030282062756619994,
+        "ce_mean": 0.08151940564594913
       },
       "rtol": 1e-12
     },
@@ -213,8 +213,8 @@
         "N": 2000
       },
       "expect": {
-        "l2_mean": 0.08087628283963588,
-        "ce_mean": 0.06191758157410145
+        "l2_mean": 0.02887430172235428,
+        "ce_mean": 0.06191758157410199
       },
       "rtol": 1e-12
     },
@@ -470,10 +470,10 @@
       "file": "output/final_prepublication_tests/gbmc_traveling_shock/summary.json",
       "type": "json_paths",
       "values": {
-        "N_slope_T_max": -0.5690019876281801,
+        "N_slope_T_max": -0.56900198762818,
         "N_slope_ci": [
-          -0.6044026773393347,
-          -0.5192017653193522
+          -0.6201360001203843,
+          -0.5158494200924095
         ]
       },
       "rtol": 1e-12
@@ -543,58 +543,59 @@
     },
     {
       "id": "regen_per_N_fitted_viscosity",
-      "study": "regen",
-      "file": "regen_data/per_N_summary.csv",
+      "study": "t6",
+      "file": "output/final_prepublication_tests/gbmc_production_n_refinement/per_N_summary.csv",
       "type": "csv_rows",
       "key": "N",
       "rows": {
         "100": {
-          "nu_mean": 0.5205669198939341,
-          "nu_std": 0.10695523463891318
+          "nu_mean": 0.5205669198941983,
+          "nu_std": 0.10695523480437316
         },
         "200": {
-          "nu_mean": 0.519711112336389,
-          "nu_std": 0.06737125160727671
+          "nu_mean": 0.5197111123625281,
+          "nu_std": 0.06737125162110141
         },
         "400": {
-          "nu_mean": 0.5086544442928065,
-          "nu_std": 0.04825755963472602
+          "nu_mean": 0.5086544442726524,
+          "nu_std": 0.04825755961134139
         },
         "800": {
-          "nu_mean": 0.5055470420622243,
-          "nu_std": 0.027701890117787748
+          "nu_mean": 0.5055470420604447,
+          "nu_std": 0.027701890125074197
         },
         "1600": {
-          "nu_mean": 0.5064800911034251,
-          "nu_std": 0.023911152957272436
+          "nu_mean": 0.5064800911036689,
+          "nu_std": 0.02391115295547833
         },
         "3200": {
-          "nu_mean": 0.5004615699358661,
-          "nu_std": 0.017319528547431587
+          "nu_mean": 0.5004615699331397,
+          "nu_std": 0.01731952854611561
         },
         "6400": {
-          "nu_mean": 0.5045224512886048,
-          "nu_std": 0.0118894424237263
+          "nu_mean": 0.5045224512899591,
+          "nu_std": 0.011889442421271747
         }
       },
-      "rtol": 1e-12
+      "rtol": 1e-08,
+      "_note": "nu from nonlinear tanh curve_fit; rtol 1e-8 absorbs optimizer-level variation across SciPy/BLAS builds"
     },
     {
-      "id": "regen_fitted_param_exponents",
-      "study": "regen",
-      "file": "regen_data/rates.json",
+      "id": "t6_fitted_param_exponents",
+      "study": "t6",
+      "file": "output/final_prepublication_tests/gbmc_production_n_refinement/rates.json",
       "type": "json_paths",
       "values": {
-        "xc_std_slope": -0.5457774272697137,
-        "nu_std_slope": -0.5157250191674344,
-        "spread_slope": -0.5099203498810043
+        "nu_std_slope": -0.5157250194463475,
+        "xc_std_slope": -0.5457774272736527
       },
-      "rtol": 1e-12
+      "rtol": 1e-08,
+      "_note": "slopes of curve_fit-derived nu_std/xc_std; rtol 1e-8 (spread_slope pinned strictly by gbmc_production_spread_fit)"
     },
     {
-      "id": "regen_dt_recovered_viscosities",
-      "study": "regen",
-      "file": "regen_data/dt_bias_perdt_N6400.csv",
+      "id": "t1_dt_recovered_viscosities",
+      "study": "t1",
+      "file": "output/final_prepublication_tests/gbmc_dt_bias/dt_bias_perdt_N6400.csv",
       "type": "csv_rows",
       "key": "dt",
       "rows": {
@@ -614,23 +615,20 @@
           "nu_fit": 0.500482
         }
       },
-      "rtol": 1e-06
+      "rtol": 1e-08,
+      "_note": "nu_fit from nonlinear tanh curve_fit; rtol 1e-8; canonical file carries the scipy fit (committed no-scipy run had fallback nu=0.5)"
     },
     {
-      "id": "regen_E_columns_bit_identical",
-      "study": "regen",
-      "file": "regen_data/per_N_summary.csv",
-      "file_b": "output/final_prepublication_tests/gbmc_production_n_refinement/per_N_summary.csv",
-      "type": "csv_columns_identical",
-      "columns": [
-        "N",
-        "S_actual",
-        "n_failed",
-        "E_bias",
-        "E_spread",
-        "E_total",
-        "identity_err"
-      ]
+      "id": "fhn_boundary_reference",
+      "study": "t5",
+      "file": "output/final_prepublication_tests/fhn_extended/summary.json",
+      "type": "json_paths",
+      "values": {
+        "boundary_diagnostic.fd_vs_exact_l2": 0.0008257530911334488,
+        "boundary_diagnostic.grid_selfconv_l2": 2.0412358875061173e-06,
+        "boundary_diagnostic.dt_selfconv_l2": 9.331874033796652e-06
+      },
+      "rtol": 1e-09
     }
   ]
 }

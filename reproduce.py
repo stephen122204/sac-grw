@@ -18,12 +18,16 @@ import sys
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 
+# Fixed date for matplotlib PDF metadata so regenerated figures are byte-identical
+# across runs (matplotlib honors SOURCE_DATE_EPOCH). Subprocesses inherit this.
+os.environ.setdefault('SOURCE_DATE_EPOCH', '1704067200')  # 2024-01-01 UTC
+
 TARGETS = {
     't1': ('studies/study_t1_gbmc_dt_bias.py',
-           'T1  GBMC dt-bias at N=6400 (5 dt values, S=40)  -> Table 7'),
+           'T1  GBMC dt-bias at N=6400 (5 dt values, S=40)  -> Table 5'),
     't2': ('studies/run_t2_S30.py',
            'T2  traveling-shock validation at S=30 (PAPER config; the S=10 '
-           'default inside run_task2() is an exploration setting)  -> Table 8 + figures'),
+           'default inside run_task2() is an exploration setting)  -> Table 6 + figures'),
     't3': ('studies/study_t3_cole_hopf_plateau.py',
            'T3  Cole-Hopf plateau decomposition (deterministic diagnostic, S=10)  '
            '-> Section 6 numbers + decomposition figure'),
@@ -32,17 +36,19 @@ TARGETS = {
     't5': ('studies/study_t5_fhn_extended.py',
            'T5  extended FHN N-refinement + dt quartet (S=30)  -> Table 2'),
     't6': ('studies/study_gbmc_production_n_refinement.py',
-           'T6  production GBMC N-refinement (N=100..6400, S=50)  -> Tables 5-6 + figures'),
-    'all': ('studies/run_prepublication_studies.py',
-            'T1-T5 in sequence via the master runner (T2 at S=30), then the '
-            'final manifest. T6 is NOT included; run it separately.'),
+           'T6  production GBMC N-refinement (N=100..6400, S=50)  -> Tables 3-4 + figures'),
+    'all': (None,
+            'T1-T6 in sequence: all six paper studies at their paper configs.'),
+    'figures': ('figure_scripts/regenerate_paper_figures.py',
+                'regenerate the 11 title-less paper figures from the checked-in '
+                'study data (no rerun) -> output/final_prepublication_tests/paper_figures/'),
 }
 
 EPILOG = """\
 targets:
 """ + "\n".join(f"  {k:<7} {v[1]}" for k, v in TARGETS.items()) + """
   verify  NO rerun: check the checked-in summaries under
-          output/final_prepublication_tests/ (and regen_data/) against
+          output/final_prepublication_tests/ against
           expected_values.json; prints PASS/FAIL per item.
 
 notes:
@@ -53,10 +59,12 @@ notes:
   * Function defaults inside the study modules are exploration settings.
     The paper configurations are exactly what these targets invoke
     (in particular, the T2 paper run is S=30 via studies/run_t2_S30.py).
-  * Rerunning t1/t3/t4/t5/t6 overwrites output/final_prepublication_tests/.
-    t2 (studies/run_t2_S30.py) and `all`'s manifest step write as documented in
-    those scripts (studies/run_t2_S30.py writes to ../regen_output/).
-  * Seeds: base seed 42, consecutive per ensemble member, paired across N.
+  * Rerunning t1..t6 overwrites that study's subdirectory under
+    output/final_prepublication_tests/ (t2 also emits a nu=0.2 sharp-layer
+    exploration figure there that is not used in the paper).
+  * Seeds: base seed 42, consecutive per ensemble member. The same seed
+    identifiers are reused at each N for reproducibility; this is not a strict
+    common-random-number coupling across N.
 """
 
 
@@ -188,6 +196,11 @@ def main():
     args = parser.parse_args()
     if args.target == 'verify':
         sys.exit(verify())
+    if args.target == 'all':
+        rc = 0
+        for t in ('t1', 't2', 't3', 't4', 't5', 't6'):
+            rc = run_target(t) or rc
+        sys.exit(rc)
     sys.exit(run_target(args.target))
 
 

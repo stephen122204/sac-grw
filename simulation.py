@@ -143,7 +143,7 @@ def simulate_fitzhugh_nagumo_grw(globs, config, _diag_dir=None):
       nonsmooth IC: linear-ramp inverse, w_i = 1/N0.
 
     :param globs: list of dicts with 'position' and scalar 'value' (= w_i)
-    :param config: SimulationConfig; diff_constant = D, a = threshold param,
+    :param config: SimulationConfig; diff_constant = D, a = wave-speed parameter,
                       time_step = dt, total_time = T, domain_size = L,
                       boundary_conditions used for position reflection.
     :param _diag_dir: optional path; if set, saves a diagnostic figure with
@@ -552,8 +552,8 @@ def simulate_burgers_cole_hopf_grw(globs, config, _diag_dir=None):
       2. Smooth with a boundary-corrected Gaussian kernel (sigma_bins=12).
          The kernel is divided by its effective support at each bin so that
          truncation at x=0 and x=L does not bias the phi_x amplitude near the
-         boundaries (previously the standard mode='same' convolution
-         underestimated |phi_x| there by up to ~2x for sigma_bins=12).
+         boundaries (a plain mode='same' convolution underestimates |phi_x|
+         there by up to ~2x for sigma_bins=12).
          sigma_bins=12 spans ~30 output bins, reducing shot noise by ~sqrt(30)
          while remaining narrow relative to the phi variation scale.
       3. Enforce the correct total for the smoothed bins:
@@ -724,9 +724,9 @@ def simulate_burgers_cole_hopf_grw(globs, config, _diag_dir=None):
     #   bins the two strategies agree to O(dx), so they are numerically
     #   equivalent for the smooth profiles produced by sigma_bins=12.
     #
-    # With boundary-corrected bin_sums_s both strategies now recover the full
-    # phi_x amplitude near x=0 and x=L; previously both were biased there
-    # because the kernel was truncated without normalization.
+    # With boundary-corrected bin_sums_s both strategies recover the full
+    # phi_x amplitude near x=0 and x=L, because the kernel weight is normalized
+    # at each bin rather than truncated.
     phi_x_out = np.gradient(phi_out, dx_out)   # Strategy A (used for u)
     phi_x_bins = bin_sums_s / dx_out             # Strategy B (shown in diagnostics)
 

@@ -328,7 +328,7 @@ def generate_fhn_steady_ic(num_globs, a, x_center=0.0):
     sum reconstructs u from 0 at the left to 1 at the right.
 
     :param num_globs: int, number of globs N0
-    :param a: float, FHN threshold parameter (used only for annotation)
+    :param a: float, FHN wave-speed parameter (used only for annotation)
     :param x_center: float, position of the wave center (u = 0.5) at t = 0
     :return: list of (position, weight) pairs
     """
@@ -356,7 +356,7 @@ def generate_fhn_nonsmooth_ic(num_globs, a, x_center=0.0, half_width=3.0):
       x_i = (x_center - hw) + 2 * hw * u_i
 
     :param num_globs: int, number of globs
-    :param a: float, FHN threshold parameter (informational)
+    :param a: float, FHN wave-speed parameter (informational)
     :param x_center: float, center of the ramp
     :param half_width: float, half-width of the linear transition zone
     :return: list of (position, weight) pairs
@@ -381,7 +381,7 @@ def generate_fhn_discontinuous_ic(num_globs, a, x_center=0.0):
     Even this extreme IC relaxes to the exact traveling wave solution.
 
     :param num_globs: int, number of globs
-    :param a: float, FHN threshold parameter (informational)
+    :param a: float, FHN wave-speed parameter (informational)
     :param x_center: float, initial position of all globs
     :return: list of (position, weight) pairs
     """

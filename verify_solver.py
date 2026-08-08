@@ -675,7 +675,7 @@ def exact_fhn_traveling_wave(x, t, a, x_center=0.0):
 
     :param x: array-like, spatial coordinates
     :param t: float, time
-    :param a: float, FHN threshold parameter
+    :param a: float, FHN wave-speed parameter
     :param x_center: float, initial position of the wave center (u = 0.5)
     :return: ndarray, exact u values at positions x, time t
     """

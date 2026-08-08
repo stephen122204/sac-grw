@@ -110,30 +110,62 @@ def _aligned_profile_error(x1, u1, x2, u2):
     return float(np.sqrt(np.sum((u1 - u2_interp)**2 * dx)))
 
 
-def _bootstrap_slope_ci(x_arr, y_arr, n_boot=2000, ci=0.95, rng=None):
-    if rng is None:
-        rng = np.random.default_rng(55)
-    valid = np.isfinite(x_arr) & np.isfinite(y_arr) & (x_arr > 0) & (y_arr > 0)
-    n = int(valid.sum())
-    if n < 3:
-        return float('nan'), float('nan'), float('nan')
-    lx = np.log10(x_arr[valid])
-    ly = np.log10(y_arr[valid])
-    c = np.polyfit(lx, ly, 1)
-    slope = float(c[0])
-    slopes = []
+def _fhn_fd_solve(a, nu, T, L, xc, M, dt_fd):
+    """Deterministic finite-domain Neumann solve (Crank--Nicolson IMEX) of the FHN
+    PDE with logistic IC on an M-point grid; returns (x, u(T))."""
+    from scipy.linalg import solve_banded
+    theta = np.sqrt(2.0) * (0.5 - a)
+    x = np.linspace(0.0, L, M); dxs = float(x[1] - x[0])
+    u = 1.0 / (1.0 + np.exp(-(x - xc) / 2.0))             # logistic IC
+    r = nu * dt_fd / (2.0 * dxs * dxs)
+    ab = np.zeros((3, M)); ab[0, 1:] = -r; ab[2, :-1] = -r; ab[1, :] = 1.0 + 2.0 * r
+    ab[0, 1] = -2.0 * r; ab[2, -2] = -2.0 * r             # homogeneous Neumann
+    def f_reac(z):
+        return z * (1.0 - z) * (theta / 2.0 - nu * (1.0 - 2.0 * z) / 4.0)
+    for _ in range(int(round(T / dt_fd))):
+        lap = np.empty(M)
+        lap[1:-1] = (u[:-2] - 2.0 * u[1:-1] + u[2:]) / (dxs * dxs)
+        lap[0] = 2.0 * (u[1] - u[0]) / (dxs * dxs)
+        lap[-1] = 2.0 * (u[-2] - u[-1]) / (dxs * dxs)
+        u = solve_banded((1, 1), ab, u + (dt_fd / 2.0) * nu * lap + dt_fd * f_reac(u))
+    return x, u
+
+
+def _fhn_boundary_diagnostic(a, nu, T, L, xc, x_ref, u_ref_exact, dx):
+    """Boundary contribution ||u_FD(T) - u_exact_logistic(T)||_L2 of the deterministic
+    finite-domain Neumann solution, plus its grid- and time-step self-convergence
+    (evidence that the reference discretization error is negligible relative to the
+    boundary contribution, so the exact logistic is a valid reference)."""
+    M = len(x_ref)
+    _, u0 = _fhn_fd_solve(a, nu, T, L, xc, M, 5e-4)               # reference resolution
+    fd_vs_exact = float(np.sqrt(np.sum((u0 - u_ref_exact) ** 2) * dx))
+    Mc = (M + 1) // 2
+    xg2, u_gc = _fhn_fd_solve(a, nu, T, L, xc, Mc, 5e-4)          # coarser grid
+    grid_sc = float(np.sqrt(np.sum((np.interp(x_ref, xg2, u_gc) - u0) ** 2) * dx))
+    _, u_dc = _fhn_fd_solve(a, nu, T, L, xc, M, 1e-3)             # coarser time step
+    dt_sc = float(np.sqrt(np.sum((u_dc - u0) ** 2) * dx))
+    return {'fd_vs_exact_l2': fd_vs_exact, 'grid_M': M, 'dt_fd': 5e-4,
+            'grid_selfconv_l2': grid_sc, 'dt_selfconv_l2': dt_sc}
+
+
+def _realization_boot(per_N, N_seq, n_boot=5000, seed=12345):
+    """Realization-level bootstrap of a log--log slope: resample the per-seed
+    values within each N (with replacement), recompute the ensemble mean, refit."""
+    rng = np.random.default_rng(seed)
+    logN = np.log(np.array(N_seq, dtype=float))
+    arrs = {N: np.asarray(per_N[N], dtype=float) for N in N_seq}
+    def _slope(means):
+        return float(np.polyfit(logN, np.log(np.array(means)), 1)[0])
+    base = _slope([arrs[N].mean() for N in N_seq])
+    bs = []
     for _ in range(n_boot):
-        idx = rng.integers(0, n, size=n)
-        try:
-            cb = np.polyfit(lx[idx], ly[idx], 1)
-            slopes.append(cb[0])
-        except Exception:
-            pass
-    if not slopes:
-        return slope, float('nan'), float('nan')
-    lo = float(np.percentile(slopes, 100*(1-ci)/2))
-    hi = float(np.percentile(slopes, 100*(1+ci)/2))
-    return slope, lo, hi
+        means = []
+        for N in N_seq:
+            a_ = arrs[N]
+            means.append(float(a_[rng.integers(0, len(a_), size=len(a_))].mean()))
+        bs.append(_slope(means))
+    lo, hi = np.percentile(bs, [2.5, 97.5])
+    return base, float(lo), float(hi)
 
 
 def run_task5(N_seq=None, S=30, base_seed=42,
@@ -157,25 +189,22 @@ def run_task5(N_seq=None, S=30, base_seed=42,
 
     per_run_records = []
     N_results = []
+    mean_prof_by_N = {}
 
     N_max = max(N_seq)
-    print(f"\n  Building reference solution (N={N_max}, 20 seeds)...")
-    ref_runs = []
-    for rep in range(20):
-        try:
-            x_r, u_r, _ = _run_fhn_one(N_max, a, nu, T, dt, L, xc, base_seed+rep+1000)
-            ref_runs.append((x_r, u_r))
-        except Exception as e:
-            print(f"    WARNING ref seed={base_seed+rep+1000}: {e}")
-    if not ref_runs:
-        print("  ERROR: cannot build reference solution.")
-        return {}
-    x_ref = ref_runs[0][0]
-    u_ref = np.mean([np.interp(x_ref, r[0], r[1]) for r in ref_runs], axis=0)
-    xc_ref = _find_front_center(x_ref, u_ref)
+    # Reference: fixed uniform evaluation grid (independent of N) and the exact
+    # logistic traveling wave at time T. Profiles are compared on this grid with
+    # uniform-grid quadrature. The exact-logistic reference is validated by the
+    # deterministic finite-domain Neumann diagnostic below.
+    M_grid = 3001
+    x_ref = np.linspace(0.0, L, M_grid)
     dx_ref = float(x_ref[1] - x_ref[0])
+    u_ref = 1.0 / (1.0 + np.exp(-(x_ref - xc_exact_T) / 2.0))   # exact logistic at T
+    xc_ref = _find_front_center(x_ref, u_ref)
     np.save(_mk(OUT_BASE, 'reference_profile.npy'), np.stack([x_ref, u_ref]))
-    print(f"  Reference front center: {xc_ref:.4f}")
+    boundary_diag = _fhn_boundary_diagnostic(a, nu, T, L, xc, x_ref, u_ref, dx_ref)
+    print(f"  Uniform grid M={M_grid}, dx={dx_ref:.5f}; exact-logistic reference; "
+          f"boundary ||u_FD-u_exact||_L2={boundary_diag['fd_vs_exact_l2']:.3e}")
 
     # N-refinement study
     for N in N_seq:
@@ -186,6 +215,7 @@ def run_task5(N_seq=None, S=30, base_seed=42,
         ap_list = []  # aligned-profile error
         sp_list = []  # front speed estimate (via center / T)
         rt_list = []
+        prof_list = []  # per-realization reconstructed profiles on the uniform x_ref
 
         for s_idx, seed in enumerate(seeds):
             try:
@@ -193,6 +223,7 @@ def run_task5(N_seq=None, S=30, base_seed=42,
                 rt_list.append(elapsed)
 
                 u_interp = np.interp(x_ref, x_out, u_out)
+                prof_list.append(u_interp)
                 diff = u_interp - u_ref
                 l1  = float(np.sum(np.abs(diff)) * dx_ref)
                 l2  = float(np.sqrt(np.sum(diff**2) * dx_ref))
@@ -241,11 +272,10 @@ def run_task5(N_seq=None, S=30, base_seed=42,
             'mean_rt': float(np.mean(rt_list)),
         }
         N_results.append(row)
-        recs_N = [r for r in per_run_records if r['N'] == N]
-        if recs_N:
-            u_mean_approx = u_ref  # fallback: reference
-            np.save(_mk(OUT_BASE, f'profile_N{N}.npy'),
-                    np.stack([x_ref, u_mean_approx]))
+        if prof_list:
+            prof_arr = np.array(prof_list)
+            np.save(_mk(OUT_BASE, f'profile_N{N}.npy'), prof_arr)
+            mean_prof_by_N[N] = prof_arr.mean(axis=0)
 
         print(f"  N={N:5d}  L2={row['l2_mean']:.4f}±{row['l2_std']:.4f}  "
               f"center_err={row['ce_mean']:.4f}  speed_err={row['speed_err_mean']:.4f}  "
@@ -305,18 +335,13 @@ def run_task5(N_seq=None, S=30, base_seed=42,
     ap_arr = np.array([r['ap_mean'] for r in N_results])
     rt_arr = np.array([r['mean_rt'] for r in N_results])
 
-    rng_ci = np.random.default_rng(404)
-    l2_slope, l2_lo, l2_hi = _bootstrap_slope_ci(N_arr, l2_arr, rng=rng_ci)
-    ce_slope, ce_lo, ce_hi = _bootstrap_slope_ci(N_arr, ce_arr[ce_arr>0], rng=rng_ci) \
-        if np.sum(ce_arr > 0) >= 2 else (float('nan'), float('nan'), float('nan'))
-    sp_slope, sp_lo, sp_hi = _bootstrap_slope_ci(N_arr, sp_arr[sp_arr>0], rng=rng_ci) \
-        if np.sum(sp_arr > 0) >= 2 else (float('nan'), float('nan'), float('nan'))
-    # Speed = center/T exactly, so the center bootstrap's index draws yield
-    # identical slope samples; the call above is kept only to preserve the
-    # RNG stream for the aligned-error CI.
-    sp_lo, sp_hi = ce_lo, ce_hi
-    ap_slope, ap_lo, ap_hi = _bootstrap_slope_ci(N_arr, ap_arr[ap_arr>0], rng=rng_ci) \
-        if np.sum(ap_arr > 0) >= 2 else (float('nan'), float('nan'), float('nan'))
+    # Realization-level bootstrap: resample the S per-seed values within each N,
+    # recompute the ensemble mean, and refit the slope.
+    _by = lambda k: {N: [r[k] for r in per_run_records if r['N'] == N] for N in N_seq}
+    l2_slope, l2_lo, l2_hi = _realization_boot(_by('l2'), N_seq)
+    ce_slope, ce_lo, ce_hi = _realization_boot(_by('center_err'), N_seq)
+    sp_slope, sp_lo, sp_hi = ce_slope, ce_lo, ce_hi   # speed = center/T: identical slope
+    ap_slope, ap_lo, ap_hi = _realization_boot(_by('aligned_err'), N_seq)
 
     print(f"\n  Slopes:")
     print(f"    Profile L2: {l2_slope:.3f} CI=[{l2_lo:.3f},{l2_hi:.3f}]")
@@ -358,7 +383,9 @@ def run_task5(N_seq=None, S=30, base_seed=42,
                    'L': L, 'xc': xc, 'S': S, 'N_seq': N_seq,
                    'theta_exact': float(theta_exact),
                    'xc_exact_T': float(xc_exact_T)},
-        'reference': {'xc_ref': float(xc_ref), 'N_max': N_max},
+        'reference': {'xc_ref': float(xc_ref), 'N_max': N_max,
+                      'grid_M': len(x_ref), 'dx': dx_ref, 'reference_type': 'exact_logistic'},
+        'boundary_diagnostic': boundary_diag,
         'fit': {
             'profile_l2_slope': l2_slope, 'profile_l2_ci': [l2_lo, l2_hi],
             'center_err_slope': ce_slope, 'center_err_ci': [ce_lo, ce_hi],
@@ -380,8 +407,6 @@ def run_task5(N_seq=None, S=30, base_seed=42,
     ax.loglog(N_arr, l2_arr, 'bo-', lw=1.8, ms=6)
     c0 = l2_arr[0] * N_arr[0]**0.5
     ax.loglog(N_ref_line, c0*N_ref_line**(-0.5), 'k--', lw=1.2, label=r'$O(N^{-1/2})$')
-    ci_str = f'[{l2_lo:.3f},{l2_hi:.3f}]'
-    ax.set_title(f'FHN: profile L2 vs N\nslope={l2_slope:.3f}  95%CI={ci_str}')
     ax.set_xlabel('N'); ax.set_ylabel('L2 (vs reference)')
     ax.legend(); ax.grid(True, which='both', alpha=0.3)
     fig.tight_layout()
@@ -390,11 +415,9 @@ def run_task5(N_seq=None, S=30, base_seed=42,
     # Fig 2: front center error vs N
     fig, axes = plt.subplots(1, 2, figsize=(12, 4))
     axes[0].loglog(N_arr, ce_arr, 'rs-', lw=1.8, ms=6)
-    axes[0].set_title(f'FHN: front center error vs N\nslope={ce_slope:.3f}')
     axes[0].set_xlabel('N'); axes[0].set_ylabel('|center error|')
     axes[0].grid(True, which='both', alpha=0.3)
     axes[1].loglog(N_arr, sp_arr, 'g^-', lw=1.8, ms=6)
-    axes[1].set_title(f'FHN: front speed error vs N\nslope={sp_slope:.3f}')
     axes[1].set_xlabel('N'); axes[1].set_ylabel('|speed error|')
     axes[1].grid(True, which='both', alpha=0.3)
     fig.tight_layout()
@@ -444,15 +467,13 @@ def run_task5(N_seq=None, S=30, base_seed=42,
 
     # Fig 7: profiles for selected N
     fig, ax = plt.subplots(figsize=(9, 5))
-    ax.plot(x_ref, u_ref, 'k-', lw=2.0, label='Reference (N=5000)', zorder=10)
+    ax.plot(x_ref, u_ref, 'k-', lw=2.0, label='Exact logistic', zorder=10)
     selected_N = [N_seq[0], N_seq[len(N_seq)//2], N_seq[-1]]
     colors = plt.cm.plasma(np.linspace(0.2, 0.85, len(selected_N)))
     for col, N_sel in zip(colors, selected_N):
-        recs = [r for r in per_run_records if r['N'] == N_sel]
-        if recs:
-            xc_n = float(np.mean([r['xc_num'] for r in recs]))
-            ax.axvline(xc_n, color=col, ls='--', lw=0.8, alpha=0.5)
-    ax.set_title(f'FHN: profiles  (T={T}, a={a}, nu={nu})')
+        if N_sel in mean_prof_by_N:
+            ax.plot(x_ref, mean_prof_by_N[N_sel], color=col, lw=1.3,
+                    label=f'Ensemble mean, N={N_sel}')
     ax.set_xlabel('x'); ax.set_ylabel('u(x, T)')
     ax.legend(fontsize=8); ax.grid(alpha=0.3)
     fig.tight_layout()

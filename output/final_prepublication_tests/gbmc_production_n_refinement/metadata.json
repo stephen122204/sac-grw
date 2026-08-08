@@ -1,5 +1,5 @@
 {
-  "git_commit": "9f60dac393af9216373b7d23137c46829a6cb3cc",
+  "git_commit": "b3cc0ff337f87fa876495d44da972dced42782b3",
   "dispatcher": "simulate_burgers() in simulation.py",
   "routes_to": "simulate_burgers_relaxation_gbmc() in relaxation_gbmc.py",
   "burgers_mode": "relaxation_gbmc",

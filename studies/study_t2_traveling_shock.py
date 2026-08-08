@@ -392,13 +392,19 @@ def run_task2(nu=0.5, A=1.0, c=0.5, a=2.0, L=8.0, x0=3.0,
     nr_Tmax = [r for r in N_results if abs(r['t_out'] - T_key) < 1e-9]
     n_arr = np.array([r['N'] for r in nr_Tmax], dtype=float)
     l2_arr = np.array([r['l2_mean'] for r in nr_Tmax])
+    # Per-seed L2 at T_max, grouped by N, for the realization-level bootstrap.
+    per_N_l2 = {}
+    for r in per_run_records:
+        if abs(r['t_out'] - T_key) < 1e-9:
+            per_N_l2.setdefault(int(r['N']), []).append(float(r['l2']))
     if len(n_arr) >= 2:
         valid = l2_arr > 0
         if valid.sum() >= 2:
-            c_fit = np.polyfit(np.log10(n_arr[valid]), np.log10(l2_arr[valid]), 1)
-            N_slope = float(c_fit[0])
-            rng_ci = np.random.default_rng(222)
-            N_lo, N_hi = _bootstrap_ci(n_arr[valid], l2_arr[valid], rng_ci)
+            N_fit = [int(n) for n, v in zip(n_arr, valid) if v]
+            # Realization-level bootstrap: resample the per-seed errors within
+            # each N and refit, the same procedure as the FHN and production
+            # studies (Section on the ensemble bootstrap in the paper).
+            N_slope, N_lo, N_hi = _realization_boot(per_N_l2, N_fit)
         else:
             N_slope = float('nan'); N_lo = float('nan'); N_hi = float('nan')
     else:
@@ -540,24 +546,24 @@ def run_task2(nu=0.5, A=1.0, c=0.5, a=2.0, L=8.0, x0=3.0,
     return summary
 
 
-def _bootstrap_ci(x_arr, y_arr, rng, n_boot=2000, ci=0.95):
-    n = len(x_arr)
-    if n < 3:
-        return float('nan'), float('nan')
-    lx = np.log10(x_arr); ly = np.log10(y_arr)
-    slopes = []
+def _realization_boot(per_N, N_seq, n_boot=5000, seed=12345):
+    """Realization-level bootstrap of a log-log slope: resample the per-seed
+    values within each N (with replacement), recompute the ensemble mean, refit.
+    Matches the FHN and production studies so all realization-level intervals use
+    the same procedure."""
+    rng = np.random.default_rng(seed)
+    logN = np.log(np.array(N_seq, dtype=float))
+    arrs = {N: np.asarray(per_N[N], dtype=float) for N in N_seq}
+    def _slope(means):
+        return float(np.polyfit(logN, np.log(np.array(means)), 1)[0])
+    base = _slope([arrs[N].mean() for N in N_seq])
+    bs = []
     for _ in range(n_boot):
-        idx = rng.integers(0, n, size=n)
-        try:
-            c = np.polyfit(lx[idx], ly[idx], 1)
-            slopes.append(c[0])
-        except Exception:
-            pass
-    if not slopes:
-        return float('nan'), float('nan')
-    lo = float(np.percentile(slopes, 100*(1-ci)/2))
-    hi = float(np.percentile(slopes, 100*(1+ci)/2))
-    return lo, hi
+        means = [float(arrs[N][rng.integers(0, len(arrs[N]), size=len(arrs[N]))].mean())
+                 for N in N_seq]
+        bs.append(_slope(means))
+    lo, hi = np.percentile(bs, [2.5, 97.5])
+    return base, float(lo), float(hi)
 
 
 if __name__ == '__main__':

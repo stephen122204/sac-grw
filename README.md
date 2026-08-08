@@ -1,9 +1,9 @@
 # RB-GBMC: Relaxation–Brownian Gradient Monte Carlo for Viscous Burgers
 
 This repository contains computer code for reproducing the numerical results
-described in the manuscript *Gradient Random Walk Methods for Diffusive PDEs
-and a Relaxation–Brownian Particle Scheme for Viscous Burgers' Equation* by
-Stephen Abkin and Prabir Daripa.
+described in the paper *A Relaxation–Brownian Gradient Particle Method for
+Viscous Burgers' Equation, with Multi-Seed Convergence Studies of Gradient
+Random Walk Methods* by Stephen Abkin and Prabir Daripa.
 
 **Paper:** link to be added (arXiv preprint forthcoming).
 
@@ -36,17 +36,23 @@ about 10–20 minutes each):
 python reproduce.py t4    # heat convergence          (Table 1)
 python reproduce.py t5    # FitzHugh–Nagumo           (Table 2)
 python reproduce.py t3    # Cole–Hopf diagnostics     (Section 6)
-python reproduce.py t6    # production RB-GBMC sweep  (Tables 5–6)
-python reproduce.py t1    # time-step bias            (Table 7)
-python reproduce.py t2    # traveling shock, S=30     (Table 8)
+python reproduce.py t6    # production RB-GBMC sweep  (Tables 3–4)
+python reproduce.py t1    # time-step bias            (Table 5)
+python reproduce.py t2    # traveling shock, S=30     (Table 6)
 ```
 
-All ensemble studies use base seed 42 with the same seed list paired across
-particle counts. Function defaults inside the study scripts are exploration
+Regenerate the paper figures from the checked-in study data (seconds, no rerun):
+
+```bash
+python reproduce.py figures   # -> output/final_prepublication_tests/paper_figures/
+```
+
+All ensemble studies use base seed 42; the same seed identifiers are reused at
+each particle count for reproducibility, which is not a strict
+common-random-number coupling across N. Function defaults inside the study scripts are exploration
 settings; the paper configurations live in the `reproduce.py` entry points.
-Study outputs are under `output/final_prepublication_tests/`, and
-`regen_data/` holds the corrected tanh-fit data behind Table 6 and the
-fitted-viscosity figure.
+Study outputs are under `output/final_prepublication_tests/`; see its
+`PROVENANCE.md` for the output layout, tolerance policy, and environment.
 
 ## Running Your Own Experiments
 

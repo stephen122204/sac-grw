@@ -27,6 +27,23 @@ from simulation import simulate_burgers
 
 OUT_BASE = 'output/final_prepublication_tests/gbmc_production_n_refinement'
 
+
+def _savez_deterministic(path, **arrays):
+    """Write an uncompressed .npz whose bytes depend only on the array contents.
+    numpy's np.savez stamps each zip member with the wall-clock time, so identical
+    arrays would otherwise produce differing bytes on each run. Here every member
+    uses a fixed timestamp and stored (uncompressed) mode, so a rerun that produces
+    identical arrays produces a byte-identical file."""
+    import io
+    import zipfile
+    with zipfile.ZipFile(path, 'w', compression=zipfile.ZIP_STORED) as zf:
+        for name, arr in arrays.items():
+            buf = io.BytesIO()
+            np.save(buf, np.asarray(arr))
+            zi = zipfile.ZipInfo(f'{name}.npy', date_time=(1980, 1, 1, 0, 0, 0))
+            zi.create_system = 3  # Unix, for platform-stable bytes
+            zf.writestr(zi, buf.getvalue())
+
 # Fixed study parameters (paper configuration)
 A      = 1.0
 NU     = 0.5
@@ -494,7 +511,6 @@ def run_study():
     ax.loglog(xfit, ref_y, 'k:', lw=1.2, label=r'$N^{-1/2}$ reference')
     ax.set_xlabel('N (particles)')
     ax.set_ylabel(r'$E_{\mathrm{spread}}$')
-    ax.set_title('GBMC production: stochastic spread vs N')
     ax.legend(fontsize=9)
     ax.grid(True, which='both', alpha=0.3)
     _savefig(fig, os.path.join(OUT_BASE, 'production_gbmc_spread_vs_N'))
@@ -509,7 +525,6 @@ def run_study():
               label=f'$E_{{bias}}$ slope={bias_slope:.3f}')
     ax.loglog(xfit, ref_y, 'k:', lw=1.2, label=r'$N^{-1/2}$ reference')
     ax.set_xlabel('N'); ax.set_ylabel('Error')
-    ax.set_title('GBMC production: bias–spread–total decomposition')
     ax.legend(fontsize=9); ax.grid(True, which='both', alpha=0.3)
     _savefig(fig, os.path.join(OUT_BASE, 'production_gbmc_bias_spread_total_vs_N'))
 
@@ -533,6 +548,13 @@ def run_study():
 
     # 4. Profiles at selected N
     N_plot = [N for N in [100, 400, 1600, 6400] if N in all_profiles_by_N]
+    # Save the mean +/- std profiles the paper figure uses, so the figure is
+    # reproducible from a checked-in file. Diagnostic data only: this does not
+    # affect any solver output, statistic, or reported value.
+    _savez_deterministic(os.path.join(OUT_BASE, 'production_profiles.npz'),
+                         x=x_ref, u_exact=u_ref,
+                         **{f'N{N}_mean': all_profiles_by_N[N].mean(axis=0) for N in N_plot},
+                         **{f'N{N}_std':  all_profiles_by_N[N].std(axis=0)  for N in N_plot})
     colors_ = plt.cm.viridis(np.linspace(0.1, 0.9, len(N_plot)))
     fig, ax = plt.subplots(figsize=(8, 5))
     ax.plot(x_ref, u_ref, 'k-', lw=2, label='Exact', zorder=10)
@@ -543,7 +565,6 @@ def run_study():
         ax.plot(x_ref, um, '-', color=col, lw=1.5, label=f'N={N}', zorder=5)
         ax.fill_between(x_ref, um - us, um + us, color=col, alpha=0.15)
     ax.set_xlabel('x'); ax.set_ylabel('u')
-    ax.set_title('GBMC production: mean ± 1σ profiles')
     ax.legend(fontsize=9); ax.grid(True, alpha=0.3)
     _savefig(fig, os.path.join(OUT_BASE, 'production_gbmc_profiles_selected_N'))
 
@@ -556,7 +577,6 @@ def run_study():
     ax.axhline(NU, color='k', ls='--', lw=1.5, label=f'Exact ν={NU}')
     ax.set_xscale('log')
     ax.set_xlabel('N'); ax.set_ylabel(r'$\nu_{\mathrm{fit}}$')
-    ax.set_title('GBMC: fitted viscosity vs N')
     ax.legend(fontsize=9); ax.grid(True, which='both', alpha=0.3)
     _savefig(fig, os.path.join(OUT_BASE, 'production_gbmc_fitted_viscosity_vs_N'))
 
