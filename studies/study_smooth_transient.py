@@ -1,5 +1,12 @@
 """Smooth nonstationary transient study for Paper 2 (RB-GBMC).
 
+Manuscript map: `sec:gbmc-transient` (initial condition `eq:transient-ic`).
+Production study; outputs are archived under
+output/final_prepublication_tests/gbmc_smooth_transient/, including the
+reference and its documented tolerance (reference.npz). The reference is a
+high-accuracy evaluation of the exact Cole-Hopf formula; no tanh-profile fit
+is used anywhere in this study.
+
 Purpose.  Every stationary-shock diagnostic above rests on the equal-mass tanh
 representation, whose sorted reconstruction is time-independent.  This study
 tests whether the relaxation-speed- and time-step-dependent label mechanism

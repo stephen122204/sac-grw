@@ -1,5 +1,11 @@
 """Ordering pilot: carried-label schedule versus redraw-after-diffusion.
 
+Manuscript map: the timing pilot discussed in `sec:gbmc-multinu`. Opt-in
+timing diagnostic, not production code: all production results use the
+carried schedule, and the post-diffusion variant exists only to attribute
+the control residual. Outputs are archived under
+output/final_prepublication_tests/gbmc_ordering_pilot/.
+
 Purpose.  The multi-viscosity sweep resolved a small positive fitted-viscosity
 offset of the conditional-mean CONTROL at the three smallest viscosities
 (about +1.2%, +3.0%, +5.8% of nu at nu = 0.1, 0.05, 0.025 with dt = 0.0025).

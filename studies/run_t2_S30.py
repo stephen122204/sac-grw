@@ -1,4 +1,5 @@
-"""Run the paper's traveling-shock refinement study at S=30.
+"""Run the paper's traveling-shock refinement study at S=30
+(manuscript label `sec:gbmc-traveling`).
 
 The manuscript's traveling-shock table uses:
   A=1, c=0.5, nu=0.5, a=2, T=1, dt=0.005, S=30

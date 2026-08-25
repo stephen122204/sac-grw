@@ -1,12 +1,19 @@
 """Task 1: High-N GBMC time-step bias study.
 
+Manuscript map: fixed-particle time-step study (`sec:gbmc-dt-bias`).
+Production study; outputs are archived under
+output/final_prepublication_tests/gbmc_dt_bias/. Unlike the stationary
+sweeps, the field here is reconstructed on N points (equal to the particle
+count), which the manuscript discloses when comparing error magnitudes.
+
 Decomposes total error per dt into
   E_bias(dt)   = ||mean_u_dt - u_exact||_2
   E_spread(dt) = [mean_s ||u_s - mean_u_dt||_2^2]^(1/2)
   E_total(dt)  = [mean_s ||u_s - u_exact||_2^2]^(1/2)
 with the identity E_total^2 = E_bias^2 + E_spread^2 verified, and fits
-nu_fit(dt), x_center_fit(dt) from the ensemble-mean profile.
-Output: output/final_prepublication_tests/gbmc_dt_bias/
+nu_fit(dt), x_center_fit(dt) from the ensemble-mean profile (the manuscript's
+second fit, with the amplitude fixed at one). Reusing seed identifiers across
+step sizes is reproducible but not a pairing: the draw count changes with dt.
 """
 import argparse
 import csv

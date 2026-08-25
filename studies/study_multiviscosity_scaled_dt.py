@@ -1,6 +1,12 @@
 """Scaled-time-step companion to the multi-viscosity sweep: dt proportional
 to nu.
 
+Manuscript map: the companion sweep of `sec:gbmc-multinu` with dt/nu held
+fixed. Production study; outputs are archived under
+output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/. Same
+value-keyed streams and per-cell resume rules as the fixed-step sweep; the
+nu = 0.5 cells are shared with it and verified to match on every invocation.
+
 The fixed-step sweep varies nu at dt = 0.0025, so the dimensionless ratio
 dt/nu grows as the layer sharpens and viscosity dependence is confounded with
 temporal resolution.  This companion holds dt/nu fixed instead:

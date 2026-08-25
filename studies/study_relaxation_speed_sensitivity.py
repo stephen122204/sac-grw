@@ -1,9 +1,15 @@
 """Focused relaxation-speed sensitivity study for Paper 2.
 
+Manuscript map: `sec:gbmc-a-sensitivity`. Production study; outputs are
+archived under
+output/final_prepublication_tests/gbmc_relaxation_speed_sensitivity/.
+
 The principal stationary study fixes ``a=2``.  This study varies only the
 two-speed relaxation parameter while retaining its PDE, physical viscosity,
-time step, final time, output points, and seed list.  Three particle counts
-separate a parameter effect from behavior at one discretization.
+time step, final time, reconstruction points, and seed list.  Three particle
+counts separate a parameter effect from behavior at one discretization. The
+``a=2`` rows are the same runs as the production study and must reproduce
+its rows exactly.
 """
 
 import contextlib

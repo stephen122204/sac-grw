@@ -1,5 +1,10 @@
 """Task 2: Traveling-shock validation for relaxation GBMC.
 
+Manuscript map: `sec:gbmc-traveling`. Production study; outputs are archived
+under output/final_prepublication_tests/gbmc_traveling_shock/. The driver
+changes only the initial distribution, left state, and diagnostics; the time
+stepping is the same shared routine as the stationary studies.
+
 Exact solution: u(x, t) = c - A * tanh(A * (x - x0 - c*t) / (2*nu)),
 asymptotic states u_L = c + A, u_R = c - A.
 
