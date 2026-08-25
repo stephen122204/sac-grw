@@ -105,9 +105,6 @@ The code-and-data archive DOI will be added at public release. See
 
 ## Acknowledgments
 
-The authors thank Oliver Stalker for providing an early version of the
-Python code.
-
 **Principal Investigator:** [Professor Prabir Daripa](https://artsci.tamu.edu/mathematics/contact/profiles/prabir-daripa.html) — Texas A&M University, Department of Mathematics
 
 Other projects from the Daripa Research Group are available on the
