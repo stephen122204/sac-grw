@@ -455,7 +455,9 @@ def simulate_burgers_relaxation_gbmc(globs, config, _diag_dir=None,
     Whole-line mode.  Stationary-shock IC only.  No boundary reflection.
     Raw cumulative-sum primary output.  Private seeded RNG.
 
-    :param globs: list of dicts with 'position' (float) and 'value' ([u_i])
+    :param globs: list of dicts with 'position' (float) and 'value' ([u_i]).
+        These are the signed gradient particles of `sec:gbmc-algorithm`;
+        the legacy parameter name is kept for interface stability.
     :param config: SimulationConfig; required fields documented in module header.
     :param _diag_dir: optional path; if set, saves a 4-panel diagnostic figure.
     :return: updated globs, positions on uniform [0,L] grid, values = [u_i].

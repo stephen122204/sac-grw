@@ -201,7 +201,8 @@ def _run_one(N, seed, a_rel=A_REL, dt=DT, collect_label=False):
     )
     cfg.seed = seed   # private RNG inside relaxation_gbmc
 
-    # N_OUT dummy globs: the solver overwrites their positions/values entirely
+    # N_OUT placeholder particles ('globs' in the solver API): the solver
+    # overwrites their positions/values entirely
     globs = [{'position': float(i) * L / (N_OUT - 1), 'value': [0.0]}
              for i in range(N_OUT)]
 
