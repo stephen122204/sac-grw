@@ -28,13 +28,15 @@ os.environ.setdefault('SOURCE_DATE_EPOCH', '1704067200')  # 2024-01-01 UTC
 
 TARGETS = {
     't1': ('studies/study_t1_gbmc_dt_bias.py',
-           'T1  RB-GBMC dt-bias at N=6400 (5 dt values, S=40)  -> Table 3'),
+           'T1  RB-GBMC dt-bias at N=6400 (5 dt values, S=40)  '
+           '-> time-step refinement table'),
     't2': ('studies/run_t2_S30.py',
            'T2  traveling-shock validation at S=30 (PAPER config; the S=10 '
-           'default inside run_task2() is an exploration setting)  -> Table 4 + figures'),
+           'default inside run_task2() is an exploration setting)  '
+           '-> traveling-shock table + figures'),
     't6': ('studies/study_gbmc_production_n_refinement.py',
            'T6  production RB-GBMC N-refinement (N=100..6400, S=50)  '
-           '-> Tables 1-2 + figures'),
+           '-> stationary refinement + recovered-viscosity tables + figures'),
     'ta': ('studies/study_relaxation_speed_sensitivity.py',
            'TA  relaxation-speed sensitivity (a=1.5,2,3,4; three N; S=50)  '
            '-> parameter-sensitivity table'),
@@ -96,7 +98,8 @@ notes:
   * Rerunning t6, ta, t1, or t2 overwrites that study's subdirectory under
     output/final_prepublication_tests/ (t2 also emits a nu=0.2 sharp-layer
     exploration figure there that is not used in the paper). Reruns are
-    seed-deterministic: every non-runtime field is reproduced bit-for-bit.
+    seed-deterministic: on the archived environment (requirements-lock.txt),
+    every non-runtime field is reproduced bit-for-bit in our checks.
   * Seeds: base seed 42, consecutive per ensemble member. The same seed
     identifiers are reused at each N for reproducibility; this is not a strict
     common-random-number coupling across N.

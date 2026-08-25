@@ -1,172 +1,109 @@
 # RB-GBMC: Relaxation-Brownian Gradient Monte Carlo for Viscous Burgers' Equation
 
-Reproducible Python implementation and numerical studies of a
-relaxation-Brownian gradient-particle method for viscous Burgers' equation.
+Python software and reproducible numerical examples for the paper
+*A Relaxation-Brownian Gradient Monte Carlo Algorithm for Viscous Burgers'
+Equation* by Stephen Abkin and Prabir Daripa.
 
-## Overview
+The repository supports two uses:
 
-RB-GBMC is a stochastic gradient-particle algorithm for viscous Burgers'
-equation `u_t + u u_x = nu u_xx`. Signed particles carry portions of the
-spatial derivative `u_x`, and sorting followed by cumulative summation
-recovers the solution. Two-speed relaxation labels represent the nonlinear
-transport: each particle moves at one of two fixed speeds, with probabilities
-chosen so that its conditional-mean velocity equals the local Burgers speed.
-Independent Brownian increments supply a separately prescribed physical
-viscosity. This repository contains the implementation, the archived
-seed-level study outputs, the manuscript figures, and the verification
-checks accompanying the paper:
+1. reproduce the reported tables and figures, and
+2. rerun the study scripts with modified parameters for new cases.
 
-> Stephen Abkin and Prabir Daripa,
-> *A Relaxation-Brownian Gradient Monte Carlo Algorithm for Viscous Burgers'
-> Equation* (manuscript; preprint and archive identifiers to be added at
-> release).
+## Install
 
-## What this repository contributes
-
-- Implements the complete relaxation-Brownian gradient-particle update
-  (transport, sort, reconstruct, verify, redraw, diffuse) in one shared
-  stepping routine used by every study.
-- Reproduces the stationary, relaxation-speed, time-step, multi-viscosity,
-  timing-pilot, traveling-shock, and smooth-transient studies reported in
-  the paper.
-- Maps every reported manuscript value to archived outputs through explicit
-  checks: an expected-values verifier and a claim-level provenance registry
-  in the manuscript project.
-
-Principal findings, stated with their scope in the paper: seed-to-seed
-spread is consistent with the Monte Carlo rate over the tested range; the
-fitted effective viscosity approaches the prescribed value under particle
-and time-step refinement; a paired conditional-mean control attributes the
-measured speed-dependent broadening to sampled-label transport; the paired
-excess approaches the analytic label scale as the shock layer sharpens; and
-the same speed- and step-dependent excess appears on a smooth nonstationary
-transient.
-
-## Quick verification (seconds)
+Release archive and repository links will be added at public release.
+From this directory, create a Python 3.11 environment:
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install -r requirements-lock.txt
-
-python reproduce.py verify   # check archived numerical results (no reruns)
-pytest -q                    # software checks (no study reruns)
-python reproduce.py figures  # regenerate all nine manuscript figures
+python -m pip install --upgrade pip
+python -m pip install -r requirements-lock.txt
 ```
 
-- `requirements-lock.txt` recreates the archived environment
-  (Python 3.11.4, numpy 1.26.4, scipy 1.17.1, matplotlib 3.10.0).
-- `requirements.txt` permits compatible version ranges for general use; see
-  `output/final_prepublication_tests/PROVENANCE.md` for the reproduction
-  policy across environments.
-- `verify` checks 164 pinned quantities in the archived summaries without
-  rerunning any ensemble.
-- `figures` rebuilds the nine manuscript figures from checked-in data only.
+`requirements-lock.txt` recreates the archived environment (Python 3.11.4,
+numpy 1.26.4, scipy 1.17.1, matplotlib 3.10.0). `requirements.txt` allows
+compatible version ranges instead. On Windows PowerShell, activate with
+`.\.venv\Scripts\Activate.ps1`.
 
-## Reproduce the studies
+## Check the Installation
 
-`python reproduce.py <target>` reruns a study from scratch and overwrites
-its subdirectory under `output/final_prepublication_tests/` (the archived
-paper-output directory). Reruns are seed-deterministic: on the archived
-environment they reproduced every non-runtime field of the stored outputs in
-our checks (only wall-clock columns change).
-
-| Target | Study and the question it answers | Approx. runtime |
-|---|---|---|
-| `t6` | stationary particle refinement: does seed-to-seed spread shrink with N? | ~1-2 min |
-| `ta` | relaxation-speed sensitivity: is the speed a substantive parameter? | ~5-20 min |
-| `adt` | joint speed/time-step matrix: does refinement reduce the speed effect? | ~5-20 min |
-| `ablation` | conditional-mean transport control: is the broadening due to sampled labels? | ~5-20 min |
-| `multinu` | fixed-step multi-viscosity sweep: how does the label excess depend on viscosity? | ~1-2 min |
-| `multinu-scaled` | viscosity-scaled step sweep: what remains when dt/nu is fixed? | ~10 min |
-| `pilot` | transport-velocity timing diagnostic for the control residual | ~few min |
-| `t1` | time-step refinement at fixed particle count | ~5-20 min |
-| `t2` | traveling shock: does the method transport a moving profile? | ~5-20 min |
-| `transient` | smooth nonstationary transient against a Cole-Hopf reference | ~few min |
-| `studies` | all ten manuscript studies in sequence (`studies-all` is an alias) | hours |
-| `figures` | rebuild the nine figures from archived data (no reruns) | seconds |
-
-The legacy target `all` runs only the original four studies (`t6 ta t1 t2`)
-and is kept for compatibility.
-
-## Reproducibility design
-
-- Seeds are explicit: base seed 42 with consecutive identifiers, or
-  value-keyed `SeedSequence` streams for the multi-viscosity, pilot, and
-  transient studies, so subsets and reorderings reproduce identical cells.
-- Pairing is stated per study: arms sharing Brownian streams at a fixed
-  configuration are paired through common random numbers, aligned by sorted
-  rank; comparisons across particle counts, step counts, or viscosities are
-  not paired.
-- Manuscript fits are strict: every reported fitted value comes from SciPy
-  `curve_fit` (recorded per run where applicable), and a fit failure aborts
-  the study rather than falling back to a cruder estimate.
-- Figure regeneration is deterministic (fixed PDF metadata date), and the
-  manuscript checker requires the shipped figures to match the regenerated
-  files byte for byte.
-- The archives include realization-level profiles, so the published tables
-  and the realization-level bootstrap intervals can be recomputed from the
-  archive alone; the test suite does exactly that.
-
-## Repository structure
-
-- `relaxation_gbmc.py` — the common particle update used by every study.
-- `studies/` — study drivers: stationary and traveling shocks, the joint
-  speed/step matrix, the conditional-mean control, the fixed- and
-  scaled-step multi-viscosity sweeps, the timing pilot, and the smooth
-  transient.
-- `figure_scripts/` — regenerates the nine manuscript figures from archived
-  data.
-- `output/final_prepublication_tests/` — the archived paper-output
-  directory: per-run tables, realization-level profiles, summaries, the
-  transient's quadrature reference with its documented tolerance, and
-  `PROVENANCE.md`.
-- `expected_values.json` + `reproduce.py verify` — the numerical gate.
-- `tests/` — software checks (58 tests: update order, exact signed-mass
-  conservation, split random streams, strict fitting, resume safety, seed
-  identity, archive completeness).
-
-## Custom runs and resume behavior
-
-The multi-viscosity, scaled-step, pilot, and transient studies are resumable
-by cell: each completed cell stores its per-run rows and a profile array,
-and `manifest.json` records a configuration fingerprint. A resume is refused
-when the fingerprint differs, so changing the seed count, particle count,
-time step, final time, reconstruction count, viscosity list, arm list,
-window design, fit-bound rule, or seed scheme cannot silently combine
-incompatible cells. Interrupted, corrupted, or incomplete cells are detected
-and regenerated.
+Confirm the environment works before the longer runs (takes seconds):
 
 ```bash
-python studies/study_multiviscosity_sweep.py --nu 0.1 0.05   # subset of cells
-python studies/study_multiviscosity_sweep.py --seeds 10      # smaller ensemble
-python studies/study_multiviscosity_sweep.py --out /tmp/x    # scratch output
+pytest -q
 ```
 
-Seeds for these studies are keyed by parameter value, never by list
-position, and a subset invocation recomputes the summary over every
-completed cell rather than shrinking it. Viscosities outside the canonical
-list are refused: changing the design is a new study. Custom-parameter runs
-write valid outputs but will not match the pinned verification values, which
+## Reproduce the Paper
+
+Check the 164 pinned numerical values against the archived study outputs,
+then rebuild the nine manuscript figures from the committed data. Neither
+command reruns a simulation, and both complete in seconds:
+
+```bash
+python reproduce.py verify
+python reproduce.py figures
+```
+
+Rerun any study from scratch with `python reproduce.py <target>`. A rerun
+overwrites that study's subdirectory under
+`output/final_prepublication_tests/` (the archived paper-output directory).
+Approximate wall-clock times on a laptop:
+
+| Target | Study | Time |
+|---|---|---|
+| `t6` | stationary particle refinement | 1--2 min |
+| `multinu` | fixed-step multi-viscosity sweep | 1--2 min |
+| `pilot` | transport-velocity timing pilot | 2--4 min |
+| `transient` | smooth transient (computes its reference on first run) | 3--5 min |
+| `multinu-scaled` | viscosity-scaled time-step sweep | ~10 min |
+| `ta`, `adt`, `ablation`, `t1`, `t2` | speed, speed-step, control, time-step, traveling studies | 5--20 min each |
+| `studies` | all ten manuscript studies in sequence | 1--2 hours |
+
+Reproducibility: every run is seed-deterministic (base seed 42 or value-keyed
+`SeedSequence` streams). On the archived environment, study reruns reproduced
+every non-runtime field of the committed outputs bit for bit in our checks,
+and figure regeneration is byte-identical. The legacy target `all` runs only
+the original four studies and is kept for compatibility.
+
+## Run a Modified Case
+
+The resumable studies accept parameter flags and a scratch output directory:
+
+```bash
+python studies/study_multiviscosity_sweep.py --nu 0.1 0.05 --seeds 10 --out /tmp/x
+```
+
+Each resumable study stores a configuration fingerprint and refuses to resume
+if the design changed, so incompatible cells are never combined; interrupted
+or corrupted cells are detected and regenerated. Custom-parameter runs write
+valid outputs but will not match the pinned verification values, which
 describe the published configuration only.
 
-## Data archive, license, and release status
+## Repository Layout
 
-The archived outputs in `output/final_prepublication_tests/` are the data
-record for the paper. At public release this repository gains a version tag,
-a LICENSE file (currently `NOASSERTION` in `CITATION.cff`, pending the
-authors' choice), and a code-and-data DOI; the paper's Code and Data
-Availability statement will then cite that DOI.
+- `relaxation_gbmc.py`: the shared particle update used by every study.
+- `studies/`: the ten paper study drivers.
+- `figure_scripts/`: regenerates the nine manuscript figures from committed
+  data.
+- `output/final_prepublication_tests/`: archived per-run tables,
+  realization-level profiles, summaries, the transient's quadrature
+  reference, and `PROVENANCE.md`.
+- `expected_values.json`, `reproduce.py`: reproduction and verification entry
+  point.
+- `tests/`: software checks (58 tests).
 
-Suggested repository metadata: name `rb-gbmc-viscous-burgers`; description
-"Reproducible Python implementation and numerical studies of a
-relaxation-Brownian gradient-particle method for viscous Burgers' equation";
-topics `burgers-equation`, `monte-carlo`, `particle-methods`,
-`numerical-analysis`, `stochastic-methods`,
-`partial-differential-equations`, `python`, `reproducible-research`.
+## Citation
 
-## Authors
+The code-and-data archive DOI will be added at public release. See
+`CITATION.cff` for citation metadata.
 
-Stephen Abkin and Prabir Daripa (Department of Mathematics, Texas A&M
-University). Citation metadata is in `CITATION.cff`; see the manuscript for
-acknowledgments and declarations.
+## Acknowledgments
+
+The authors thank Oliver Stalker for providing an early version of the
+Python code.
+
+**Principal Investigator:** [Professor Prabir Daripa](https://artsci.tamu.edu/mathematics/contact/profiles/prabir-daripa.html) — Texas A&M University, Department of Mathematics
+
+Other projects from the Daripa Research Group are available on the
+[group's GitHub page](https://github.com/Daripa-Research-Group).

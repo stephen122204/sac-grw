@@ -5,10 +5,11 @@ relaxation speed a and decreases under time-step refinement, consistent with the
 conditional label-variance scale D_label. That is an association. This ablation
 tests attribution: it replaces the sampled two-speed label V_i in {-a,+a} with
 the exact conditional mean V_i = u_i (Burgers f'(u)=u), which removes label-
-sampling variance while keeping the same Brownian diffusion. If the a-dependent
-broadening is largely removed by the control while the Brownian/reconstruction
-floor remains, the paper can describe direct mechanism evidence; if not, retain
-the association language.
+sampling variance while keeping the same Brownian diffusion. Archived outcome
+(see summary.json and the manuscript's ablation section): the control removes
+most of the a-dependent broadening, and all six paired two-speed-minus-control
+intervals resolve away from zero, so the manuscript reports a paired
+attribution to sampled-label transport in the tested setting.
 
 Design (separate experiment, split RNG streams).
   N = 6400, M = 400, S = 50

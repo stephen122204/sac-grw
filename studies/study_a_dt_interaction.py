@@ -12,7 +12,8 @@ The Brownian term is the prescribed physical variance; the second is an excess
 variance from sampling the two-speed transport label.  Under a frozen-state
 heuristic, accumulating this excess over T/dt steps suggests an O(dt)
 contribution that grows with the relaxation speed ``a`` and decreases under
-time-step refinement toward a residual finite-N/fit floor.  This study measures
+time-step refinement toward a residual finite-N and fit contribution.  This
+study measures
 the error decomposition and recovered shock width across the a-by-dt matrix to
 test whether the observations are consistent with that scaling; it does not by
 itself isolate label sampling as the sole cause of the width error.

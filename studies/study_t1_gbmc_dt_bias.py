@@ -275,7 +275,7 @@ def run_task1(N_vals=None, dt_seq=None, S=40, base_seed=42,
         print(f"\n  Fitted E_bias slope vs dt: {bias_slope:.4f}  CI=[{b_lo:.4f},{b_hi:.4f}]")
 
         if np.isnan(bias_slope):
-            conclusion = "bias_unresolved: insufficient data points with E_bias > noise floor"
+            conclusion = "bias_unresolved: insufficient data points with E_bias > estimation noise"
         elif bias_arr.max() < 2 * spr_arr.min():
             conclusion = ("bias_below_spread: E_bias < 2*E_spread at all dt; "
                           "bias remains below ensemble-estimation noise")

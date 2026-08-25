@@ -1,4 +1,5 @@
-"""BPC Relaxation + Gradient Brownian Monte Carlo (GBMC) for viscous Burgers.
+"""Bertaglia--Pareschi--Caflisch (BPC) relaxation + gradient Brownian Monte
+Carlo (GBMC) for viscous Burgers' equation.
 
 PDE:  u_t + u * u_x = nu * u_xx
 
@@ -29,7 +30,9 @@ Quantile particle initialisation (recovers exact IC in the particle limit):
     m_i = -2*A / N          (all equal; sum(m) = -2A = u(+inf) - u(-inf))
     u_{-inf} = A
 
-Each particle carries a persistent velocity label  V_i in {-a, +a}.
+Each particle carries a velocity label  V_i in {-a, +a}, redrawn once per
+time step from the local equilibrium and carried through the intervening
+sort and Brownian displacement.
 
 The relaxation speed a is a FIXED positive scalar read from
 config.relaxation_speed_a.  ValueError is raised if the field is absent or

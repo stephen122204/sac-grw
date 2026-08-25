@@ -172,10 +172,10 @@ def run_study():
             'L': L, 'xc': XC, 'N_out': N_OUT,
         },
         'design': (
-            'Only a and N vary. The output grid and physical/numerical '
-            'parameters are held fixed. The same seed identifiers are reused '
-            'at each a and N; comparisons across N are not particlewise '
-            'common-random-number couplings.'
+            'Only a and N vary. The reconstruction points and '
+            'physical/numerical parameters are held fixed. The same seed '
+            'identifiers are reused at each a and N; comparisons across N '
+            'are not particlewise common-random-number couplings.'
         ),
         'shared_stepper': 'advance_rbgbmc_particles in relaxation_gbmc.py',
         'command': 'python reproduce.py ta',
