@@ -90,7 +90,8 @@ def _make_config(N=200, nu=0.5, dt=0.005, T=0.5, L=4.0,
 
 
 def _run(cfg):
-    """Build globs from config IC, run solver, return (x, u) arrays."""
+    """Build the particle list ('globs' in the solver API) from the config
+    IC, run the solver, return (x, u) arrays."""
     globs = [{'position': float(p), 'value': [float(v)]}
              for p, v in cfg.initial_conditions]
     result = simulate_burgers_relaxation_gbmc(globs, cfg)
