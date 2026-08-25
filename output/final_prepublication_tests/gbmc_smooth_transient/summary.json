@@ -1,0 +1,192 @@
+{
+  "metadata": {
+    "purpose": "smooth nonstationary transient: does the a- and dt-dependent label mechanism persist away from the equal-mass stationary reconstruction?",
+    "problem": "u0 = 1*exp(-(x-2)^2/(2*0.5^2)), nu = 0.1, T = 1, whole line, window [0, 6] with 400 points",
+    "reference": {
+      "epsrel": 1e-10,
+      "self_consistency_max_abs": 9.600098493933729e-13,
+      "crank_nicolson_max_abs": 7.124692122373322e-05,
+      "reference_tolerance": 7.124692122373322e-05,
+      "cn_grid": {
+        "dx": 0.004,
+        "dt": 0.0002,
+        "interval": [
+          -8.0,
+          14.0
+        ]
+      }
+    },
+    "dt_seq": [
+      0.005,
+      0.0025,
+      0.00125
+    ],
+    "arms": [
+      "two_speed_a2",
+      "two_speed_a4",
+      "cond_mean"
+    ],
+    "N": 6400,
+    "S": 50,
+    "n_failed": 0,
+    "pairing": "arms share Brownian streams per (dt, seed); paired within dt only, aligned by sorted rank",
+    "command": "python studies/study_smooth_transient.py"
+  },
+  "summary": [
+    {
+      "dt": 0.005,
+      "arm": "two_speed_a2",
+      "a": 2.0,
+      "S": 50,
+      "E_bias": 0.014874505580809804,
+      "E_spread": 0.012824223134879506,
+      "E_total": 0.019639542135363574,
+      "identity_error": 4.336808689942018e-19,
+      "D_label_run_mean": 0.009272191770783637
+    },
+    {
+      "dt": 0.005,
+      "arm": "two_speed_a4",
+      "a": 4.0,
+      "S": 50,
+      "E_bias": 0.05610748571607654,
+      "E_spread": 0.012935393997890432,
+      "E_total": 0.057579287693235594,
+      "identity_error": 5.421010862427522e-19,
+      "D_label_run_mean": 0.03930305907179066
+    },
+    {
+      "dt": 0.005,
+      "arm": "cond_mean",
+      "a": 2.0,
+      "S": 50,
+      "E_bias": 0.0012650902080854078,
+      "E_spread": 0.012520807259386656,
+      "E_total": 0.012584556712943971,
+      "identity_error": 0.0,
+      "D_label_run_mean": 0.009262610741488986
+    },
+    {
+      "dt": 0.0025,
+      "arm": "two_speed_a2",
+      "a": 2.0,
+      "S": 50,
+      "E_bias": 0.007749496026417987,
+      "E_spread": 0.012484953444046876,
+      "E_total": 0.014694514322136894,
+      "identity_error": 2.168404344971009e-19,
+      "D_label_run_mean": 0.004633815658060065
+    },
+    {
+      "dt": 0.0025,
+      "arm": "two_speed_a4",
+      "a": 4.0,
+      "S": 50,
+      "E_bias": 0.029642578260167925,
+      "E_spread": 0.01338844446729272,
+      "E_total": 0.03252588032880833,
+      "identity_error": 6.2341624917916505e-19,
+      "D_label_run_mean": 0.01964145837500671
+    },
+    {
+      "dt": 0.0025,
+      "arm": "cond_mean",
+      "a": 2.0,
+      "S": 50,
+      "E_bias": 0.0013197418495981747,
+      "E_spread": 0.012385880953428307,
+      "E_total": 0.01245599315759602,
+      "identity_error": 8.131516293641283e-20,
+      "D_label_run_mean": 0.004631949295283953
+    },
+    {
+      "dt": 0.00125,
+      "arm": "two_speed_a2",
+      "a": 2.0,
+      "S": 50,
+      "E_bias": 0.004774569242272822,
+      "E_spread": 0.012479708694992158,
+      "E_total": 0.013361872644248655,
+      "identity_error": 0.0,
+      "D_label_run_mean": 0.002316299894017293
+    },
+    {
+      "dt": 0.00125,
+      "arm": "two_speed_a4",
+      "a": 4.0,
+      "S": 50,
+      "E_bias": 0.01753371402121662,
+      "E_spread": 0.012436654248269178,
+      "E_total": 0.021496546147434934,
+      "identity_error": 4.336808689942018e-19,
+      "D_label_run_mean": 0.009818492156521497
+    },
+    {
+      "dt": 0.00125,
+      "arm": "cond_mean",
+      "a": 2.0,
+      "S": 50,
+      "E_bias": 0.002240046361184525,
+      "E_spread": 0.011840013632376791,
+      "E_total": 0.012050051058610674,
+      "identity_error": 5.421010862427522e-20,
+      "D_label_run_mean": 0.0023159531912088534
+    }
+  ],
+  "paired_l2_contrasts": [
+    {
+      "dt": 0.005,
+      "contrast": "two_speed_a2 - cond_mean",
+      "n_pairs": 50,
+      "mean": 0.006837090226184867,
+      "ci_lo": 0.005540498247357528,
+      "ci_hi": 0.008172893128705696,
+      "resolves_sign": true
+    },
+    {
+      "dt": 0.005,
+      "contrast": "two_speed_a4 - cond_mean",
+      "n_pairs": 50,
+      "mean": 0.04520203325472338,
+      "ci_lo": 0.04348958167692516,
+      "ci_hi": 0.046763317790766756,
+      "resolves_sign": true
+    },
+    {
+      "dt": 0.0025,
+      "contrast": "two_speed_a2 - cond_mean",
+      "n_pairs": 50,
+      "mean": 0.002178550950116548,
+      "ci_lo": 0.0012637509337177465,
+      "ci_hi": 0.0031159516700443226,
+      "resolves_sign": true
+    },
+    {
+      "dt": 0.0025,
+      "contrast": "two_speed_a4 - cond_mean",
+      "n_pairs": 50,
+      "mean": 0.020105021643289138,
+      "ci_lo": 0.018707792357928545,
+      "ci_hi": 0.021488137409368044,
+      "resolves_sign": true
+    },
+    {
+      "dt": 0.00125,
+      "contrast": "two_speed_a2 - cond_mean",
+      "n_pairs": 50,
+      "mean": 0.0012925144321049725,
+      "ci_lo": 0.0004350550916776648,
+      "ci_hi": 0.0021406918978117747,
+      "resolves_sign": true
+    },
+    {
+      "dt": 0.00125,
+      "contrast": "two_speed_a4 - cond_mean",
+      "n_pairs": 50,
+      "mean": 0.009559557481158295,
+      "ci_lo": 0.008441040125395318,
+      "ci_hi": 0.010713013744758767,
+      "resolves_sign": true
+    }
+  ]
+}

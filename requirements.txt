@@ -1,0 +1,12 @@
+# Verified with Python 3.11, numpy 1.26.4, scipy 1.17.1, matplotlib 3.10.0.
+# requirements-lock.txt pins that exact archived configuration.
+# Directly computed quantities (E-columns, spread slope, stored arrays) are
+# bit-identical across these numpy builds; curve_fit-derived quantities agree
+# within the rtol 1e-8 policy (see output/final_prepublication_tests/PROVENANCE.md).
+numpy>=1.26,<3
+matplotlib>=3.8
+# scipy is required for the tanh fits (recovered shock parameters xc, nu);
+# without it the studies fall back to a cruder zero-crossing fit. The paper's
+# fitted-viscosity values require scipy; see
+# output/final_prepublication_tests/PROVENANCE.md.
+scipy>=1.11

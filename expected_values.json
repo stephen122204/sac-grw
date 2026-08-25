@@ -1,0 +1,3219 @@
+{
+  "_meta": {
+    "description": "Pinned expected values for the Paper 2 (RB-GBMC) release. Checked by `python reproduce.py verify` against the checked-in summaries under output/final_prepublication_tests/. Directly computed quantities (E_bias/E_spread/E_total, stored arrays, spread slope) use strict/bit-identical checks; quantities from the nonlinear tanh curve_fit (fitted viscosity and derived summaries) use rtol 1e-8 to absorb optimizer-level variation across SciPy/BLAS builds. Values were pinned by reading the canonical files directly.",
+    "pinned_from_branch": "standalone-local-project"
+  },
+  "checks": [
+    {
+      "id": "gbmc_production_per_N_errors",
+      "study": "t6",
+      "file": "output/final_prepublication_tests/gbmc_production_n_refinement/per_N_summary.csv",
+      "type": "csv_rows",
+      "key": "N",
+      "rows": {
+        "100": {
+          "E_bias": 0.023268630395208958,
+          "E_spread": 0.13472135468633517,
+          "E_total": 0.1367160289395145
+        },
+        "200": {
+          "E_bias": 0.015862422228328524,
+          "E_spread": 0.09617025420828537,
+          "E_total": 0.09746965801435849
+        },
+        "400": {
+          "E_bias": 0.010543803640819815,
+          "E_spread": 0.06193835159653649,
+          "E_total": 0.06282938161172955
+        },
+        "800": {
+          "E_bias": 0.007779648461160033,
+          "E_spread": 0.04632556524196337,
+          "E_total": 0.0469742581119344
+        },
+        "1600": {
+          "E_bias": 0.0063823445888609165,
+          "E_spread": 0.030504804358861184,
+          "E_total": 0.03116532386200019
+        },
+        "3200": {
+          "E_bias": 0.0026106724190533073,
+          "E_spread": 0.02116269038392282,
+          "E_total": 0.021323111282488417
+        },
+        "6400": {
+          "E_bias": 0.0033576356916351475,
+          "E_spread": 0.017282285347326176,
+          "E_total": 0.017605428261310407
+        }
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "gbmc_production_spread_fit",
+      "study": "t6",
+      "file": "output/final_prepublication_tests/gbmc_production_n_refinement/rates.json",
+      "type": "json_paths",
+      "values": {
+        "spread_slope": -0.5099203498810043,
+        "spread_r2": 0.9946806807198103,
+        "spread_ci_lo": -0.5390624017960933,
+        "spread_ci_hi": -0.47938929458619245
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "gbmc_dt_bias_fit",
+      "study": "t1",
+      "file": "output/final_prepublication_tests/gbmc_dt_bias/dt_bias_summary_N6400.json",
+      "type": "json_paths",
+      "values": {
+        "fit.bias_slope": 0.5042993808922924,
+        "fit.bias_slope_ci_lo": 0.2494815285981458,
+        "fit.bias_slope_ci_hi": 0.8222198200730509
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "gbmc_dt_bias_errors_dt0.01",
+      "study": "t1",
+      "file": "output/final_prepublication_tests/gbmc_dt_bias/dt_bias_summary_N6400.json",
+      "type": "json_select",
+      "list_path": "per_dt",
+      "where": {
+        "dt": 0.01
+      },
+      "expect": {
+        "E_bias": 0.01145621736265175,
+        "E_spread": 0.016606840382497202,
+        "E_total": 0.02017503565672346
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "gbmc_dt_bias_errors_dt0.005",
+      "study": "t1",
+      "file": "output/final_prepublication_tests/gbmc_dt_bias/dt_bias_summary_N6400.json",
+      "type": "json_select",
+      "list_path": "per_dt",
+      "where": {
+        "dt": 0.005
+      },
+      "expect": {
+        "E_bias": 0.005893353962105021,
+        "E_spread": 0.016739714790495252,
+        "E_total": 0.017746821467231378
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "gbmc_dt_bias_errors_dt0.0025",
+      "study": "t1",
+      "file": "output/final_prepublication_tests/gbmc_dt_bias/dt_bias_summary_N6400.json",
+      "type": "json_select",
+      "list_path": "per_dt",
+      "where": {
+        "dt": 0.0025
+      },
+      "expect": {
+        "E_bias": 0.0037651065433198247,
+        "E_spread": 0.017546237127336647,
+        "E_total": 0.017945653083999945
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "gbmc_dt_bias_errors_dt0.00125",
+      "study": "t1",
+      "file": "output/final_prepublication_tests/gbmc_dt_bias/dt_bias_summary_N6400.json",
+      "type": "json_select",
+      "list_path": "per_dt",
+      "where": {
+        "dt": 0.00125
+      },
+      "expect": {
+        "E_bias": 0.0034987076680946367,
+        "E_spread": 0.01748962048911472,
+        "E_total": 0.017836136919188682
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "gbmc_dt_bias_errors_dt0.000625",
+      "study": "t1",
+      "file": "output/final_prepublication_tests/gbmc_dt_bias/dt_bias_summary_N6400.json",
+      "type": "json_select",
+      "list_path": "per_dt",
+      "where": {
+        "dt": 0.000625
+      },
+      "expect": {
+        "E_bias": 0.002589539127299367,
+        "E_spread": 0.016254580374909216,
+        "E_total": 0.0164595594125784
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "gbmc_traveling_T1_N100",
+      "study": "t2",
+      "file": "output/final_prepublication_tests/gbmc_traveling_shock/summary.json",
+      "type": "json_select",
+      "list_path": "N_refinement",
+      "where": {
+        "N": 100,
+        "t_out": 1.0
+      },
+      "expect": {
+        "l2_mean": 0.16592479030313792,
+        "ce_mean": 0.10927796483352033
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "gbmc_traveling_T1_N200",
+      "study": "t2",
+      "file": "output/final_prepublication_tests/gbmc_traveling_shock/summary.json",
+      "type": "json_select",
+      "list_path": "N_refinement",
+      "where": {
+        "N": 200,
+        "t_out": 1.0
+      },
+      "expect": {
+        "l2_mean": 0.11978733206336141,
+        "ce_mean": 0.07796708409773732
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "gbmc_traveling_T1_N400",
+      "study": "t2",
+      "file": "output/final_prepublication_tests/gbmc_traveling_shock/summary.json",
+      "type": "json_select",
+      "list_path": "N_refinement",
+      "where": {
+        "N": 400,
+        "t_out": 1.0
+      },
+      "expect": {
+        "l2_mean": 0.0746690955608181,
+        "ce_mean": 0.04890347562026765
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "gbmc_traveling_T1_N800",
+      "study": "t2",
+      "file": "output/final_prepublication_tests/gbmc_traveling_shock/summary.json",
+      "type": "json_select",
+      "list_path": "N_refinement",
+      "where": {
+        "N": 800,
+        "t_out": 1.0
+      },
+      "expect": {
+        "l2_mean": 0.0567524148772774,
+        "ce_mean": 0.037705465164790355
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "gbmc_traveling_T1_N1600",
+      "study": "t2",
+      "file": "output/final_prepublication_tests/gbmc_traveling_shock/summary.json",
+      "type": "json_select",
+      "list_path": "N_refinement",
+      "where": {
+        "N": 1600,
+        "t_out": 1.0
+      },
+      "expect": {
+        "l2_mean": 0.03586485697463877,
+        "ce_mean": 0.02053439484333981
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "gbmc_traveling_T1_N3200",
+      "study": "t2",
+      "file": "output/final_prepublication_tests/gbmc_traveling_shock/summary.json",
+      "type": "json_select",
+      "list_path": "N_refinement",
+      "where": {
+        "N": 3200,
+        "t_out": 1.0
+      },
+      "expect": {
+        "l2_mean": 0.022854988062406666,
+        "ce_mean": 0.012113441535138669
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "gbmc_traveling_N_slope",
+      "study": "t2",
+      "file": "output/final_prepublication_tests/gbmc_traveling_shock/summary.json",
+      "type": "json_paths",
+      "values": {
+        "N_slope_T_max": -0.56900198762818,
+        "N_slope_ci": [
+          -0.6201360001203843,
+          -0.5158494200924095
+        ]
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "regen_per_N_fitted_viscosity",
+      "study": "t6",
+      "file": "output/final_prepublication_tests/gbmc_production_n_refinement/per_N_summary.csv",
+      "type": "csv_rows",
+      "key": "N",
+      "rows": {
+        "100": {
+          "nu_mean": 0.5205669198941983,
+          "nu_std": 0.10695523480437316
+        },
+        "200": {
+          "nu_mean": 0.5197111123625281,
+          "nu_std": 0.06737125162110141
+        },
+        "400": {
+          "nu_mean": 0.5086544442726524,
+          "nu_std": 0.04825755961134139
+        },
+        "800": {
+          "nu_mean": 0.5055470420604447,
+          "nu_std": 0.027701890125074197
+        },
+        "1600": {
+          "nu_mean": 0.5064800911036689,
+          "nu_std": 0.02391115295547833
+        },
+        "3200": {
+          "nu_mean": 0.5004615699331397,
+          "nu_std": 0.01731952854611561
+        },
+        "6400": {
+          "nu_mean": 0.5045224512899591,
+          "nu_std": 0.011889442421271747
+        }
+      },
+      "rtol": 1e-08,
+      "_note": "nu from nonlinear tanh curve_fit; rtol 1e-8 absorbs optimizer-level variation across SciPy/BLAS builds"
+    },
+    {
+      "id": "t6_fitted_param_exponents",
+      "study": "t6",
+      "file": "output/final_prepublication_tests/gbmc_production_n_refinement/rates.json",
+      "type": "json_paths",
+      "values": {
+        "nu_std_slope": -0.5157250194463475,
+        "xc_std_slope": -0.5457774272736527
+      },
+      "rtol": 1e-08,
+      "_note": "slopes of curve_fit-derived nu_std/xc_std; rtol 1e-8 (spread_slope pinned strictly by gbmc_production_spread_fit)"
+    },
+    {
+      "id": "t1_dt_recovered_viscosities",
+      "study": "t1",
+      "file": "output/final_prepublication_tests/gbmc_dt_bias/dt_bias_perdt_N6400.csv",
+      "type": "csv_rows",
+      "key": "dt",
+      "rows": {
+        "0.01": {
+          "nu_fit": 0.508388
+        },
+        "0.005": {
+          "nu_fit": 0.504051
+        },
+        "0.0025": {
+          "nu_fit": 0.502519
+        },
+        "0.00125": {
+          "nu_fit": 0.50163
+        },
+        "0.000625": {
+          "nu_fit": 0.500482
+        }
+      },
+      "rtol": 1e-08,
+      "_note": "nu_fit from nonlinear tanh curve_fit; rtol 1e-8; canonical file carries the scipy fit (committed no-scipy run had fallback nu=0.5)"
+    },
+    {
+      "id": "relaxation_speed_sensitivity_errors",
+      "study": "ta",
+      "file": "output/final_prepublication_tests/gbmc_relaxation_speed_sensitivity/summary.csv",
+      "type": "csv_rows",
+      "key": "case",
+      "rows": {
+        "a=1.5,N=400": {
+          "E_bias": 0.009897997116023155,
+          "E_spread": 0.06199182094971552,
+          "E_total": 0.06277703570232024,
+          "n_failed": 0
+        },
+        "a=2,N=400": {
+          "E_bias": 0.010543803640819815,
+          "E_spread": 0.06193835159653649,
+          "E_total": 0.06282938161172955,
+          "n_failed": 0
+        },
+        "a=3,N=400": {
+          "E_bias": 0.012365857732139217,
+          "E_spread": 0.06218436570670958,
+          "E_total": 0.06340196981007218,
+          "n_failed": 0
+        },
+        "a=4,N=400": {
+          "E_bias": 0.014979871139877563,
+          "E_spread": 0.06226740378347865,
+          "E_total": 0.06404393892713116,
+          "n_failed": 0
+        },
+        "a=1.5,N=1600": {
+          "E_bias": 0.006139938809920462,
+          "E_spread": 0.030456389792586386,
+          "E_total": 0.031069124992305915,
+          "n_failed": 0
+        },
+        "a=2,N=1600": {
+          "E_bias": 0.0063823445888609165,
+          "E_spread": 0.030504804358861184,
+          "E_total": 0.03116532386200019,
+          "n_failed": 0
+        },
+        "a=3,N=1600": {
+          "E_bias": 0.007758317221807575,
+          "E_spread": 0.03077279113414037,
+          "E_total": 0.03173572372421376,
+          "n_failed": 0
+        },
+        "a=4,N=1600": {
+          "E_bias": 0.01054170376277354,
+          "E_spread": 0.030918010664637053,
+          "E_total": 0.032665745080752165,
+          "n_failed": 0
+        },
+        "a=1.5,N=6400": {
+          "E_bias": 0.002612245338407405,
+          "E_spread": 0.01725032189549183,
+          "E_total": 0.01744698917309562,
+          "n_failed": 0
+        },
+        "a=2,N=6400": {
+          "E_bias": 0.0033576356916351475,
+          "E_spread": 0.017282285347326176,
+          "E_total": 0.017605428261310407,
+          "n_failed": 0
+        },
+        "a=3,N=6400": {
+          "E_bias": 0.005687983276426241,
+          "E_spread": 0.017269376875349934,
+          "E_total": 0.018181983704089483,
+          "n_failed": 0
+        },
+        "a=4,N=6400": {
+          "E_bias": 0.009098688782339,
+          "E_spread": 0.01722531464441106,
+          "E_total": 0.019480698194798456,
+          "n_failed": 0
+        }
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "relaxation_speed_sensitivity_widths",
+      "study": "ta",
+      "file": "output/final_prepublication_tests/gbmc_relaxation_speed_sensitivity/summary.csv",
+      "type": "csv_rows",
+      "key": "case",
+      "rows": {
+        "a=1.5,N=400": {
+          "nu_mean": 0.5080430425380689
+        },
+        "a=2,N=400": {
+          "nu_mean": 0.5086544442726524
+        },
+        "a=3,N=400": {
+          "nu_mean": 0.511073889811141
+        },
+        "a=4,N=400": {
+          "nu_mean": 0.5143009693084681
+        },
+        "a=1.5,N=1600": {
+          "nu_mean": 0.5054611329731844
+        },
+        "a=2,N=1600": {
+          "nu_mean": 0.5064800911036689
+        },
+        "a=3,N=1600": {
+          "nu_mean": 0.5088763947194009
+        },
+        "a=4,N=1600": {
+          "nu_mean": 0.512378376893285
+        },
+        "a=1.5,N=6400": {
+          "nu_mean": 0.5036619171708909
+        },
+        "a=2,N=6400": {
+          "nu_mean": 0.5045224512899591
+        },
+        "a=3,N=6400": {
+          "nu_mean": 0.5070170673895875
+        },
+        "a=4,N=6400": {
+          "nu_mean": 0.5104870752911728
+        }
+      },
+      "rtol": 1e-08,
+      "_note": "nu_mean is computed from nonlinear tanh curve_fit values; rtol 1e-8 absorbs optimizer-level variation across SciPy/BLAS builds"
+    },
+    {
+      "id": "gbmc_a_dt_representative_cells",
+      "study": "adt",
+      "file": "output/final_prepublication_tests/gbmc_a_dt_interaction/summary.csv",
+      "type": "csv_rows",
+      "key": "case",
+      "rtol": 1e-06,
+      "rows": {
+        "a=2,dt=0.0025": {
+          "E_bias": 0.0033576356916351475,
+          "E_spread": 0.017282285347326176,
+          "E_total": 0.017605428261310407,
+          "nu_mean": 0.5045224512899591,
+          "D_label": 0.004583333312988342
+        },
+        "a=4,dt=0.01": {
+          "E_bias": 0.0335038243253739,
+          "E_spread": 0.01644741953187435,
+          "E_total": 0.03732323476981862,
+          "nu_mean": 0.5380080575032626,
+          "D_label": 0.07833333325195338
+        },
+        "a=4,dt=0.000625": {
+          "E_bias": 0.0035598952338843593,
+          "E_spread": 0.0159595476644577,
+          "E_total": 0.01635175879623748,
+          "nu_mean": 0.5036848572890671,
+          "D_label": 0.004895833328247016
+        },
+        "a=1.5,dt=0.000625": {
+          "E_bias": 0.002609222288327212,
+          "E_spread": 0.01608259868366305,
+          "E_total": 0.0162928825371591,
+          "nu_mean": 0.5018277405594478,
+          "D_label": 0.0005989583282470814
+        }
+      }
+    },
+    {
+      "id": "gbmc_a_dt_cross_check_and_analytic",
+      "study": "adt",
+      "file": "output/final_prepublication_tests/gbmc_a_dt_interaction/analysis.json",
+      "type": "json_paths",
+      "rtol": 1e-06,
+      "values": {
+        "gate_summary.analytic_max_abs_dev_below_1e10": true,
+        "gate_summary.cross_check_exercised": true,
+        "gate_summary.cross_check_n_shared_seeds": 50,
+        "gate_summary.cross_check_per_seed_max_l2": 0.0,
+        "gate_summary.aggregate_cross_check_overall_max": 0.0,
+        "gate_summary.all_paired_a_intervals_resolve_sign": true,
+        "paired_intervals_across_a_at_fixed_dt.0.mean_dnu": 0.003322253689712147,
+        "paired_intervals_across_a_at_fixed_dt.0.ratio_mean": 0.3796861359671025,
+        "paired_intervals_across_a_at_fixed_dt.0.resolves_sign": true
+      }
+    },
+    {
+      "id": "gbmc_ablation_control_near_zero_offset",
+      "study": "ablation",
+      "file": "output/final_prepublication_tests/gbmc_conditional_mean_ablation/summary.json",
+      "type": "json_select",
+      "list_path": "summary",
+      "rtol": 1e-06,
+      "where": {
+        "dt": 0.01,
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "nu_mean": 0.5019174238018256,
+        "nu_offset": 0.0019174238018255796
+      }
+    },
+    {
+      "id": "gbmc_ablation_two_speed_a4_offset",
+      "study": "ablation",
+      "file": "output/final_prepublication_tests/gbmc_conditional_mean_ablation/summary.json",
+      "type": "json_select",
+      "list_path": "summary",
+      "rtol": 1e-06,
+      "where": {
+        "dt": 0.01,
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "nu_offset": 0.033490755199797384
+      }
+    },
+    {
+      "id": "gbmc_ablation_paired_a2_minus_control",
+      "study": "ablation",
+      "file": "output/final_prepublication_tests/gbmc_conditional_mean_ablation/summary.json",
+      "type": "json_select",
+      "list_path": "paired_nu_contrasts",
+      "rtol": 1e-06,
+      "where": {
+        "dt": 0.01,
+        "contrast": "two_speed_a2 - cond_mean"
+      },
+      "expect": {
+        "mean": 0.008812354800848554,
+        "resolves_sign": true
+      }
+    },
+    {
+      "id": "gbmc_ablation_paired_a4_minus_control",
+      "study": "ablation",
+      "file": "output/final_prepublication_tests/gbmc_conditional_mean_ablation/summary.json",
+      "type": "json_select",
+      "list_path": "paired_nu_contrasts",
+      "rtol": 1e-06,
+      "where": {
+        "dt": 0.01,
+        "contrast": "two_speed_a4 - cond_mean"
+      },
+      "expect": {
+        "mean": 0.03157333139797175,
+        "resolves_sign": true
+      }
+    },
+    {
+      "id": "gbmc_ablation_finest_a2_contrast",
+      "study": "ablation",
+      "file": "output/final_prepublication_tests/gbmc_conditional_mean_ablation/summary.json",
+      "type": "json_select",
+      "list_path": "paired_nu_contrasts",
+      "rtol": 1e-06,
+      "where": {
+        "dt": 0.000625,
+        "contrast": "two_speed_a2 - cond_mean"
+      },
+      "expect": {
+        "mean": 0.0004752169191168476,
+        "resolves_sign": true
+      }
+    },
+    {
+      "id": "gbmc_ablation_finest_a4_contrast",
+      "study": "ablation",
+      "file": "output/final_prepublication_tests/gbmc_conditional_mean_ablation/summary.json",
+      "type": "json_select",
+      "list_path": "paired_nu_contrasts",
+      "rtol": 1e-06,
+      "where": {
+        "dt": 0.000625,
+        "contrast": "two_speed_a4 - cond_mean"
+      },
+      "expect": {
+        "mean": 0.002005026749036548,
+        "resolves_sign": true
+      }
+    },
+    {
+      "id": "gbmc_ablation_control_offset_includes_zero",
+      "study": "ablation",
+      "file": "output/final_prepublication_tests/gbmc_conditional_mean_ablation/summary.json",
+      "type": "json_select",
+      "list_path": "summary",
+      "rtol": 1e-06,
+      "where": {
+        "dt": 0.000625,
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "nu_offset_ci_includes_zero": true
+      }
+    },
+    {
+      "id": "gbmc_ablation_zero_failures",
+      "study": "ablation",
+      "file": "output/final_prepublication_tests/gbmc_conditional_mean_ablation/summary.json",
+      "type": "json_paths",
+      "rtol": 1e-09,
+      "values": {
+        "metadata.n_failed": 0
+      }
+    },
+    {
+      "id": "gbmc_ablation_decomposition_identity",
+      "study": "ablation",
+      "file": "output/final_prepublication_tests/gbmc_conditional_mean_ablation/summary.json",
+      "type": "json_select",
+      "list_path": "summary",
+      "rtol": 1e-09,
+      "where": {
+        "dt": 0.01,
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "identity_error": 0.0
+      }
+    },
+    {
+      "id": "multinu_two_speed_a2_nu0p5",
+      "study": "multinu",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.5,
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "nu_offset_abs": 0.003989744374757743,
+        "nu_offset_abs_ci_lo": 0.0012340325033910382,
+        "nu_offset_abs_ci_hi": 0.006745157060635444,
+        "nu_mean": 0.5039897443747577,
+        "D_label": 0.004583333312988281,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "multinu_two_speed_a4_nu0p5",
+      "study": "multinu",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.5,
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "nu_offset_abs": 0.009951952595750616,
+        "nu_offset_abs_ci_lo": 0.00728811205223492,
+        "nu_offset_abs_ci_hi": 0.012672955005460496,
+        "nu_mean": 0.5099519525957507,
+        "D_label": 0.01958333331298828,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "multinu_cond_mean_nu0p5",
+      "study": "multinu",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.5,
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "nu_offset_abs": 0.001799918042591756,
+        "nu_offset_abs_ci_lo": -0.0010190325798532694,
+        "nu_offset_abs_ci_hi": 0.004601595445906266,
+        "nu_mean": 0.5017999180425917,
+        "D_label": 0.0,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "multinu_two_speed_a2_nu0p25",
+      "study": "multinu",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.25,
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "nu_offset_abs": 0.003286167173608691,
+        "nu_offset_abs_ci_lo": 0.0024549636982401615,
+        "nu_offset_abs_ci_hi": 0.0041293001470037545,
+        "nu_mean": 0.2532861671736087,
+        "D_label": 0.004583333312988281,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "multinu_two_speed_a4_nu0p25",
+      "study": "multinu",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.25,
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "nu_offset_abs": 0.011123540849627292,
+        "nu_offset_abs_ci_lo": 0.010221613373506347,
+        "nu_offset_abs_ci_hi": 0.012009501966360381,
+        "nu_mean": 0.2611235408496273,
+        "D_label": 0.01958333331298828,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "multinu_cond_mean_nu0p25",
+      "study": "multinu",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.25,
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "nu_offset_abs": 0.0006594086567379193,
+        "nu_offset_abs_ci_lo": -0.00014434679859630245,
+        "nu_offset_abs_ci_hi": 0.001520533023789829,
+        "nu_mean": 0.2506594086567379,
+        "D_label": 0.0,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "multinu_two_speed_a2_nu0p1",
+      "study": "multinu",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.1,
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "nu_offset_abs": 0.005052652008660066,
+        "nu_offset_abs_ci_lo": 0.004672336975917933,
+        "nu_offset_abs_ci_hi": 0.005451786756694504,
+        "nu_mean": 0.10505265200866006,
+        "D_label": 0.004583333312988281,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "multinu_two_speed_a4_nu0p1",
+      "study": "multinu",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.1,
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "nu_offset_abs": 0.01668119369198026,
+        "nu_offset_abs_ci_lo": 0.01622951365351918,
+        "nu_offset_abs_ci_hi": 0.01713493457615867,
+        "nu_mean": 0.11668119369198028,
+        "D_label": 0.01958333331298828,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "multinu_cond_mean_nu0p1",
+      "study": "multinu",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.1,
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "nu_offset_abs": 0.001208786837928897,
+        "nu_offset_abs_ci_lo": 0.000827034274229154,
+        "nu_offset_abs_ci_hi": 0.0015765681947952988,
+        "nu_mean": 0.1012087868379289,
+        "D_label": 0.0,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "multinu_two_speed_a2_nu0p05",
+      "study": "multinu",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.05,
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "nu_offset_abs": 0.005911879363672017,
+        "nu_offset_abs_ci_lo": 0.005742557781567975,
+        "nu_offset_abs_ci_hi": 0.006091008418265149,
+        "nu_mean": 0.055911879363672014,
+        "D_label": 0.004583333312988281,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "multinu_two_speed_a4_nu0p05",
+      "study": "multinu",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.05,
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "nu_offset_abs": 0.019436646128971346,
+        "nu_offset_abs_ci_lo": 0.019224088239865014,
+        "nu_offset_abs_ci_hi": 0.019660689745316224,
+        "nu_mean": 0.06943664612897135,
+        "D_label": 0.01958333331298828,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "multinu_cond_mean_nu0p05",
+      "study": "multinu",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.05,
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "nu_offset_abs": 0.0015049586070483368,
+        "nu_offset_abs_ci_lo": 0.0013307589852132077,
+        "nu_offset_abs_ci_hi": 0.0016777198970398825,
+        "nu_mean": 0.05150495860704833,
+        "D_label": 0.0,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "multinu_two_speed_a2_nu0p025",
+      "study": "multinu",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.025,
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "nu_offset_abs": 0.0059676803417663795,
+        "nu_offset_abs_ci_lo": 0.0058654894165961055,
+        "nu_offset_abs_ci_hi": 0.006074192306068022,
+        "nu_mean": 0.030967680341766383,
+        "D_label": 0.004583333312988281,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "multinu_two_speed_a4_nu0p025",
+      "study": "multinu",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.025,
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "nu_offset_abs": 0.020344384737946627,
+        "nu_offset_abs_ci_lo": 0.020195764380060665,
+        "nu_offset_abs_ci_hi": 0.02048968939451833,
+        "nu_mean": 0.04534438473794663,
+        "D_label": 0.01958333331298828,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "multinu_cond_mean_nu0p025",
+      "study": "multinu",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.025,
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "nu_offset_abs": 0.0014499750718996512,
+        "nu_offset_abs_ci_lo": 0.0013617027346634054,
+        "nu_offset_abs_ci_hi": 0.0015351508058722475,
+        "nu_mean": 0.026449975071899653,
+        "D_label": 0.0,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "multinu_paired_two_speed_a2_nu0p5",
+      "study": "multinu",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "list_path": "paired_nu_contrasts",
+      "where": {
+        "nu": 0.5,
+        "contrast": "two_speed_a2 - cond_mean"
+      },
+      "expect": {
+        "mean": 0.002189826332165987,
+        "ci_lo": 0.0019000687111318565,
+        "ci_hi": 0.0024881464587380975,
+        "n_pairs": 50,
+        "resolves_sign": true
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "multinu_paired_two_speed_a4_nu0p5",
+      "study": "multinu",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "list_path": "paired_nu_contrasts",
+      "where": {
+        "nu": 0.5,
+        "contrast": "two_speed_a4 - cond_mean"
+      },
+      "expect": {
+        "mean": 0.00815203455315886,
+        "ci_lo": 0.007525135788483529,
+        "ci_hi": 0.008729961637693575,
+        "n_pairs": 50,
+        "resolves_sign": true
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "multinu_paired_two_speed_a4_nu0p5",
+      "study": "multinu",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "list_path": "paired_nu_contrasts",
+      "where": {
+        "nu": 0.5,
+        "contrast": "two_speed_a4 - two_speed_a2"
+      },
+      "expect": {
+        "mean": 0.005962208220992872,
+        "ci_lo": 0.005598772286452833,
+        "ci_hi": 0.006323091342872174,
+        "n_pairs": 50,
+        "resolves_sign": true
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "multinu_paired_two_speed_a2_nu0p25",
+      "study": "multinu",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "list_path": "paired_nu_contrasts",
+      "where": {
+        "nu": 0.25,
+        "contrast": "two_speed_a2 - cond_mean"
+      },
+      "expect": {
+        "mean": 0.0026267585168707713,
+        "ci_lo": 0.002507884213901058,
+        "ci_hi": 0.002746200131950716,
+        "n_pairs": 50,
+        "resolves_sign": true
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "multinu_paired_two_speed_a4_nu0p25",
+      "study": "multinu",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "list_path": "paired_nu_contrasts",
+      "where": {
+        "nu": 0.25,
+        "contrast": "two_speed_a4 - cond_mean"
+      },
+      "expect": {
+        "mean": 0.01046413219288937,
+        "ci_lo": 0.010207453181160606,
+        "ci_hi": 0.010707599950118439,
+        "n_pairs": 50,
+        "resolves_sign": true
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "multinu_paired_two_speed_a4_nu0p25",
+      "study": "multinu",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "list_path": "paired_nu_contrasts",
+      "where": {
+        "nu": 0.25,
+        "contrast": "two_speed_a4 - two_speed_a2"
+      },
+      "expect": {
+        "mean": 0.0078373736760186,
+        "ci_lo": 0.0076666205585543806,
+        "ci_hi": 0.008010339594696254,
+        "n_pairs": 50,
+        "resolves_sign": true
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "multinu_paired_two_speed_a2_nu0p1",
+      "study": "multinu",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "list_path": "paired_nu_contrasts",
+      "where": {
+        "nu": 0.1,
+        "contrast": "two_speed_a2 - cond_mean"
+      },
+      "expect": {
+        "mean": 0.0038438651707311698,
+        "ci_lo": 0.0037489039140962076,
+        "ci_hi": 0.003942523944455341,
+        "n_pairs": 50,
+        "resolves_sign": true
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "multinu_paired_two_speed_a4_nu0p1",
+      "study": "multinu",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "list_path": "paired_nu_contrasts",
+      "where": {
+        "nu": 0.1,
+        "contrast": "two_speed_a4 - cond_mean"
+      },
+      "expect": {
+        "mean": 0.015472406854051364,
+        "ci_lo": 0.01527473250831801,
+        "ci_hi": 0.015680785400976872,
+        "n_pairs": 50,
+        "resolves_sign": true
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "multinu_paired_two_speed_a4_nu0p1",
+      "study": "multinu",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "list_path": "paired_nu_contrasts",
+      "where": {
+        "nu": 0.1,
+        "contrast": "two_speed_a4 - two_speed_a2"
+      },
+      "expect": {
+        "mean": 0.011628541683320195,
+        "ci_lo": 0.011501794627681238,
+        "ci_hi": 0.011756757500150353,
+        "n_pairs": 50,
+        "resolves_sign": true
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "multinu_paired_two_speed_a2_nu0p05",
+      "study": "multinu",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "list_path": "paired_nu_contrasts",
+      "where": {
+        "nu": 0.05,
+        "contrast": "two_speed_a2 - cond_mean"
+      },
+      "expect": {
+        "mean": 0.00440692075662368,
+        "ci_lo": 0.004350297644850257,
+        "ci_hi": 0.004465669546481183,
+        "n_pairs": 50,
+        "resolves_sign": true
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "multinu_paired_two_speed_a4_nu0p05",
+      "study": "multinu",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "list_path": "paired_nu_contrasts",
+      "where": {
+        "nu": 0.05,
+        "contrast": "two_speed_a4 - cond_mean"
+      },
+      "expect": {
+        "mean": 0.017931687521923007,
+        "ci_lo": 0.017793314525698344,
+        "ci_hi": 0.018074151227130637,
+        "n_pairs": 50,
+        "resolves_sign": true
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "multinu_paired_two_speed_a4_nu0p05",
+      "study": "multinu",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "list_path": "paired_nu_contrasts",
+      "where": {
+        "nu": 0.05,
+        "contrast": "two_speed_a4 - two_speed_a2"
+      },
+      "expect": {
+        "mean": 0.01352476676529933,
+        "ci_lo": 0.013426313126177468,
+        "ci_hi": 0.01362064494890536,
+        "n_pairs": 50,
+        "resolves_sign": true
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "multinu_paired_two_speed_a2_nu0p025",
+      "study": "multinu",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "list_path": "paired_nu_contrasts",
+      "where": {
+        "nu": 0.025,
+        "contrast": "two_speed_a2 - cond_mean"
+      },
+      "expect": {
+        "mean": 0.004517705269866728,
+        "ci_lo": 0.004471110555131821,
+        "ci_hi": 0.00456277925801223,
+        "n_pairs": 50,
+        "resolves_sign": true
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "multinu_paired_two_speed_a4_nu0p025",
+      "study": "multinu",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "list_path": "paired_nu_contrasts",
+      "where": {
+        "nu": 0.025,
+        "contrast": "two_speed_a4 - cond_mean"
+      },
+      "expect": {
+        "mean": 0.01889440966604698,
+        "ci_lo": 0.018793731750587666,
+        "ci_hi": 0.019001796333951926,
+        "n_pairs": 50,
+        "resolves_sign": true
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "multinu_paired_two_speed_a4_nu0p025",
+      "study": "multinu",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "list_path": "paired_nu_contrasts",
+      "where": {
+        "nu": 0.025,
+        "contrast": "two_speed_a4 - two_speed_a2"
+      },
+      "expect": {
+        "mean": 0.014376704396180252,
+        "ci_lo": 0.014301188265634365,
+        "ci_hi": 0.01445253413965268,
+        "n_pairs": 50,
+        "resolves_sign": true
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "multinu_design_and_health",
+      "study": "multinu",
+      "type": "json_paths",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_sweep/summary.json",
+      "values": {
+        "metadata.n_failed": 0,
+        "metadata.n_at_fit_bound": 0,
+        "metadata.S": 50,
+        "metadata.N": 6400,
+        "metadata.dt": 0.0025,
+        "metadata.M": 400
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "pilot_ctrl_carried_nu0p1_dt0p0025",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.1,
+        "dt": 0.0025,
+        "schedule": "carried",
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "nu_offset_abs": 0.001208786837928897,
+        "nu_offset_abs_ci_lo": 0.0008375067854191475,
+        "nu_offset_abs_ci_hi": 0.0015808713656886252,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_ctrl_postdiff_nu0p1_dt0p0025",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.1,
+        "dt": 0.0025,
+        "schedule": "postdiff",
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "nu_offset_abs": 0.00036328776112821287,
+        "nu_offset_abs_ci_lo": -6.185099235471096e-06,
+        "nu_offset_abs_ci_hi": 0.0007329002277647745,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_ctrl_carried_nu0p1_dt0p00125",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.1,
+        "dt": 0.00125,
+        "schedule": "carried",
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "nu_offset_abs": 0.0004695068051084544,
+        "nu_offset_abs_ci_lo": 7.25471005546169e-05,
+        "nu_offset_abs_ci_hi": 0.0008522048826294545,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_ctrl_postdiff_nu0p1_dt0p00125",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.1,
+        "dt": 0.00125,
+        "schedule": "postdiff",
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "nu_offset_abs": 4.293873259532288e-05,
+        "nu_offset_abs_ci_lo": -0.0003355200343099268,
+        "nu_offset_abs_ci_hi": 0.0004191022222973019,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_ctrl_carried_nu0p05_dt0p0025",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.05,
+        "dt": 0.0025,
+        "schedule": "carried",
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "nu_offset_abs": 0.0015049586070483368,
+        "nu_offset_abs_ci_lo": 0.0013361569179341475,
+        "nu_offset_abs_ci_hi": 0.0016824776536485233,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_ctrl_postdiff_nu0p05_dt0p0025",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.05,
+        "dt": 0.0025,
+        "schedule": "postdiff",
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "nu_offset_abs": 0.0005710461281280804,
+        "nu_offset_abs_ci_lo": 0.00039141210123854185,
+        "nu_offset_abs_ci_hi": 0.0007453475131984921,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_ctrl_carried_nu0p05_dt0p00125",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.05,
+        "dt": 0.00125,
+        "schedule": "carried",
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "nu_offset_abs": 0.0006753246884604157,
+        "nu_offset_abs_ci_lo": 0.0004678873763085587,
+        "nu_offset_abs_ci_hi": 0.0008813056979080684,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_ctrl_postdiff_nu0p05_dt0p00125",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.05,
+        "dt": 0.00125,
+        "schedule": "postdiff",
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "nu_offset_abs": 0.0002030925717338819,
+        "nu_offset_abs_ci_lo": -3.4534738424474916e-06,
+        "nu_offset_abs_ci_hi": 0.00040714528259185034,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_ctrl_carried_nu0p025_dt0p0025",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.025,
+        "dt": 0.0025,
+        "schedule": "carried",
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "nu_offset_abs": 0.0014499750718996512,
+        "nu_offset_abs_ci_lo": 0.0013583680328533797,
+        "nu_offset_abs_ci_hi": 0.0015437587315907074,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_ctrl_postdiff_nu0p025_dt0p0025",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.025,
+        "dt": 0.0025,
+        "schedule": "postdiff",
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "nu_offset_abs": 0.0005066848988095597,
+        "nu_offset_abs_ci_lo": 0.00041703273333015367,
+        "nu_offset_abs_ci_hi": 0.0005950189648105354,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_ctrl_carried_nu0p025_dt0p00125",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.025,
+        "dt": 0.00125,
+        "schedule": "carried",
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "nu_offset_abs": 0.000651118961252748,
+        "nu_offset_abs_ci_lo": 0.0005448006299764723,
+        "nu_offset_abs_ci_hi": 0.0007563070250369711,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_ctrl_postdiff_nu0p025_dt0p00125",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.025,
+        "dt": 0.00125,
+        "schedule": "postdiff",
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "nu_offset_abs": 0.00016947751172326927,
+        "nu_offset_abs_ci_lo": 6.720454702791736e-05,
+        "nu_offset_abs_ci_hi": 0.00027486785201822587,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_sched_cond_mean_nu0p1_dt0p0025",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "schedule_contrasts",
+      "where": {
+        "nu": 0.1,
+        "dt": 0.0025,
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "mean": -0.000845499076800684,
+        "ci_lo": -0.0008558892153062988,
+        "ci_hi": -0.0008352012350289507,
+        "n_pairs": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_sched_two_speed_a2_nu0p1_dt0p0025",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "schedule_contrasts",
+      "where": {
+        "nu": 0.1,
+        "dt": 0.0025,
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "mean": -0.0007896447111293048,
+        "ci_lo": -0.0008154714612839636,
+        "ci_hi": -0.0007640598582123513,
+        "n_pairs": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_sched_two_speed_a4_nu0p1_dt0p0025",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "schedule_contrasts",
+      "where": {
+        "nu": 0.1,
+        "dt": 0.0025,
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "mean": -0.0006890653534787192,
+        "ci_lo": -0.0007255468916671063,
+        "ci_hi": -0.0006510902551371011,
+        "n_pairs": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_sched_cond_mean_nu0p1_dt0p00125",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "schedule_contrasts",
+      "where": {
+        "nu": 0.1,
+        "dt": 0.00125,
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "mean": -0.00042656807251313157,
+        "ci_lo": -0.0004321424926539757,
+        "ci_hi": -0.0004212626851377641,
+        "n_pairs": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_sched_two_speed_a2_nu0p1_dt0p00125",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "schedule_contrasts",
+      "where": {
+        "nu": 0.1,
+        "dt": 0.00125,
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "mean": -0.00041620316021530795,
+        "ci_lo": -0.00042898301300879486,
+        "ci_hi": -0.00040319528131859485,
+        "n_pairs": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_sched_two_speed_a4_nu0p1_dt0p00125",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "schedule_contrasts",
+      "where": {
+        "nu": 0.1,
+        "dt": 0.00125,
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "mean": -0.00039204973194066904,
+        "ci_lo": -0.0004151136647437665,
+        "ci_hi": -0.00036912746088384836,
+        "n_pairs": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_sched_cond_mean_nu0p05_dt0p0025",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "schedule_contrasts",
+      "where": {
+        "nu": 0.05,
+        "dt": 0.0025,
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "mean": -0.0009339124789202562,
+        "ci_lo": -0.0009406096537089712,
+        "ci_hi": -0.0009274377615205093,
+        "n_pairs": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_sched_two_speed_a2_nu0p05_dt0p0025",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "schedule_contrasts",
+      "where": {
+        "nu": 0.05,
+        "dt": 0.0025,
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "mean": -0.0008550340248461222,
+        "ci_lo": -0.0008746276076316217,
+        "ci_hi": -0.0008347817395367292,
+        "n_pairs": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_sched_two_speed_a4_nu0p05_dt0p0025",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "schedule_contrasts",
+      "where": {
+        "nu": 0.05,
+        "dt": 0.0025,
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "mean": -0.0006795538707858495,
+        "ci_lo": -0.0007157105955285695,
+        "ci_hi": -0.0006456089289440961,
+        "n_pairs": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_sched_cond_mean_nu0p05_dt0p00125",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "schedule_contrasts",
+      "where": {
+        "nu": 0.05,
+        "dt": 0.00125,
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "mean": -0.00047223211672653377,
+        "ci_lo": -0.0004782715882436837,
+        "ci_hi": -0.0004660217923637106,
+        "n_pairs": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_sched_two_speed_a2_nu0p05_dt0p00125",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "schedule_contrasts",
+      "where": {
+        "nu": 0.05,
+        "dt": 0.00125,
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "mean": -0.0004521007813459346,
+        "ci_lo": -0.00046381264699988804,
+        "ci_hi": -0.0004398871105114457,
+        "n_pairs": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_sched_two_speed_a4_nu0p05_dt0p00125",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "schedule_contrasts",
+      "where": {
+        "nu": 0.05,
+        "dt": 0.00125,
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "mean": -0.0003969409672393942,
+        "ci_lo": -0.0004176122272015022,
+        "ci_hi": -0.00037666228944025995,
+        "n_pairs": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_sched_cond_mean_nu0p025_dt0p0025",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "schedule_contrasts",
+      "where": {
+        "nu": 0.025,
+        "dt": 0.0025,
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "mean": -0.0009432901730900919,
+        "ci_lo": -0.0009474674040741637,
+        "ci_hi": -0.0009390394254527752,
+        "n_pairs": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_sched_two_speed_a2_nu0p025_dt0p0025",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "schedule_contrasts",
+      "where": {
+        "nu": 0.025,
+        "dt": 0.0025,
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "mean": -0.0007944644987920226,
+        "ci_lo": -0.0008128185748375003,
+        "ci_hi": -0.0007772413180825892,
+        "n_pairs": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_sched_two_speed_a4_nu0p025_dt0p0025",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "schedule_contrasts",
+      "where": {
+        "nu": 0.025,
+        "dt": 0.0025,
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "mean": -0.0005487724454319137,
+        "ci_lo": -0.0005793241474864738,
+        "ci_hi": -0.0005189716680210909,
+        "n_pairs": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_sched_cond_mean_nu0p025_dt0p00125",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "schedule_contrasts",
+      "where": {
+        "nu": 0.025,
+        "dt": 0.00125,
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "mean": -0.00048164144952947863,
+        "ci_lo": -0.00048439316452649747,
+        "ci_hi": -0.0004787959612523328,
+        "n_pairs": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_sched_two_speed_a2_nu0p025_dt0p00125",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "schedule_contrasts",
+      "where": {
+        "nu": 0.025,
+        "dt": 0.00125,
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "mean": -0.0004403197047143001,
+        "ci_lo": -0.000448502987698367,
+        "ci_hi": -0.00043185519214380237,
+        "n_pairs": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_sched_two_speed_a4_nu0p025_dt0p00125",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "schedule_contrasts",
+      "where": {
+        "nu": 0.025,
+        "dt": 0.00125,
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "mean": -0.000355937299484113,
+        "ci_lo": -0.0003704158104892231,
+        "ci_hi": -0.0003411394711796044,
+        "n_pairs": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_label_two_speed_a2_carried_nu0p1_dt0p0025",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "label_contrasts",
+      "where": {
+        "nu": 0.1,
+        "dt": 0.0025,
+        "schedule": "carried",
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "mean": 0.0038438651707311698,
+        "ci_lo": 0.0037479338502080135,
+        "ci_hi": 0.003936751888113158,
+        "D_label": 0.004583333312988281
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_label_two_speed_a4_carried_nu0p1_dt0p0025",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "label_contrasts",
+      "where": {
+        "nu": 0.1,
+        "dt": 0.0025,
+        "schedule": "carried",
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "mean": 0.015472406854051364,
+        "ci_lo": 0.015269587129474939,
+        "ci_hi": 0.015690160060273593,
+        "D_label": 0.01958333331298828
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_label_two_speed_a2_postdiff_nu0p1_dt0p0025",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "label_contrasts",
+      "where": {
+        "nu": 0.1,
+        "dt": 0.0025,
+        "schedule": "postdiff",
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "mean": 0.003899719536402549,
+        "ci_lo": 0.003813441907407937,
+        "ci_hi": 0.003990386309861207,
+        "D_label": 0.004583333312988281
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_label_two_speed_a4_postdiff_nu0p1_dt0p0025",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "label_contrasts",
+      "where": {
+        "nu": 0.1,
+        "dt": 0.0025,
+        "schedule": "postdiff",
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "mean": 0.015628840577373328,
+        "ci_lo": 0.01543179893262465,
+        "ci_hi": 0.01583419989085732,
+        "D_label": 0.01958333331298828
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_label_two_speed_a2_carried_nu0p1_dt0p00125",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "label_contrasts",
+      "where": {
+        "nu": 0.1,
+        "dt": 0.00125,
+        "schedule": "carried",
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "mean": 0.0019407118015914865,
+        "ci_lo": 0.0018790597273451789,
+        "ci_hi": 0.002005250580030745,
+        "D_label": 0.0022916666564941407
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_label_two_speed_a4_carried_nu0p1_dt0p00125",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "label_contrasts",
+      "where": {
+        "nu": 0.1,
+        "dt": 0.00125,
+        "schedule": "carried",
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "mean": 0.007949704592997436,
+        "ci_lo": 0.007827040744802316,
+        "ci_hi": 0.008078434057210994,
+        "D_label": 0.00979166665649414
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_label_two_speed_a2_postdiff_nu0p1_dt0p00125",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "label_contrasts",
+      "where": {
+        "nu": 0.1,
+        "dt": 0.00125,
+        "schedule": "postdiff",
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "mean": 0.00195107671388931,
+        "ci_lo": 0.0018911046462970534,
+        "ci_hi": 0.0020131867983633786,
+        "D_label": 0.0022916666564941407
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_label_two_speed_a4_postdiff_nu0p1_dt0p00125",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "label_contrasts",
+      "where": {
+        "nu": 0.1,
+        "dt": 0.00125,
+        "schedule": "postdiff",
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "mean": 0.007984222933569898,
+        "ci_lo": 0.007871968549329398,
+        "ci_hi": 0.008099814785726299,
+        "D_label": 0.00979166665649414
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_label_two_speed_a2_carried_nu0p05_dt0p0025",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "label_contrasts",
+      "where": {
+        "nu": 0.05,
+        "dt": 0.0025,
+        "schedule": "carried",
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "mean": 0.00440692075662368,
+        "ci_lo": 0.004351967176202359,
+        "ci_hi": 0.0044629823684601885,
+        "D_label": 0.004583333312988281
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_label_two_speed_a4_carried_nu0p05_dt0p0025",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "label_contrasts",
+      "where": {
+        "nu": 0.05,
+        "dt": 0.0025,
+        "schedule": "carried",
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "mean": 0.017931687521923007,
+        "ci_lo": 0.017791096360417313,
+        "ci_hi": 0.018069461998072436,
+        "D_label": 0.01958333331298828
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_label_two_speed_a2_postdiff_nu0p05_dt0p0025",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "label_contrasts",
+      "where": {
+        "nu": 0.05,
+        "dt": 0.0025,
+        "schedule": "postdiff",
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "mean": 0.004485799210697814,
+        "ci_lo": 0.004427286225278529,
+        "ci_hi": 0.004544205761549334,
+        "D_label": 0.004583333312988281
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_label_two_speed_a4_postdiff_nu0p05_dt0p0025",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "label_contrasts",
+      "where": {
+        "nu": 0.05,
+        "dt": 0.0025,
+        "schedule": "postdiff",
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "mean": 0.018186046130057417,
+        "ci_lo": 0.018040681760068383,
+        "ci_hi": 0.01832572417293141,
+        "D_label": 0.01958333331298828
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_label_two_speed_a2_carried_nu0p05_dt0p00125",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "label_contrasts",
+      "where": {
+        "nu": 0.05,
+        "dt": 0.00125,
+        "schedule": "carried",
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "mean": 0.002250034754852104,
+        "ci_lo": 0.0022096208212350685,
+        "ci_hi": 0.0022883570918660534,
+        "D_label": 0.0022916666564941407
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_label_two_speed_a4_carried_nu0p05_dt0p00125",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "label_contrasts",
+      "where": {
+        "nu": 0.05,
+        "dt": 0.00125,
+        "schedule": "carried",
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "mean": 0.009226215279654537,
+        "ci_lo": 0.009137458101285597,
+        "ci_hi": 0.009313922294298858,
+        "D_label": 0.00979166665649414
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_label_two_speed_a2_postdiff_nu0p05_dt0p00125",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "label_contrasts",
+      "where": {
+        "nu": 0.05,
+        "dt": 0.00125,
+        "schedule": "postdiff",
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "mean": 0.002270166090232704,
+        "ci_lo": 0.002230937999027471,
+        "ci_hi": 0.002309211304452903,
+        "D_label": 0.0022916666564941407
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_label_two_speed_a4_postdiff_nu0p05_dt0p00125",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "label_contrasts",
+      "where": {
+        "nu": 0.05,
+        "dt": 0.00125,
+        "schedule": "postdiff",
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "mean": 0.009301506429141675,
+        "ci_lo": 0.00921495995517263,
+        "ci_hi": 0.009385050756234572,
+        "D_label": 0.00979166665649414
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_label_two_speed_a2_carried_nu0p025_dt0p0025",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "label_contrasts",
+      "where": {
+        "nu": 0.025,
+        "dt": 0.0025,
+        "schedule": "carried",
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "mean": 0.004517705269866728,
+        "ci_lo": 0.00447185640664015,
+        "ci_hi": 0.004561992348411635,
+        "D_label": 0.004583333312988281
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_label_two_speed_a4_carried_nu0p025_dt0p0025",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "label_contrasts",
+      "where": {
+        "nu": 0.025,
+        "dt": 0.0025,
+        "schedule": "carried",
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "mean": 0.01889440966604698,
+        "ci_lo": 0.018786386774776034,
+        "ci_hi": 0.018999886230876357,
+        "D_label": 0.01958333331298828
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_label_two_speed_a2_postdiff_nu0p025_dt0p0025",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "label_contrasts",
+      "where": {
+        "nu": 0.025,
+        "dt": 0.0025,
+        "schedule": "postdiff",
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "mean": 0.004666530944164798,
+        "ci_lo": 0.004618889363208067,
+        "ci_hi": 0.004713529863364846,
+        "D_label": 0.004583333312988281
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_label_two_speed_a4_postdiff_nu0p025_dt0p0025",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "label_contrasts",
+      "where": {
+        "nu": 0.025,
+        "dt": 0.0025,
+        "schedule": "postdiff",
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "mean": 0.019288927393705156,
+        "ci_lo": 0.019183580896153823,
+        "ci_hi": 0.019396863064109787,
+        "D_label": 0.01958333331298828
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_label_two_speed_a2_carried_nu0p025_dt0p00125",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "label_contrasts",
+      "where": {
+        "nu": 0.025,
+        "dt": 0.00125,
+        "schedule": "carried",
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "mean": 0.0023051812242382446,
+        "ci_lo": 0.0022779503307609945,
+        "ci_hi": 0.0023336942070710546,
+        "D_label": 0.0022916666564941407
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_label_two_speed_a4_carried_nu0p025_dt0p00125",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "label_contrasts",
+      "where": {
+        "nu": 0.025,
+        "dt": 0.00125,
+        "schedule": "carried",
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "mean": 0.009569064501089918,
+        "ci_lo": 0.009497565797075972,
+        "ci_hi": 0.009639835299129741,
+        "D_label": 0.00979166665649414
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_label_two_speed_a2_postdiff_nu0p025_dt0p00125",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "label_contrasts",
+      "where": {
+        "nu": 0.025,
+        "dt": 0.00125,
+        "schedule": "postdiff",
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "mean": 0.002346502969053423,
+        "ci_lo": 0.002317588892990966,
+        "ci_hi": 0.0023753400167886678,
+        "D_label": 0.0022916666564941407
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_label_two_speed_a4_postdiff_nu0p025_dt0p00125",
+      "study": "pilot",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "list_path": "label_contrasts",
+      "where": {
+        "nu": 0.025,
+        "dt": 0.00125,
+        "schedule": "postdiff",
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "mean": 0.009694768651135284,
+        "ci_lo": 0.009623925857832115,
+        "ci_hi": 0.00976624111531125,
+        "D_label": 0.00979166665649414
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "pilot_design_and_health",
+      "study": "pilot",
+      "type": "json_paths",
+      "file": "output/final_prepublication_tests/gbmc_ordering_pilot/summary.json",
+      "values": {
+        "metadata.n_failed": 0,
+        "metadata.n_at_fit_bound": 0,
+        "metadata.S": 50,
+        "metadata.N": 6400,
+        "metadata.cross_check_members_vs_multinu": 450
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "mnsc_two_speed_a2_nu0p5",
+      "study": "mnsc",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.5,
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "nu_offset_abs": 0.003989744374757743,
+        "nu_offset_abs_ci_lo": 0.001427405266132532,
+        "nu_offset_abs_ci_hi": 0.00676842120793234,
+        "D_label": 0.004583333312988281,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "mnsc_two_speed_a4_nu0p5",
+      "study": "mnsc",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.5,
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "nu_offset_abs": 0.009951952595750616,
+        "nu_offset_abs_ci_lo": 0.007265557785619156,
+        "nu_offset_abs_ci_hi": 0.012666660414606044,
+        "D_label": 0.01958333331298828,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "mnsc_cond_mean_nu0p5",
+      "study": "mnsc",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.5,
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "nu_offset_abs": 0.001799918042591756,
+        "nu_offset_abs_ci_lo": -0.0010235857390295696,
+        "nu_offset_abs_ci_hi": 0.0045322083269491486,
+        "D_label": 0.0,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "mnsc_two_speed_a2_nu0p25",
+      "study": "mnsc",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.25,
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "nu_offset_abs": 0.0012057860797501645,
+        "nu_offset_abs_ci_lo": 0.0003088628568397034,
+        "nu_offset_abs_ci_hi": 0.00210266415996075,
+        "D_label": 0.0022916666564941407,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "mnsc_two_speed_a4_nu0p25",
+      "study": "mnsc",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.25,
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "nu_offset_abs": 0.005180815428020052,
+        "nu_offset_abs_ci_lo": 0.004265586204367576,
+        "nu_offset_abs_ci_hi": 0.006026259469370314,
+        "D_label": 0.00979166665649414,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "mnsc_cond_mean_nu0p25",
+      "study": "mnsc",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.25,
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "nu_offset_abs": -5.377828622280478e-05,
+        "nu_offset_abs_ci_lo": -0.000942449506329906,
+        "nu_offset_abs_ci_hi": 0.0008261798721046165,
+        "D_label": 0.0,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "mnsc_two_speed_a2_nu0p1",
+      "study": "mnsc",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.1,
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "nu_offset_abs": 0.0012943969930366969,
+        "nu_offset_abs_ci_lo": 0.0008762547968889967,
+        "nu_offset_abs_ci_hi": 0.0017107613396388482,
+        "D_label": 0.0009166666625976563,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "mnsc_two_speed_a4_nu0p1",
+      "study": "mnsc",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.1,
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "nu_offset_abs": 0.003712755658504525,
+        "nu_offset_abs_ci_lo": 0.003295651960346554,
+        "nu_offset_abs_ci_hi": 0.004131935319507534,
+        "D_label": 0.0039166666625976565,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "mnsc_cond_mean_nu0p1",
+      "study": "mnsc",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.1,
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "nu_offset_abs": 0.00048507983195082705,
+        "nu_offset_abs_ci_lo": 6.535095591119818e-05,
+        "nu_offset_abs_ci_hi": 0.0009158316700497097,
+        "D_label": 0.0,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "mnsc_two_speed_a2_nu0p05",
+      "study": "mnsc",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.05,
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "nu_offset_abs": 0.00047793244372709,
+        "nu_offset_abs_ci_lo": 0.0002893442743766619,
+        "nu_offset_abs_ci_hi": 0.000662423820842447,
+        "D_label": 0.00045833333129882816,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "mnsc_two_speed_a4_nu0p05",
+      "study": "mnsc",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.05,
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "nu_offset_abs": 0.0018977881622848686,
+        "nu_offset_abs_ci_lo": 0.0017083678504682483,
+        "nu_offset_abs_ci_hi": 0.002081367699959231,
+        "D_label": 0.0019583333312988283,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "mnsc_cond_mean_nu0p05",
+      "study": "mnsc",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.05,
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "nu_offset_abs": 2.0173456507375787e-05,
+        "nu_offset_abs_ci_lo": -0.00016322330199182626,
+        "nu_offset_abs_ci_hi": 0.00019657057526952697,
+        "D_label": 0.0,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "mnsc_two_speed_a2_nu0p025",
+      "study": "mnsc",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.025,
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "nu_offset_abs": 0.000292948960950743,
+        "nu_offset_abs_ci_lo": 0.00021439947317420258,
+        "nu_offset_abs_ci_hi": 0.000374281729763747,
+        "D_label": 0.00022916666564941408,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "mnsc_two_speed_a4_nu0p025",
+      "study": "mnsc",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.025,
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "nu_offset_abs": 0.001039739559921147,
+        "nu_offset_abs_ci_lo": 0.0009588493236584417,
+        "nu_offset_abs_ci_hi": 0.0011258929349422235,
+        "D_label": 0.0009791666656494141,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "mnsc_cond_mean_nu0p025",
+      "study": "mnsc",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "list_path": "summary",
+      "where": {
+        "nu": 0.025,
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "nu_offset_abs": 5.2961719226669036e-05,
+        "nu_offset_abs_ci_lo": -2.486905319619214e-05,
+        "nu_offset_abs_ci_hi": 0.00012981394761193326,
+        "D_label": 0.0,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "mnsc_paired_two_speed_a2_vs_cond_mean_nu0p5",
+      "study": "mnsc",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "list_path": "paired_nu_contrasts",
+      "where": {
+        "nu": 0.5,
+        "contrast": "two_speed_a2 - cond_mean"
+      },
+      "expect": {
+        "mean": 0.002189826332165987,
+        "ci_lo": 0.0019077789423656017,
+        "ci_hi": 0.0024824092984618044,
+        "n_pairs": 50,
+        "D_label": 0.004583333312988281
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "mnsc_paired_two_speed_a4_vs_cond_mean_nu0p5",
+      "study": "mnsc",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "list_path": "paired_nu_contrasts",
+      "where": {
+        "nu": 0.5,
+        "contrast": "two_speed_a4 - cond_mean"
+      },
+      "expect": {
+        "mean": 0.00815203455315886,
+        "ci_lo": 0.00754836731194343,
+        "ci_hi": 0.008762981431453066,
+        "n_pairs": 50,
+        "D_label": 0.01958333331298828
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "mnsc_paired_two_speed_a4_vs_two_speed_a2_nu0p5",
+      "study": "mnsc",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "list_path": "paired_nu_contrasts",
+      "where": {
+        "nu": 0.5,
+        "contrast": "two_speed_a4 - two_speed_a2"
+      },
+      "expect": {
+        "mean": 0.005962208220992872,
+        "ci_lo": 0.005589549349085489,
+        "ci_hi": 0.0063304804443602815,
+        "n_pairs": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "mnsc_paired_two_speed_a2_vs_cond_mean_nu0p25",
+      "study": "mnsc",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "list_path": "paired_nu_contrasts",
+      "where": {
+        "nu": 0.25,
+        "contrast": "two_speed_a2 - cond_mean"
+      },
+      "expect": {
+        "mean": 0.0012595643659729693,
+        "ci_lo": 0.0011574853951232546,
+        "ci_hi": 0.0013606368601375937,
+        "n_pairs": 50,
+        "D_label": 0.0022916666564941407
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "mnsc_paired_two_speed_a4_vs_cond_mean_nu0p25",
+      "study": "mnsc",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "list_path": "paired_nu_contrasts",
+      "where": {
+        "nu": 0.25,
+        "contrast": "two_speed_a4 - cond_mean"
+      },
+      "expect": {
+        "mean": 0.005234593714242858,
+        "ci_lo": 0.00505839808290469,
+        "ci_hi": 0.00541832870671025,
+        "n_pairs": 50,
+        "D_label": 0.00979166665649414
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "mnsc_paired_two_speed_a4_vs_two_speed_a2_nu0p25",
+      "study": "mnsc",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "list_path": "paired_nu_contrasts",
+      "where": {
+        "nu": 0.25,
+        "contrast": "two_speed_a4 - two_speed_a2"
+      },
+      "expect": {
+        "mean": 0.0039750293482698875,
+        "ci_lo": 0.0038637968264691558,
+        "ci_hi": 0.004092273600210978,
+        "n_pairs": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "mnsc_paired_two_speed_a2_vs_cond_mean_nu0p1",
+      "study": "mnsc",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "list_path": "paired_nu_contrasts",
+      "where": {
+        "nu": 0.1,
+        "contrast": "two_speed_a2 - cond_mean"
+      },
+      "expect": {
+        "mean": 0.0008093171610858698,
+        "ci_lo": 0.0007740922287888939,
+        "ci_hi": 0.0008440071126283628,
+        "n_pairs": 50,
+        "D_label": 0.0009166666625976563
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "mnsc_paired_two_speed_a4_vs_cond_mean_nu0p1",
+      "study": "mnsc",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "list_path": "paired_nu_contrasts",
+      "where": {
+        "nu": 0.1,
+        "contrast": "two_speed_a4 - cond_mean"
+      },
+      "expect": {
+        "mean": 0.0032276758265536985,
+        "ci_lo": 0.0031513955047627663,
+        "ci_hi": 0.0033005532564931318,
+        "n_pairs": 50,
+        "D_label": 0.0039166666625976565
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "mnsc_paired_two_speed_a4_vs_two_speed_a2_nu0p1",
+      "study": "mnsc",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "list_path": "paired_nu_contrasts",
+      "where": {
+        "nu": 0.1,
+        "contrast": "two_speed_a4 - two_speed_a2"
+      },
+      "expect": {
+        "mean": 0.0024183586654678286,
+        "ci_lo": 0.002367181871415915,
+        "ci_hi": 0.002466036625630184,
+        "n_pairs": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "mnsc_paired_two_speed_a2_vs_cond_mean_nu0p05",
+      "study": "mnsc",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "list_path": "paired_nu_contrasts",
+      "where": {
+        "nu": 0.05,
+        "contrast": "two_speed_a2 - cond_mean"
+      },
+      "expect": {
+        "mean": 0.00045775898721971424,
+        "ci_lo": 0.00044141606722401995,
+        "ci_hi": 0.00047490191933948904,
+        "n_pairs": 50,
+        "D_label": 0.00045833333129882816
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "mnsc_paired_two_speed_a4_vs_cond_mean_nu0p05",
+      "study": "mnsc",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "list_path": "paired_nu_contrasts",
+      "where": {
+        "nu": 0.05,
+        "contrast": "two_speed_a4 - cond_mean"
+      },
+      "expect": {
+        "mean": 0.0018776147057774925,
+        "ci_lo": 0.0018374579867443451,
+        "ci_hi": 0.0019176997241409208,
+        "n_pairs": 50,
+        "D_label": 0.0019583333312988283
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "mnsc_paired_two_speed_a4_vs_two_speed_a2_nu0p05",
+      "study": "mnsc",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "list_path": "paired_nu_contrasts",
+      "where": {
+        "nu": 0.05,
+        "contrast": "two_speed_a4 - two_speed_a2"
+      },
+      "expect": {
+        "mean": 0.0014198557185577784,
+        "ci_lo": 0.0013934214557677926,
+        "ci_hi": 0.0014470857518151658,
+        "n_pairs": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "mnsc_paired_two_speed_a2_vs_cond_mean_nu0p025",
+      "study": "mnsc",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "list_path": "paired_nu_contrasts",
+      "where": {
+        "nu": 0.025,
+        "contrast": "two_speed_a2 - cond_mean"
+      },
+      "expect": {
+        "mean": 0.00023998724172407394,
+        "ci_lo": 0.00022956440256138283,
+        "ci_hi": 0.00025010161665163895,
+        "n_pairs": 50,
+        "D_label": 0.00022916666564941408
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "mnsc_paired_two_speed_a4_vs_cond_mean_nu0p025",
+      "study": "mnsc",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "list_path": "paired_nu_contrasts",
+      "where": {
+        "nu": 0.025,
+        "contrast": "two_speed_a4 - cond_mean"
+      },
+      "expect": {
+        "mean": 0.0009867778406944779,
+        "ci_lo": 0.0009661071814574144,
+        "ci_hi": 0.0010074289281726664,
+        "n_pairs": 50,
+        "D_label": 0.0009791666656494141
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "mnsc_paired_two_speed_a4_vs_two_speed_a2_nu0p025",
+      "study": "mnsc",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "list_path": "paired_nu_contrasts",
+      "where": {
+        "nu": 0.025,
+        "contrast": "two_speed_a4 - two_speed_a2"
+      },
+      "expect": {
+        "mean": 0.0007467905989704041,
+        "ci_lo": 0.0007348272781389442,
+        "ci_hi": 0.0007586015087498272,
+        "n_pairs": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "mnsc_design_and_health",
+      "study": "mnsc",
+      "type": "json_paths",
+      "file": "output/final_prepublication_tests/gbmc_multiviscosity_scaled_dt/summary.json",
+      "values": {
+        "metadata.n_failed": 0,
+        "metadata.n_at_fit_bound": 0,
+        "metadata.S": 50,
+        "metadata.N": 6400,
+        "metadata.cross_check_nu0p5_members_vs_fixed_step": 150
+      },
+      "rtol": 1e-12
+    },
+    {
+      "id": "trans_two_speed_a2_dt0p005",
+      "study": "trans",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_smooth_transient/summary.json",
+      "list_path": "summary",
+      "where": {
+        "dt": 0.005,
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "E_bias": 0.014874505580809804,
+        "E_spread": 0.012824223134879506,
+        "E_total": 0.019639542135363574,
+        "D_label_run_mean": 0.009272191770783637,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "trans_two_speed_a4_dt0p005",
+      "study": "trans",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_smooth_transient/summary.json",
+      "list_path": "summary",
+      "where": {
+        "dt": 0.005,
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "E_bias": 0.05610748571607654,
+        "E_spread": 0.012935393997890432,
+        "E_total": 0.057579287693235594,
+        "D_label_run_mean": 0.03930305907179066,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "trans_cond_mean_dt0p005",
+      "study": "trans",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_smooth_transient/summary.json",
+      "list_path": "summary",
+      "where": {
+        "dt": 0.005,
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "E_bias": 0.0012650902080854078,
+        "E_spread": 0.012520807259386656,
+        "E_total": 0.012584556712943971,
+        "D_label_run_mean": 0.009262610741488986,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "trans_two_speed_a2_dt0p0025",
+      "study": "trans",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_smooth_transient/summary.json",
+      "list_path": "summary",
+      "where": {
+        "dt": 0.0025,
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "E_bias": 0.007749496026417987,
+        "E_spread": 0.012484953444046876,
+        "E_total": 0.014694514322136894,
+        "D_label_run_mean": 0.004633815658060065,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "trans_two_speed_a4_dt0p0025",
+      "study": "trans",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_smooth_transient/summary.json",
+      "list_path": "summary",
+      "where": {
+        "dt": 0.0025,
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "E_bias": 0.029642578260167925,
+        "E_spread": 0.01338844446729272,
+        "E_total": 0.03252588032880833,
+        "D_label_run_mean": 0.01964145837500671,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "trans_cond_mean_dt0p0025",
+      "study": "trans",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_smooth_transient/summary.json",
+      "list_path": "summary",
+      "where": {
+        "dt": 0.0025,
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "E_bias": 0.0013197418495981747,
+        "E_spread": 0.012385880953428307,
+        "E_total": 0.01245599315759602,
+        "D_label_run_mean": 0.004631949295283953,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "trans_two_speed_a2_dt0p00125",
+      "study": "trans",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_smooth_transient/summary.json",
+      "list_path": "summary",
+      "where": {
+        "dt": 0.00125,
+        "arm": "two_speed_a2"
+      },
+      "expect": {
+        "E_bias": 0.004774569242272822,
+        "E_spread": 0.012479708694992158,
+        "E_total": 0.013361872644248655,
+        "D_label_run_mean": 0.002316299894017293,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "trans_two_speed_a4_dt0p00125",
+      "study": "trans",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_smooth_transient/summary.json",
+      "list_path": "summary",
+      "where": {
+        "dt": 0.00125,
+        "arm": "two_speed_a4"
+      },
+      "expect": {
+        "E_bias": 0.01753371402121662,
+        "E_spread": 0.012436654248269178,
+        "E_total": 0.021496546147434934,
+        "D_label_run_mean": 0.009818492156521497,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "trans_cond_mean_dt0p00125",
+      "study": "trans",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_smooth_transient/summary.json",
+      "list_path": "summary",
+      "where": {
+        "dt": 0.00125,
+        "arm": "cond_mean"
+      },
+      "expect": {
+        "E_bias": 0.002240046361184525,
+        "E_spread": 0.011840013632376791,
+        "E_total": 0.012050051058610674,
+        "D_label_run_mean": 0.0023159531912088534,
+        "S": 50
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "trans_paired_two_speed_a2_dt0p005",
+      "study": "trans",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_smooth_transient/summary.json",
+      "list_path": "paired_l2_contrasts",
+      "where": {
+        "dt": 0.005,
+        "contrast": "two_speed_a2 - cond_mean"
+      },
+      "expect": {
+        "mean": 0.006837090226184867,
+        "ci_lo": 0.005540498247357528,
+        "ci_hi": 0.008172893128705696,
+        "n_pairs": 50,
+        "resolves_sign": true
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "trans_paired_two_speed_a4_dt0p005",
+      "study": "trans",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_smooth_transient/summary.json",
+      "list_path": "paired_l2_contrasts",
+      "where": {
+        "dt": 0.005,
+        "contrast": "two_speed_a4 - cond_mean"
+      },
+      "expect": {
+        "mean": 0.04520203325472338,
+        "ci_lo": 0.04348958167692516,
+        "ci_hi": 0.046763317790766756,
+        "n_pairs": 50,
+        "resolves_sign": true
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "trans_paired_two_speed_a2_dt0p0025",
+      "study": "trans",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_smooth_transient/summary.json",
+      "list_path": "paired_l2_contrasts",
+      "where": {
+        "dt": 0.0025,
+        "contrast": "two_speed_a2 - cond_mean"
+      },
+      "expect": {
+        "mean": 0.002178550950116548,
+        "ci_lo": 0.0012637509337177465,
+        "ci_hi": 0.0031159516700443226,
+        "n_pairs": 50,
+        "resolves_sign": true
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "trans_paired_two_speed_a4_dt0p0025",
+      "study": "trans",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_smooth_transient/summary.json",
+      "list_path": "paired_l2_contrasts",
+      "where": {
+        "dt": 0.0025,
+        "contrast": "two_speed_a4 - cond_mean"
+      },
+      "expect": {
+        "mean": 0.020105021643289138,
+        "ci_lo": 0.018707792357928545,
+        "ci_hi": 0.021488137409368044,
+        "n_pairs": 50,
+        "resolves_sign": true
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "trans_paired_two_speed_a2_dt0p00125",
+      "study": "trans",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_smooth_transient/summary.json",
+      "list_path": "paired_l2_contrasts",
+      "where": {
+        "dt": 0.00125,
+        "contrast": "two_speed_a2 - cond_mean"
+      },
+      "expect": {
+        "mean": 0.0012925144321049725,
+        "ci_lo": 0.0004350550916776648,
+        "ci_hi": 0.0021406918978117747,
+        "n_pairs": 50,
+        "resolves_sign": true
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "trans_paired_two_speed_a4_dt0p00125",
+      "study": "trans",
+      "type": "json_select",
+      "file": "output/final_prepublication_tests/gbmc_smooth_transient/summary.json",
+      "list_path": "paired_l2_contrasts",
+      "where": {
+        "dt": 0.00125,
+        "contrast": "two_speed_a4 - cond_mean"
+      },
+      "expect": {
+        "mean": 0.009559557481158295,
+        "ci_lo": 0.008441040125395318,
+        "ci_hi": 0.010713013744758767,
+        "n_pairs": 50,
+        "resolves_sign": true
+      },
+      "rtol": 1e-08
+    },
+    {
+      "id": "trans_reference_and_health",
+      "study": "trans",
+      "type": "json_paths",
+      "file": "output/final_prepublication_tests/gbmc_smooth_transient/summary.json",
+      "values": {
+        "metadata.reference.self_consistency_max_abs": 9.600098493933729e-13,
+        "metadata.reference.crank_nicolson_max_abs": 7.124692122373322e-05,
+        "metadata.n_failed": 0,
+        "metadata.S": 50,
+        "metadata.N": 6400
+      },
+      "rtol": 1e-08
+    }
+  ]
+}

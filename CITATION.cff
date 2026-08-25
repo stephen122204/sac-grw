@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the paper below."
+title: "RB-GBMC: Relaxation-Brownian Gradient Monte Carlo for Viscous Burgers' Equation"
+authors:
+  - family-names: Abkin
+    given-names: Stephen
+  - family-names: Daripa
+    given-names: Prabir
+license: NOASSERTION
+preferred-citation:
+  type: article
+  title: >-
+    A Relaxation-Brownian Gradient Monte Carlo Algorithm for Viscous Burgers'
+    Equation
+  authors:
+    - family-names: Abkin
+      given-names: Stephen
+    - family-names: Daripa
+      given-names: Prabir
+  year: 2026
+  notes: "Preprint identifier to be added before public release."

@@ -1,0 +1,372 @@
+"""Regenerate the nine Paper 2 figures from the checked-in study data.
+
+This script never reruns an ensemble study and never recomputes a seed. It reads
+only the canonical summaries/CSVs/JSONs/arrays under
+``output/final_prepublication_tests/`` and reproduces the paper figures with a
+single publication style (serif / Computer Modern math, muted palette).
+
+Run directly (``python figure_scripts/regenerate_paper_figures.py``) or via
+``python reproduce.py figures``. Output PDFs are written to
+``output/final_prepublication_tests/paper2_figures/``.
+Set ``PAPER2_MANUSCRIPT_FIGURE_DIR`` to mirror the same generated PDFs into a
+manuscript figure directory during an editorial build.
+
+Cosmetic-only conventions (no data changes):
+  * fitted-viscosity figure uses the paper's ``\\hat\\nu`` label;
+  * the bias-spread-total figure contains the spread fit and the
+    ``N^{-1/2}`` guide, with numerical fit values kept in the paper text;
+  * time-step reference curves are labeled as guides rather than proved error
+    orders.
+
+Figure -> canonical data source:
+  production_gbmc_bias_spread_total_vs_N gbmc_production_n_refinement/{per_N_summary.csv,rates.json}           (t6)
+  production_gbmc_profiles_selected_N    gbmc_production_n_refinement/production_profiles.npz                  (t6)
+  production_gbmc_fitted_viscosity_vs_N  gbmc_production_n_refinement/per_N_summary.csv                        (t6)
+  gbmc_bias_vs_dt                        gbmc_dt_bias/dt_bias_summary_N6400.json                               (t1)
+  gbmc_a_dt_fitted_width                 gbmc_a_dt_interaction/summary.json                                  (adt)
+  gbmc_multinu_paired_excess             gbmc_multiviscosity_sweep/summary.json +
+                                         gbmc_multiviscosity_scaled_dt/summary.json                       (multinu)
+  gbmc_traveling_error_vs_N             gbmc_traveling_shock/summary.json                                      (t2)
+  gbmc_traveling_center_vs_time          gbmc_traveling_shock/per_run.csv (single seed 42, largest N)          (t2)
+"""
+import csv
+import json
+import os
+
+# Fixed date for matplotlib PDF metadata so regenerated figures are byte-identical
+# across runs (matplotlib honors SOURCE_DATE_EPOCH).
+os.environ.setdefault('SOURCE_DATE_EPOCH', '1704067200')  # 2024-01-01 UTC
+
+import numpy as np
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA = os.path.join(ROOT, 'output', 'final_prepublication_tests')
+OUT = os.path.join(DATA, 'paper2_figures')
+MIRROR_OUT = os.environ.get('PAPER2_MANUSCRIPT_FIGURE_DIR')
+
+NU = 0.5  # prescribed viscosity for the stationary/traveling shock studies
+
+# Publication palette: muted and colour-blind safe.
+EXACT = '#111111'          # total / exact reference
+GRW = '#2166ac'            # spread / primary GRW curve (blue)
+DET = '#d6604d'            # bias / deterministic (red)
+SECONDARY = '#762a83'      # secondary quantity (purple)
+GUIDE = '#777777'          # reference guides (grey)
+
+
+def _apply_style():
+    plt.rcParams.update({
+        'font.family': 'serif',
+        'font.serif': ['Computer Modern Roman', 'Times New Roman', 'DejaVu Serif'],
+        'mathtext.fontset': 'cm',
+        'axes.labelsize': 11, 'axes.titlesize': 12,
+        'xtick.labelsize': 9, 'ytick.labelsize': 9, 'legend.fontsize': 9,
+        'lines.linewidth': 1.9, 'lines.markersize': 5.5,
+        'axes.grid': True, 'grid.alpha': 0.25, 'grid.linewidth': 0.7,
+        'axes.spines.top': True, 'axes.spines.right': True,
+        'pdf.fonttype': 42, 'ps.fonttype': 42, 'savefig.bbox': 'tight',
+    })
+
+
+def _csv(path):
+    with open(path) as f:
+        return list(csv.DictReader(f))
+
+
+def _json(path):
+    with open(path) as f:
+        return json.load(f)
+
+
+def _save(fig, name):
+    filename = name + '.pdf'
+    fig.savefig(os.path.join(OUT, filename), dpi=300, bbox_inches='tight')
+    if MIRROR_OUT:
+        os.makedirs(MIRROR_OUT, exist_ok=True)
+        fig.savefig(os.path.join(MIRROR_OUT, filename), dpi=300,
+                    bbox_inches='tight')
+    plt.close(fig)
+    print('wrote', filename)
+
+
+# --------------------------------------------------------------------------- #
+# t6  production stationary-shock figures
+# --------------------------------------------------------------------------- #
+def _t6():
+    rows = _csv(os.path.join(DATA, 'gbmc_production_n_refinement', 'per_N_summary.csv'))
+    rates = _json(os.path.join(DATA, 'gbmc_production_n_refinement', 'rates.json'))
+    N = np.array([float(r['N']) for r in rows])
+    return rows, rates, N
+
+
+def production_gbmc_bias_spread_total_vs_N():
+    # Bias/spread/total decomposition, with the spread fit + its confidence
+    # interval and the N^{-1/2} guide folded in (there is no separate spread figure).
+    rows, _, N = _t6()
+    bias = np.array([float(r['E_bias']) for r in rows])
+    spr = np.array([float(r['E_spread']) for r in rows])
+    tot = np.array([float(r['E_total']) for r in rows])
+    xfit = np.array([N.min(), N.max()])
+    coeffs = np.polyfit(np.log10(N), np.log10(spr), 1)
+    i_mid = len(N) // 2
+    fig, ax = plt.subplots(figsize=(7, 5))
+    ax.loglog(N, tot, 's-', color=EXACT, label=r'$E_\mathrm{total}$')
+    ax.loglog(N, spr, 'o-', color=GRW, label=r'$E_\mathrm{spread}$')
+    ax.loglog(N, bias, '^-', color=DET, label=r'$E_\mathrm{bias}$')
+    ax.loglog(xfit, 10**np.polyval(coeffs, np.log10(xfit)), '--', color=GRW,
+              alpha=0.7, label='spread fit')
+    ax.loglog(xfit, spr[i_mid] * (xfit / N[i_mid])**(-0.5), ':', color=GUIDE,
+              label=r'$N^{-1/2}$')
+    ax.set_xlabel('N')
+    ax.set_ylabel(r'$L^2$ error')
+    ax.legend()
+    _save(fig, 'production_gbmc_bias_spread_total_vs_N')
+
+
+def production_gbmc_profiles_selected_N():
+    npz = np.load(os.path.join(DATA, 'gbmc_production_n_refinement', 'production_profiles.npz'))
+    x = npz['x']
+    u_exact = npz['u_exact']
+    N_plot = [N for N in [100, 400, 1600, 6400] if f'N{N}_mean' in npz]
+    colors_ = plt.cm.viridis(np.linspace(0.1, 0.85, len(N_plot)))
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.plot(x, u_exact, '-', color=EXACT, lw=2.2, label='Exact', zorder=10)
+    for col, N in zip(colors_, N_plot):
+        um = npz[f'N{N}_mean']
+        us = npz[f'N{N}_std']
+        ax.plot(x, um, '-', color=col, lw=1.5, label=f'N={N}', zorder=5)
+        ax.fill_between(x, um - us, um + us, color=col, alpha=0.15)
+    ax.set_xlabel('x')
+    ax.set_ylabel('u')
+    ax.legend()
+    _save(fig, 'production_gbmc_profiles_selected_N')
+
+
+def production_gbmc_fitted_viscosity_vs_N():
+    rows, _, N = _t6()
+    nu_means = np.array([float(r['nu_mean']) for r in rows])
+    nu_stds = np.array([float(r['nu_std']) for r in rows])
+    fig, ax = plt.subplots(figsize=(7, 4))
+    ax.errorbar(N, nu_means, yerr=nu_stds, fmt='o-', color=SECONDARY,
+                capsize=4, label=r'$\hat\nu$ (mean $\pm$ std)')
+    ax.axhline(NU, color=EXACT, ls='--', label=r'prescribed $\nu=0.5$')
+    ax.set_xscale('log')
+    ax.set_xlabel('N')
+    ax.set_ylabel(r'$\hat\nu$')
+    ax.legend()
+    _save(fig, 'production_gbmc_fitted_viscosity_vs_N')
+
+
+# --------------------------------------------------------------------------- #
+# t1  gbmc_bias_vs_dt
+# --------------------------------------------------------------------------- #
+def gbmc_bias_vs_dt():
+    t1 = _json(os.path.join(DATA, 'gbmc_dt_bias', 'dt_bias_summary_N6400.json'))
+    per_dt = sorted(t1['per_dt'], key=lambda r: r['dt'])
+    dt_arr = np.array([r['dt'] for r in per_dt])
+    bias_arr = np.array([r['E_bias'] for r in per_dt])
+    spr_arr = np.array([r['E_spread'] for r in per_dt])
+    tot_arr = np.array([r['E_total'] for r in per_dt])
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.loglog(dt_arr, tot_arr, 's-', color=EXACT, label=r'$E_\mathrm{total}$')
+    ax.loglog(dt_arr, spr_arr, 'o-', color=GRW, label=r'$E_\mathrm{spread}$')
+    ax.loglog(dt_arr, bias_arr, '^-', color=DET, label=r'$E_\mathrm{bias}$')
+    dt_ref = np.array([dt_arr.min(), dt_arr.max()])
+    for exp, ls, lbl in [(1.0, '--', r'$\Delta t$ guide'),
+                         (0.5, ':', r'$\Delta t^{1/2}$ guide')]:
+        c0 = max(bias_arr) * (dt_arr.min() ** (-exp))
+        ax.loglog(dt_ref, c0 * dt_ref**exp, ls, color=GUIDE, lw=1.0, label=lbl)
+    ax.set_xlabel(r'$\Delta t$')
+    ax.set_ylabel(r'$L^2$ error')
+    ax.legend(fontsize=8)
+    _save(fig, 'gbmc_bias_vs_dt')
+
+
+# --------------------------------------------------------------------------- #
+# adt  joint relaxation-speed / time-step interaction
+# --------------------------------------------------------------------------- #
+def gbmc_a_dt_fitted_width():
+    study = _json(os.path.join(DATA, 'gbmc_a_dt_interaction', 'summary.json'))
+    rows = study['results']
+    a_seq = study['metadata']['a_seq']
+    colors = plt.cm.viridis(np.linspace(0.12, 0.88, len(a_seq)))
+    markers = ['o', 's', '^', 'D']
+    linestyles = ['-', '--', '-.', ':']
+
+    fig, ax = plt.subplots(figsize=(7.2, 4.7))
+    for a, color, marker, linestyle in zip(
+            a_seq, colors, markers, linestyles):
+        selected = sorted((row for row in rows if row['a'] == a),
+                          key=lambda row: row['dt'])
+        dt = np.array([row['dt'] for row in selected])
+        offset = np.array([row['nu_offset'] for row in selected])
+        ax.plot(dt, offset, marker=marker, linestyle=linestyle, color=color,
+                label=rf'$a={a:g}$')
+
+    ax.axhline(0.0, color=EXACT, linewidth=1.0, alpha=0.75)
+    ax.set_xscale('log')
+    ticks = sorted(study['metadata']['dt_seq'])
+    ax.set_xticks(ticks)
+    ax.set_xticklabels([f'{value:g}' for value in ticks])
+    ax.set_xlabel(r'$\Delta t$')
+    ax.set_ylabel(r'fitted-viscosity offset $\hat\nu-\nu$')
+    ax.legend(ncol=2)
+    _save(fig, 'gbmc_a_dt_fitted_width')
+
+
+# --------------------------------------------------------------------------- #
+# multinu  gbmc_multinu_paired_excess
+# --------------------------------------------------------------------------- #
+def gbmc_multinu_paired_excess():
+    fixed = _json(os.path.join(DATA, 'gbmc_multiviscosity_sweep', 'summary.json'))
+    scaled = _json(os.path.join(DATA, 'gbmc_multiviscosity_scaled_dt', 'summary.json'))
+
+    def paired(study, arm):
+        rows = [p for p in study['paired_nu_contrasts']
+                if p['contrast'] == f'{arm} - cond_mean']
+        rows.sort(key=lambda p: p['nu'], reverse=True)
+        nus = [p['nu'] for p in rows]
+        return nus, [p['mean'] for p in rows], rows
+
+    def d_label(a, dt):
+        return 0.5 * dt * (a * a - (1.0 / 3.0 + 2.0 / (3.0 * 6400 ** 2)))
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10.2, 4.2))
+    # Left: absolute paired excess vs nu at fixed dt, with D_label guides.
+    for arm, a, color, marker in (('two_speed_a2', 2.0, GRW, 'o'),
+                                  ('two_speed_a4', 4.0, SECONDARY, 's')):
+        nus, means, _ = paired(fixed, arm)
+        ax1.loglog(nus, means, marker=marker, linestyle='-', color=color,
+                   label=rf'$a={a:g}$')
+        ax1.axhline(d_label(a, 0.0025), color=color, ls=':', lw=1.1)
+    ax1.set_xlabel(r'$\nu$')
+    ax1.set_ylabel('paired fitted-viscosity excess')
+    ax1.invert_xaxis()
+    ax1.legend(title=r'fixed $\Delta t=0.0025$ (dotted: $D_{\mathrm{label}}$)')
+    # Right: excess as a fraction of D_label for both sweeps.
+    for study, dt_of, ls, tag in ((fixed, lambda nu: 0.0025, '-', 'fixed'),
+                                  (scaled, lambda nu: 0.005 * nu, '--', 'scaled')):
+        for arm, a, color, marker in (('two_speed_a2', 2.0, GRW, 'o'),
+                                      ('two_speed_a4', 4.0, SECONDARY, 's')):
+            nus, means, _ = paired(study, arm)
+            ratio = [m / d_label(a, dt_of(nu)) for nu, m in zip(nus, means)]
+            ax2.semilogx(nus, ratio, marker=marker, linestyle=ls, color=color,
+                         label=rf'$a={a:g}$, {tag} $\Delta t$')
+    ax2.axhline(1.0, color=EXACT, lw=1.0, alpha=0.75)
+    ax2.set_xlabel(r'$\nu$')
+    ax2.set_ylabel(r'paired excess / $D_{\mathrm{label}}$')
+    ax2.invert_xaxis()
+    ax2.set_ylim(0.0, 1.15)
+    ax2.legend(fontsize=8)
+    fig.tight_layout()
+    _save(fig, 'gbmc_multinu_paired_excess')
+
+
+# --------------------------------------------------------------------------- #
+# t2  gbmc_traveling_error_vs_N  and  gbmc_traveling_center_vs_time
+# --------------------------------------------------------------------------- #
+def gbmc_traveling_error_vs_N():
+    t2 = _json(os.path.join(DATA, 'gbmc_traveling_shock', 'summary.json'))
+    T_key = t2['params']['output_times'][-1]
+    nr = sorted([r for r in t2['N_refinement'] if abs(r['t_out'] - T_key) < 1e-9],
+                key=lambda r: r['N'])
+    n_arr = np.array([float(r['N']) for r in nr])
+    l2_arr = np.array([float(r['l2_mean']) for r in nr])
+    fig, ax = plt.subplots(figsize=(6, 4))
+    ax.loglog(n_arr, l2_arr, 'o-', color=GRW, label=f'$L^2$ (T={T_key})')
+    n_ref = np.array([n_arr.min(), n_arr.max()])
+    c0 = l2_arr[0] * n_arr[0]**0.5
+    ax.loglog(n_ref, c0 * n_ref**(-0.5), '--', color=GUIDE, label=r'$N^{-1/2}$')
+    ax.set_xlabel('N')
+    ax.set_ylabel(r'$L^2$ error')
+    ax.legend()
+    _save(fig, 'gbmc_traveling_error_vs_N')
+
+
+def gbmc_transient_profiles_excess():
+    base = os.path.join(DATA, 'gbmc_smooth_transient')
+    sj = _json(os.path.join(base, 'summary.json'))
+    ref = np.load(os.path.join(base, 'reference.npz'))
+    x, u_ref = ref['x'], ref['u_ref']
+    u0 = np.exp(-(x - 2.0) ** 2 / (2.0 * 0.5 ** 2))
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10.2, 4.2))
+    ax1.plot(x, u0, ':', color=GUIDE, lw=1.4, label=r'$u_0$')
+    ax1.plot(x, u_ref, '-', color=EXACT, lw=2.0, label='reference, $T=1$',
+             zorder=10)
+    for arm, color, label in (('cond_mean', GRW, 'control mean'),
+                              ('two_speed_a4', SECONDARY, r'$a=4$ mean')):
+        prof = np.load(os.path.join(
+            base, f'cell_{arm}_dt0p005.npz'))['profiles']
+        ax1.plot(x, prof.mean(axis=0), '--', color=color, lw=1.5, label=label)
+    ax1.set_xlabel('x')
+    ax1.set_ylabel('u')
+    ax1.legend(title=r'$\Delta t=0.005$', fontsize=8)
+
+    for arm, a, color, marker in (('two_speed_a2', 2.0, GRW, 'o'),
+                                  ('two_speed_a4', 4.0, SECONDARY, 's')):
+        rows = sorted((p for p in sj['paired_l2_contrasts']
+                       if p['contrast'] == f'{arm} - cond_mean'),
+                      key=lambda p: p['dt'])
+        dts = [p['dt'] for p in rows]
+        means = [p['mean'] for p in rows]
+        ax2.loglog(dts, means, marker=marker, linestyle='-', color=color,
+                   label=rf'$a={a:g}$')
+    dt_ref = np.array([min(dts), max(dts)])
+    c0 = means[-1] / dt_ref[-1]
+    ax2.loglog(dt_ref, c0 * dt_ref, ':', color=GUIDE, lw=1.1,
+               label=r'$\Delta t$ guide')
+    ax2.set_xlabel(r'$\Delta t$')
+    ax2.set_ylabel(r'paired $L^2$ excess over control')
+    ax2.legend(fontsize=8)
+    fig.tight_layout()
+    _save(fig, 'gbmc_transient_profiles_excess')
+
+
+def gbmc_traveling_center_vs_time():
+    pr = _csv(os.path.join(DATA, 'gbmc_traveling_shock', 'per_run.csv'))
+    N_max = int(max(float(r['N']) for r in pr))
+    trk = sorted([r for r in pr if int(float(r['N'])) == N_max and int(float(r['seed'])) == 42],
+                 key=lambda r: float(r['t_out']))
+    t_track = [float(r['t_out']) for r in trk]
+    xc_num = [float(r['xc_num']) for r in trk]
+    xc_ex = [float(r['xc_exact']) for r in trk]
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4))
+    ax1.plot(t_track, xc_ex, '-', color=EXACT, lw=2, label='Exact center')
+    ax1.plot(t_track, xc_num, 'o-', color=GRW, label='GBMC center')
+    ax1.set_xlabel('t')
+    ax1.set_ylabel('shock center')
+    ax1.legend()
+    ax2.plot(t_track, [abs(n - e) for n, e in zip(xc_num, xc_ex)], 'o-', color=DET)
+    ax2.set_xlabel('t')
+    ax2.set_ylabel('$|$center error$|$')
+    fig.tight_layout()
+    _save(fig, 'gbmc_traveling_center_vs_time')
+
+
+FIGURES = [
+    production_gbmc_bias_spread_total_vs_N,
+    production_gbmc_profiles_selected_N,
+    production_gbmc_fitted_viscosity_vs_N,
+    gbmc_bias_vs_dt,
+    gbmc_a_dt_fitted_width,
+    gbmc_multinu_paired_excess,
+    gbmc_traveling_error_vs_N,
+    gbmc_traveling_center_vs_time,
+    gbmc_transient_profiles_excess,
+]
+
+
+def main():
+    os.makedirs(OUT, exist_ok=True)
+    _apply_style()
+    for fn in FIGURES:
+        fn()
+    print(f'\nDONE. {len(FIGURES)} title-less paper figures in {OUT}')
+
+
+if __name__ == '__main__':
+    main()

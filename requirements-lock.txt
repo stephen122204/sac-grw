@@ -1,0 +1,9 @@
+# Exact environment used to produce the archived study outputs under
+# output/final_prepublication_tests/ (see PROVENANCE.md for the bit-level
+# reproduction policy). requirements.txt keeps compatible ranges for general
+# use; install from THIS file to reproduce the archived configuration.
+#
+# Python 3.11.4
+numpy==1.26.4
+scipy==1.17.1
+matplotlib==3.10.0

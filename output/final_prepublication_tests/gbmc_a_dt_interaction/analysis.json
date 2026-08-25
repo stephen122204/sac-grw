@@ -1,0 +1,275 @@
+{
+  "package_versions": {
+    "python": "3.11.4",
+    "numpy": "1.26.4",
+    "scipy": "1.17.1",
+    "matplotlib": "3.10.0"
+  },
+  "analytic_D_label": {
+    "formula": "D_label = (dt/2)[a^2 - A^2(1/3 + 2/(3 N^2))]",
+    "reconstructed_states": "u_i = A(1 - 2 i / N), i=1..N (equal-mass)",
+    "max_abs_dev_stored_vs_analytic": 2.636779683484747e-16,
+    "note": "For the stationary equal-mass shock D_label is an exact design scale, not a trajectory statistic."
+  },
+  "cross_check_vs_production_N6400": {
+    "exercised": true,
+    "n_shared_seeds": 50,
+    "per_seed_max_abs_delta": {
+      "l2": 0.0,
+      "nu_fit": 0.0,
+      "xc_fit": 0.0
+    },
+    "aggregate_vs_reference_summaries": {
+      "exercised": true,
+      "refs": [
+        "production_per_N",
+        "relaxation_speed"
+      ],
+      "max_abs_delta": {
+        "production_per_N": {
+          "E_bias": 0.0,
+          "E_spread": 0.0,
+          "E_total": 0.0,
+          "nu_mean": 0.0
+        },
+        "relaxation_speed": {
+          "E_bias": 0.0,
+          "E_spread": 0.0,
+          "E_total": 0.0,
+          "nu_mean": 0.0
+        }
+      },
+      "overall_max": 0.0
+    }
+  },
+  "paired_intervals_across_a_at_fixed_dt": [
+    {
+      "dt": 0.01,
+      "a_lo": 1.5,
+      "a_hi": 2.0,
+      "n_pairs": 50,
+      "mean_dnu": 0.003322253689712147,
+      "ci_lo": 0.003018147755232101,
+      "ci_hi": 0.0036344415958355757,
+      "resolves_sign": true,
+      "delta_D_label": 0.00875,
+      "ratio_mean": 0.3796861359671025,
+      "ratio_ci_lo": 0.3449311720265258,
+      "ratio_ci_hi": 0.41536475380978005
+    },
+    {
+      "dt": 0.01,
+      "a_lo": 2.0,
+      "a_hi": 3.0,
+      "n_pairs": 50,
+      "mean_dnu": 0.009510203348863811,
+      "ci_lo": 0.00901610347745181,
+      "ci_hi": 0.010025152986392514,
+      "resolves_sign": true,
+      "delta_D_label": 0.025,
+      "ratio_mean": 0.3804081339545524,
+      "ratio_ci_lo": 0.36064413909807236,
+      "ratio_ci_hi": 0.4010061194557005
+    },
+    {
+      "dt": 0.01,
+      "a_lo": 3.0,
+      "a_hi": 4.0,
+      "n_pairs": 50,
+      "mean_dnu": 0.013232106431671175,
+      "ci_lo": 0.012696824524042144,
+      "ci_hi": 0.013750359144662756,
+      "resolves_sign": true,
+      "delta_D_label": 0.035,
+      "ratio_mean": 0.37806018376203354,
+      "ratio_ci_lo": 0.3627664149726326,
+      "ratio_ci_hi": 0.3928674041332216
+    },
+    {
+      "dt": 0.005,
+      "a_lo": 1.5,
+      "a_hi": 2.0,
+      "n_pairs": 50,
+      "mean_dnu": 0.0016265503588836416,
+      "ci_lo": 0.0014587073210285866,
+      "ci_hi": 0.0017914857075764558,
+      "resolves_sign": true,
+      "delta_D_label": 0.004375,
+      "ratio_mean": 0.37178293917340377,
+      "ratio_ci_lo": 0.3334188162351055,
+      "ratio_ci_hi": 0.409482447446047
+    },
+    {
+      "dt": 0.005,
+      "a_lo": 2.0,
+      "a_hi": 3.0,
+      "n_pairs": 50,
+      "mean_dnu": 0.00464543097537919,
+      "ci_lo": 0.00431757973440198,
+      "ci_hi": 0.004980162582311984,
+      "resolves_sign": true,
+      "delta_D_label": 0.0125,
+      "ratio_mean": 0.37163447803033517,
+      "ratio_ci_lo": 0.3454063787521584,
+      "ratio_ci_hi": 0.3984130065849587
+    },
+    {
+      "dt": 0.005,
+      "a_lo": 3.0,
+      "a_hi": 4.0,
+      "n_pairs": 50,
+      "mean_dnu": 0.006791034806610819,
+      "ci_lo": 0.006424405506319288,
+      "ci_hi": 0.007172470348209332,
+      "resolves_sign": true,
+      "delta_D_label": 0.0175,
+      "ratio_mean": 0.3880591318063325,
+      "ratio_ci_lo": 0.36710888607538783,
+      "ratio_ci_hi": 0.40985544846910466
+    },
+    {
+      "dt": 0.0025,
+      "a_lo": 1.5,
+      "a_hi": 2.0,
+      "n_pairs": 50,
+      "mean_dnu": 0.0008605341190681559,
+      "ci_lo": 0.0007481386468209435,
+      "ci_hi": 0.0009777642464639566,
+      "resolves_sign": true,
+      "delta_D_label": 0.0021875,
+      "ratio_mean": 0.39338702585972835,
+      "ratio_ci_lo": 0.34200623854671697,
+      "ratio_ci_hi": 0.4469779412406658
+    },
+    {
+      "dt": 0.0025,
+      "a_lo": 2.0,
+      "a_hi": 3.0,
+      "n_pairs": 50,
+      "mean_dnu": 0.002494616099628443,
+      "ci_lo": 0.0022866017886423273,
+      "ci_hi": 0.002709408007665896,
+      "resolves_sign": true,
+      "delta_D_label": 0.00625,
+      "ratio_mean": 0.39913857594055085,
+      "ratio_ci_lo": 0.36585628618277233,
+      "ratio_ci_hi": 0.43350528122654336
+    },
+    {
+      "dt": 0.0025,
+      "a_lo": 3.0,
+      "a_hi": 4.0,
+      "n_pairs": 50,
+      "mean_dnu": 0.003470007901585187,
+      "ci_lo": 0.0032491669448794394,
+      "ci_hi": 0.0036889681853725766,
+      "resolves_sign": true,
+      "delta_D_label": 0.00875,
+      "ratio_mean": 0.3965723316097356,
+      "ratio_ci_lo": 0.3713333651290788,
+      "ratio_ci_hi": 0.42159636404258016
+    },
+    {
+      "dt": 0.00125,
+      "a_lo": 1.5,
+      "a_hi": 2.0,
+      "n_pairs": 50,
+      "mean_dnu": 0.0004637377179933821,
+      "ci_lo": 0.0003745519628074689,
+      "ci_hi": 0.0005518756334379145,
+      "resolves_sign": true,
+      "delta_D_label": 0.00109375,
+      "ratio_mean": 0.42398877073680646,
+      "ratio_ci_lo": 0.34244750885254294,
+      "ratio_ci_hi": 0.5045720077146646
+    },
+    {
+      "dt": 0.00125,
+      "a_lo": 2.0,
+      "a_hi": 3.0,
+      "n_pairs": 50,
+      "mean_dnu": 0.0012016896634719566,
+      "ci_lo": 0.0010413204189699944,
+      "ci_hi": 0.0013509488126525805,
+      "resolves_sign": true,
+      "delta_D_label": 0.003125,
+      "ratio_mean": 0.38454069231102606,
+      "ratio_ci_lo": 0.3332225340703982,
+      "ratio_ci_hi": 0.4323036200488257
+    },
+    {
+      "dt": 0.00125,
+      "a_lo": 3.0,
+      "a_hi": 4.0,
+      "n_pairs": 50,
+      "mean_dnu": 0.0017932568694555252,
+      "ci_lo": 0.0016430936544417365,
+      "ci_hi": 0.0019359161940119397,
+      "resolves_sign": true,
+      "delta_D_label": 0.004375,
+      "ratio_mean": 0.40988728444697714,
+      "ratio_ci_lo": 0.3755642638723969,
+      "ratio_ci_hi": 0.4424951300598719
+    },
+    {
+      "dt": 0.000625,
+      "a_lo": 1.5,
+      "a_hi": 2.0,
+      "n_pairs": 50,
+      "mean_dnu": 0.0002103354026541382,
+      "ci_lo": 0.00015350296632423135,
+      "ci_hi": 0.0002639359262425777,
+      "resolves_sign": true,
+      "delta_D_label": 0.000546875,
+      "ratio_mean": 0.38461330771042407,
+      "ratio_ci_lo": 0.2806911384214516,
+      "ratio_ci_hi": 0.4826256937007135
+    },
+    {
+      "dt": 0.000625,
+      "a_lo": 2.0,
+      "a_hi": 3.0,
+      "n_pairs": 50,
+      "mean_dnu": 0.0007067647860117244,
+      "ci_lo": 0.0006124429691126011,
+      "ci_hi": 0.000802288779151023,
+      "resolves_sign": true,
+      "delta_D_label": 0.0015625,
+      "ratio_mean": 0.4523294630475036,
+      "ratio_ci_lo": 0.39196350023206467,
+      "ratio_ci_hi": 0.5134648186566546
+    },
+    {
+      "dt": 0.000625,
+      "a_lo": 3.0,
+      "a_hi": 4.0,
+      "n_pairs": 50,
+      "mean_dnu": 0.0009400165409534278,
+      "ci_lo": 0.0008261312632110149,
+      "ci_hi": 0.0010506961051131585,
+      "resolves_sign": true,
+      "delta_D_label": 0.0021875,
+      "ratio_mean": 0.4297218472929955,
+      "ratio_ci_lo": 0.37766000603932104,
+      "ratio_ci_hi": 0.48031821948030096
+    }
+  ],
+  "observed_ratio_a1p5_to_2_across_dt": [
+    0.3796861359671025,
+    0.37178293917340377,
+    0.39338702585972835,
+    0.42398877073680646,
+    0.38461330771042407
+  ],
+  "pairing_note": "Runs across a at a fixed dt share aligned Brownian and label streams and are genuinely paired; comparisons across different dt are not paired. Paired differencing reduces contributions common to both speeds or only weakly dependent on a (reconstruction, finite-N, fit bias), isolating the a-dependent broadening. The a=1.5->2 ratio Delta-nu / Delta-D_label is observed in the range 0.37-0.42 across dt, not an exact constant.",
+  "gate_summary": {
+    "analytic_max_abs_dev_below_1e10": true,
+    "cross_check_exercised": true,
+    "cross_check_n_shared_seeds": 50,
+    "cross_check_per_seed_max_l2": 0.0,
+    "aggregate_cross_check_overall_max": 0.0,
+    "all_paired_a_intervals_resolve_sign": true,
+    "ratio_a1p5_2_min": 0.37178293917340377,
+    "ratio_a1p5_2_max": 0.42398877073680646
+  }
+}
