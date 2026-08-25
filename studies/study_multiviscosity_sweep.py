@@ -1,5 +1,12 @@
 """Multi-viscosity sweep for Paper 2 (RB-GBMC).
 
+Manuscript map: fixed-time-step viscosity sweep of `sec:gbmc-multinu`.
+Production study; outputs are archived under
+output/final_prepublication_tests/gbmc_multiviscosity_sweep/. Resumable by
+cell with a validated configuration fingerprint; seeds are keyed by the
+viscosity value, so subsets and reorderings reproduce identical cells, and
+arms share the Brownian stream only within a viscosity.
+
 Purpose.  The stationary-shock studies fix nu = 0.5.  The analytic label scale
 D_label = (dt/2)[a^2 - A^2(1/3 + 2/(3N^2))] is INDEPENDENT of nu, so the theory
 predicts that the absolute recovered-viscosity offset (nu_hat - nu) stays

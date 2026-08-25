@@ -1,13 +1,20 @@
-"""Production N-refinement study for the relaxation–Brownian GBMC solver.
+"""Production N-refinement study for the relaxation-Brownian GBMC solver.
+
+Manuscript map: stationary particle refinement (`sec:gbmc-convergence`) and
+the fitted effective viscosity (`sec:gbmc-nu-recovery`, fit template
+`eq:gbmc-tanh-fit`). Production study; outputs are archived under
+output/final_prepublication_tests/gbmc_production_n_refinement/.
 
 Routes directly through the standalone Paper 2 solver entry point:
   simulate_burgers_relaxation_gbmc() [relaxation_gbmc.py]
 
-Benchmark: stationary viscous Burgers shock
+Test problem: stationary viscous Burgers shock
   u_exact(x) = -A * tanh(A*(x - xc) / (2*nu)),
   A=1, nu=0.5, a=2, T=0.5, dt=0.0025, L=4, xc=2.
 N in {100, ..., 6400}, S=50 reused seeds (42 + s), fixed N_out=400
-reconstruction grid.
+reconstruction points (N_OUT below denotes their count). Reusing seed
+identifiers across N is reproducible but is not a common-random-number
+pairing, because changing N changes the number and order of draws.
 """
 import csv
 import json
@@ -230,9 +237,9 @@ def _run_one(N, seed, a_rel=A_REL, dt=DT, collect_label=False):
     xc_fit, nu_fit, A_fit = _fit_tanh(x_out, u_out, A, XC, NU,
                                       strict=True, method_out=fit_diag)
 
-    # Mass diagnostics (from config: expected total mass = -2A)
-    # These are read from relaxation_gbmc stdout diagnostics — here we
-    # proxy them from the expected exact values + output.
+    # The solver prints per-run mass diagnostics to stdout; this record keeps
+    # only the exact expected total (-2A), which the stepper conserves
+    # identically (manuscript label `eq:mass-conservation`).
     total_mass_expected = -2.0 * A
     max_abs_u = float(np.max(np.abs(u_out)))
 
@@ -326,7 +333,9 @@ def run_study():
                 'fit_method': r['fit_method'],
                 'max_abs_u':  r['max_abs_u'],
                 'total_mass_expected': r['total_mass_expected'],
-                'outside_N':       '',  # extracted from RBMC stdout; logged above
+                # Outside-window diagnostics are printed by the solver per run
+                # but are not archived; the columns stay for schema stability.
+                'outside_N':       '',
                 'outside_signed':  '',
                 'outside_abs':     '',
                 'runtime_s':  r['runtime_s'],
@@ -463,7 +472,9 @@ def run_study():
     for ar in adj_rates:
         print(f"    N={ar['N_lo']}->{ar['N_hi']}: rate={ar['rate']:.4f}")
 
-    # Compatibility with -0.5
+    # Consistency with the Monte Carlo reference -1/2, plus a continuity
+    # check against a pre-production pilot fit; both are retained because
+    # rates.json stores these keys.
     expected = -0.5
     compat   = (ci_lo <= expected <= ci_hi)
     earlier  = -0.507

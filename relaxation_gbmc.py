@@ -1,6 +1,12 @@
 """Bertaglia--Pareschi--Caflisch (BPC) relaxation + gradient Brownian Monte
 Carlo (GBMC) for viscous Burgers' equation.
 
+Manuscript map: this module is the shared particle update of Algorithm 1
+(labels `alg:gbmc`, `sec:gbmc-algorithm`); its exact stage properties (mass
+conservation, conditional-mean transport, Brownian heat consistency) are
+stated in `sec:gbmc-properties`. Every study driver calls this one
+implementation; there are no copied evolution loops.
+
 PDE:  u_t + u * u_x = nu * u_xx
 
 Domain mode: WHOLE LINE only.  Particles move freely on the real line.
@@ -90,7 +96,8 @@ def exact_stationary_shock(x, nu, amplitude=1.0, center=2.0):
 
 def initialize_tanh_shock_particles(N, nu, amplitude, center,
                                     mean_level=0.0):
-    """Create the equal-mass quantile representation of a tanh shock.
+    """Create the equal-mass quantile representation of a tanh shock
+    (manuscript label `eq:quantile-init`).
 
     ``mean_level=0`` gives the stationary profile used by the production
     wrapper.  A nonzero value gives the traveling profile
@@ -122,7 +129,8 @@ def initialize_tanh_shock_particles(N, nu, amplitude, center,
 
 
 def reconstruct_cumulative_field(x_p, m_p, u_left, x_out):
-    """Reconstruct the field by the unsmoothed signed cumulative sum."""
+    """Reconstruct the field by the unsmoothed signed cumulative sum
+    (manuscript label `eq:background-cumsum`)."""
     x_p = np.asarray(x_p, dtype=float)
     m_p = np.asarray(m_p, dtype=float)
     x_out = np.asarray(x_out, dtype=float)
@@ -132,6 +140,8 @@ def reconstruct_cumulative_field(x_p, m_p, u_left, x_out):
     x_sorted = x_p[order]
     m_sorted = m_p[order]
     cumulative_mass = np.concatenate([[0.0], np.cumsum(m_sorted)])
+    # side='right' implements the manuscript convention: u(x) sums the masses
+    # of every particle with X_i <= x.
     indices = np.searchsorted(x_sorted, x_out, side='right')
     return float(u_left) + cumulative_mass[indices]
 
@@ -177,8 +187,9 @@ def advance_rbgbmc_particles(x_p, m_p, u_left, nu, a, dt, n_steps, rng,
     and every in-loop reconstruction except the final one (whose labels are
     drawn but never used before the loop ends). It consumes no random numbers
     and does not alter the draw order, so the returned solution arrays are
-    identical whether or not it is enabled. The result feeds the conditional
-    label-variance proxy ``D_label = (dt/2) * <a**2 - u**2>``.
+    identical whether or not it is enabled. The result feeds the label scale
+    ``D_label = (dt/2) * <a**2 - u**2>`` (manuscript label `eq:D-label`; for
+    the equal-mass shock this equals the closed form `eq:D-label-stationary`).
     """
     x_p = np.asarray(x_p, dtype=float).copy()
     m_p = np.asarray(m_p, dtype=float).copy()
@@ -248,6 +259,10 @@ def advance_rbgbmc_particles(x_p, m_p, u_left, nu, a, dt, n_steps, rng,
     u_max_history = []
 
     for step in range(1, n_steps + 1):
+        # Production timing (Algorithm 1, `sec:gbmc-algorithm`): the labels in
+        # v were drawn from the PREVIOUS reconstruction, so this transport,
+        # the following sort/reconstruct/verify/redraw, and the Brownian
+        # displacement must keep this order. Do not reorder these stages.
         x_p = x_p + v * dt
         if redraw_after_diffusion:
             # Ordering-pilot schedule: diffuse BEFORE the reconstruction that
@@ -268,6 +283,9 @@ def advance_rbgbmc_particles(x_p, m_p, u_left, nu, a, dt, n_steps, rng,
                 f"max|u|={max_u_step:.8g} >= a={a:.8g}. "
                 "Reduce dt, increase N, or increase the relaxation speed."
             )
+        # Equilibrium switching probability (`eq:switch-prob`); the strict
+        # subcharacteristic check above guarantees p_plus lies in (0, 1), so
+        # any violation here is a genuine failure, never clipped or repaired.
         p_plus = (a + u) / (2.0 * a)
         if np.any(p_plus < 0.0) or np.any(p_plus > 1.0):
             raise RuntimeError(

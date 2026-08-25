@@ -1,5 +1,13 @@
 """Joint relaxation-speed and time-step interaction study for Paper 2.
 
+Manuscript map: `sec:gbmc-a-dt-interaction` (one-step moments
+`eq:one-step-moments`, analytic label scale `eq:D-label-stationary`).
+Production study; outputs are archived under
+output/final_prepublication_tests/gbmc_a_dt_interaction/. Uses the
+single-stream production path, so at a fixed step size the draws are aligned
+across relaxation speeds and speed comparisons are paired; comparisons
+across step sizes are not.
+
 Motivation.  Consider the displacement of a particle over one loop pass: a
 transport step using its carried two-speed label, followed by one independent
 Brownian increment.  Conditional on the reconstructed state ``u`` at which the

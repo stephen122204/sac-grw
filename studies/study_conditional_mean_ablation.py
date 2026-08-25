@@ -1,5 +1,12 @@
 """Conditional-mean transport control (ablation) for Paper 2.
 
+Manuscript map: the paired control of `sec:gbmc-a-dt-interaction`. Internal
+control, explicitly not a competing solver. Outputs are archived under
+output/final_prepublication_tests/gbmc_conditional_mean_ablation/. Split
+random streams: at each step size all arms share the Brownian generator
+(paired through common random numbers, aligned by sorted rank), while label
+uniforms come from a separate stream the control never consumes.
+
 Purpose.  The a-by-dt matrix shows the recovered shock width increases with the
 relaxation speed a and decreases under time-step refinement, consistent with the
 conditional label-variance scale D_label. That is an association. This ablation
