@@ -8,6 +8,13 @@ roughly flat across nu (tracking D_label), while the RELATIVE offset
 This sweep tests that prediction, and whether the conditional-mean control
 removes the a-dependent excess at every viscosity, not only at nu = 0.5.
 
+Archived outcome (see summary.json and the manuscript's multi-viscosity
+section): the raw absolute offset is NOT flat; the paired
+two-speed-minus-control excess rises toward the nu-independent D_label as nu
+falls, and the relative quantities grow approximately like D_label/nu. The
+'prediction' field stored in summary.json records the preregistered
+expectation, not the outcome.
+
 Preregistered safeguards (all implemented here):
   * resolve narrower shocks: the evaluation window is centered on the shock and
     scaled to the layer, so points across the transition do not collapse at low

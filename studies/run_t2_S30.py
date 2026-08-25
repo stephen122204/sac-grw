@@ -1,11 +1,12 @@
-"""Paper 2 Table 4: run T2 traveling shock at S=30 (other parameters default).
+"""Run the paper's traveling-shock refinement study at S=30.
 
-The paper's traveling-shock study uses:
+The manuscript's traveling-shock table uses:
   A=1, c=0.5, nu=0.5, a=2, T=1, dt=0.005, S=30
   N in {100, 200, 400, 800, 1600, 3200}
 
 run_task2() defaults match everything except S (default 10).
-Base seed = 42, same as the T4/T5/T6 studies. Seeds are 42, 43, ..., 71.
+Base seed = 42, the same base seed as the stationary studies. Seeds are
+42, 43, ..., 71.
 """
 import os, sys, time
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -29,8 +30,8 @@ result = m.run_task2(
     S=30,
     base_seed=42,
     run_sharp=True,            # also emits the nu=0.2 sharp-layer exploration figure
-                               # (not in Table 4) so the canonical output dir is
-                               # fully regenerated; the nu=0.5 Table 4 values are
+                               # (not used in the paper) so the canonical output dir
+                               # is fully regenerated; the nu=0.5 table values are
                                # independent of this run
 )
 print(f"\n=== T2 traveling-shock S=30 wall time: {time.perf_counter()-t0:.1f}s ===")

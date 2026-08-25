@@ -1,10 +1,12 @@
 """
 test_relaxation_gbmc.py
 =======================
-Pytest tests for the BPC relaxation GBMC Burgers solver.
+Pytest tests for the Bertaglia--Pareschi--Caflisch (BPC) relaxation GBMC
+Burgers solver. The lettered items below index the required behaviors;
+individual tests cite them as "item X".
 
-Covers all required spec test cases:
-  A. Persistent two-speed labels V_i in {-a, +a}
+Covers the required behaviors:
+  A. Two-speed labels V_i in {-a, +a}
   B. Correct equilibrium expectation E[V_i|u_i] = u_i
   C. Stochastic, not deterministic, switching
   D. Fixed a throughout run
@@ -175,10 +177,10 @@ class TestQuantileInit:
         )
 
 
-# Test: stationary shock benchmark
+# Test: stationary shock test problem
 
 class TestStationaryShock:
-    """Stationary shock is an exact steady state; RBMC should reproduce it
+    """Stationary shock is an exact steady state; RB-GBMC should reproduce it
     to within Monte Carlo noise."""
 
     def test_stationary_shock_low_noise(self):
@@ -222,7 +224,7 @@ class TestStationaryShock:
 # Test: parameter validation
 
 class TestParameterValidation:
-    """Spec §7: descriptive errors for invalid parameters."""
+    """Descriptive errors for invalid parameters."""
 
     def test_a_none_raises_valueerror(self):
         """Omitting relaxation_speed_a (None) must raise ValueError."""
@@ -268,10 +270,10 @@ class TestParameterValidation:
             simulate_burgers_relaxation_gbmc(globs, cfg)
 
 
-# Test: unsupported IC raises NotImplementedError  (spec §5, §10 H)
+# Test: unsupported IC raises NotImplementedError  (item H)
 
 class TestUnsupportedIC:
-    """Spec §5: only stationary_shock is supported."""
+    """Only stationary_shock is supported by the wrapper (item H)."""
 
     def _make_unsupported(self, ic_type, **kw):
         cfg = _make_config(ic_type=ic_type, **kw)
@@ -303,10 +305,10 @@ class TestUnsupportedIC:
             simulate_burgers_relaxation_gbmc(globs, cfg)
 
 
-# Test: unsupported domain mode raises NotImplementedError  (spec §10 I)
+# Test: unsupported domain mode raises NotImplementedError  (item I)
 
 class TestUnsupportedDomainMode:
-    """Spec §6: only whole_line domain mode is supported."""
+    """Only whole_line domain mode is supported (item I)."""
 
     def test_finite_domain_mode_raises(self):
         """relaxation_domain_mode='finite' must raise NotImplementedError."""
@@ -325,7 +327,7 @@ class TestUnsupportedDomainMode:
             simulate_burgers_relaxation_gbmc(globs, cfg)
 
 
-# Test: whole-line mode — no reflection  (spec §10 E)
+# Test: whole-line mode — no reflection  (item E)
 
 class TestWholeLineMode:
     """Particles must travel freely; no reflection at x=0 or x=L."""
@@ -362,12 +364,12 @@ class TestWholeLineMode:
         assert max(out_x) <= L + 1e-12
 
 
-# Test: BPC two-speed mechanics  (spec §10 A-D, F-G, J)
+# Test: BPC two-speed mechanics  (items A-D, F-G, J)
 
 class TestBPCTwoSpeed:
     """Tests for the validated two-speed BPC relaxation method."""
 
-    # Spec §10 A: velocity labels are ±a
+    # Item A: velocity labels are ±a
     def test_velocity_labels_are_plus_minus_a(self):
         """
         Manually perform the initialization and verify every label is +a or -a.
@@ -404,7 +406,7 @@ class TestBPCTwoSpeed:
             f"Displacements not ±a*dt={a*dt}: {displacements}"
         )
 
-    # Spec §10 B: E[V_i | u_i] = u_i
+    # Item B: E[V_i | u_i] = u_i
     def test_expected_velocity_equals_u(self):
         """For many draws, mean(V_i) ≈ u_i within statistical tolerance."""
         a = 2.0
@@ -419,7 +421,7 @@ class TestBPCTwoSpeed:
                 f"E[V|u={u_i}] = {mean_v:.4f}, expected {u_i:.4f}"
             )
 
-    # Spec §10 C: stochastic, not deterministic
+    # Item C: stochastic, not deterministic
     def test_switching_is_stochastic_not_deterministic(self):
         """
         For u_i = +0.5 (< a = 2.0), both +a and -a should appear over many draws.
@@ -439,7 +441,7 @@ class TestBPCTwoSpeed:
             f"frac(+a)={frac_plus:.4f}, expected p_plus={p_plus:.4f}"
         )
 
-    # Spec §10 D: a is fixed
+    # Item D: a is fixed
     def test_relaxation_speed_a_is_fixed(self):
         """config.relaxation_speed_a must equal what was passed in."""
         cfg = _make_config(relaxation_speed_a=3.0)
@@ -459,7 +461,7 @@ class TestBPCTwoSpeed:
         assert u.min() >= -1.0 - 1e-9
         assert u.max() <= +1.0 + 1e-9
 
-    # Spec §10 J: subcharacteristic failure raises RuntimeError
+    # Item J: subcharacteristic failure raises RuntimeError
     def test_subcharacteristic_violation_raises(self):
         """a <= A must raise RuntimeError (or ValueError before the loop)."""
         cfg = _make_config(N=100, nu=0.5, T=0.1, amplitude=1.0,
@@ -477,7 +479,7 @@ class TestBPCTwoSpeed:
         assert cfg.relaxation_domain_mode == 'whole_line'
 
 
-# Test: sorting integrity  (spec §10 G)
+# Test: sorting integrity  (item G)
 
 class TestSortingIntegrity:
     """Verify that (X, m, V) are sorted together with the same permutation."""
@@ -588,7 +590,7 @@ class TestReconstructHelper:
         assert abs(total_recovered - total_before) < 1e-4
 
 
-# Test: seed reproducibility  (spec §10, seed propagation fix)
+# Test: seed reproducibility
 
 class TestReproducibility:
     """Verify that seed propagation through SimulationConfig makes runs reproducible."""
@@ -630,7 +632,7 @@ class TestReproducibility:
 def test_label_diagnostic_is_non_invasive():
     """The label-variance diagnostic must not perturb the solver's outputs.
 
-    Codex point 4: diagnostics disabled versus enabled must produce identical
+    Diagnostics disabled versus enabled must produce identical
     solution arrays, because the diagnostic only reads the already-computed
     reconstruction and consumes no random numbers.
     """
