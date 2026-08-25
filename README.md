@@ -68,17 +68,22 @@ the original four studies and is kept for compatibility.
 
 ## Run a Modified Case
 
-The resumable studies accept parameter flags and a scratch output directory:
+Some studies accept command-line options, so you can change parameters and
+write the results to a separate directory instead of overwriting the archived
+outputs. For example, this runs the multi-viscosity study with two
+viscosities and 10 seeds and saves everything under `/tmp/my_test`:
 
 ```bash
-python studies/study_multiviscosity_sweep.py --nu 0.1 0.05 --seeds 10 --out /tmp/x
+python studies/study_multiviscosity_sweep.py --nu 0.1 0.05 --seeds 10 --out /tmp/my_test
 ```
 
-Each resumable study stores a configuration fingerprint and refuses to resume
-if the design changed, so incompatible cells are never combined; interrupted
-or corrupted cells are detected and regenerated. Custom-parameter runs write
-valid outputs but will not match the pinned verification values, which
-describe the published configuration only.
+If a long run is interrupted, running the same command again continues from
+where it stopped instead of starting over. Each study saves its settings next
+to its results and stops with an error rather than continue a run whose
+settings have changed, so results from different setups are never mixed.
+Runs with modified parameters produce valid output, but
+`python reproduce.py verify` checks only the original settings used in the
+paper, so a modified run is not expected to match those values.
 
 ## Repository Layout
 
