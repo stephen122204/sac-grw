@@ -249,7 +249,7 @@ def gbmc_multinu_paired_excess():
     ax1.set_xlabel(r'$\nu$')
     ax1.set_ylabel('paired fitted-viscosity excess')
     ax1.invert_xaxis()
-    ax1.legend(title=r'fixed $\Delta t=0.0025$ (dotted: $D_{\mathrm{label}}$)')
+    ax1.legend()
     # Right: excess as a fraction of D_label for both sweeps.
     for study, dt_of, ls, tag in ((fixed, lambda nu: 0.0025, '-', 'fixed'),
                                   (scaled, lambda nu: 0.005 * nu, '--', 'scaled')):
@@ -308,7 +308,7 @@ def gbmc_transient_profiles_excess():
         ax1.plot(x, prof.mean(axis=0), '--', color=color, lw=1.5, label=label)
     ax1.set_xlabel('x')
     ax1.set_ylabel('u')
-    ax1.legend(title=r'$\Delta t=0.005$', fontsize=8)
+    ax1.legend(fontsize=8)
 
     for arm, a, color, marker in (('two_speed_a2', 2.0, GRW, 'o'),
                                   ('two_speed_a4', 4.0, SECONDARY, 's')):
