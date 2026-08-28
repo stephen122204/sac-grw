@@ -156,7 +156,7 @@ def production_gbmc_fitted_viscosity_vs_N():
     fig, ax = plt.subplots(figsize=(7, 4))
     ax.errorbar(N, nu_means, yerr=nu_stds, fmt='o-', color=SECONDARY,
                 capsize=4, label=r'$\hat\nu$ (mean $\pm$ std)')
-    ax.axhline(NU, color=EXACT, ls='--', label=r'prescribed $\nu=0.5$')
+    ax.axhline(NU, color=EXACT, ls='--', label=r'$\nu=0.5$')
     ax.set_xscale('log')
     ax.set_xlabel('N')
     ax.set_ylabel(r'$\hat\nu$')
