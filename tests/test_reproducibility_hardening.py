@@ -272,3 +272,19 @@ def test_multinu_archive_is_complete_and_healthy():
     manifest = json.load(open(os.path.join(MV_DIR, 'manifest.json')))
     assert manifest['config'] == mv._fingerprint(50)
     assert len(manifest['done']) == 15
+
+
+def test_time_step_fit_raises_instead_of_returning_initial_guesses(monkeypatch):
+    from studies.study_t1_gbmc_dt_bias import _fit_tanh as fit_time_step
+    import scipy.optimize
+
+    x, u = _fit_inputs()
+    xc, nu = fit_time_step(x, u, 1.0, 1.9, 0.4)
+    np.testing.assert_allclose([xc, nu], [2.0, 0.5], rtol=0, atol=1e-6)
+
+    def broken(*args, **kwargs):
+        raise RuntimeError('synthetic curve_fit failure')
+
+    monkeypatch.setattr(scipy.optimize, 'curve_fit', broken)
+    with pytest.raises(RuntimeError, match='curve_fit failed in the time-step study'):
+        fit_time_step(x, u, 1.0, 1.9, 0.4)

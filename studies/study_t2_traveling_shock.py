@@ -54,24 +54,6 @@ def exact_traveling_shock(x, t, nu, A, c, x0):
     return c - A * np.tanh(A * (x - x0 - c * t) / (2.0 * nu))
 
 
-def _quantile_init_traveling(N, nu, A, c, x0):
-    """
-    Quantile initialization for traveling shock.
-
-    u(x,0) = c - A*tanh(A*(x-x0)/(2*nu))
-    u_L = c+A  (x -> -inf),   u_R = c-A  (x -> +inf)
-    u_x = -A^2/(2*nu) * sech^2(A*(x-x0)/(2*nu))  [same magnitude as stationary]
-
-    CDF of |u_x|: F(x) = (1 + tanh(A*(x-x0)/(2*nu))) / 2
-    Quantile: X_i = x0 + (2*nu/A) * arctanh(2*r_i - 1)
-    Mass per particle: m_i = (u_R - u_L)/N = -2A/N
-    u_{-inf} = c + A
-    """
-    return initialize_tanh_shock_particles(
-        N, nu, A, x0, mean_level=c
-    )
-
-
 def _run_traveling(N, nu, T, dt, L, A, c, x0, a, seed, output_times=None):
     """
     Run the traveling-shock validation driver.
@@ -83,7 +65,9 @@ def _run_traveling(N, nu, T, dt, L, A, c, x0, a, seed, output_times=None):
     """
     rng = np.random.default_rng(int(seed))
 
-    x_p, m_p, u_inf = _quantile_init_traveling(N, nu, A, c, x0)
+    x_p, m_p, u_inf = initialize_tanh_shock_particles(
+        N, nu, A, x0, mean_level=c
+    )
     if not np.all(np.isfinite(x_p)):
         raise RuntimeError("Non-finite particle positions at t=0.")
 

@@ -6,7 +6,6 @@
 numpy>=1.26,<3
 matplotlib>=3.8
 # scipy is required for the tanh fits (recovered shock parameters xc, nu);
-# without it the studies fall back to a cruder zero-crossing fit. The paper's
-# fitted-viscosity values require scipy; see
+# manuscript studies require successful SciPy fits. See
 # output/final_prepublication_tests/PROVENANCE.md.
 scipy>=1.11

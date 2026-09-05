@@ -28,10 +28,12 @@ compatible version ranges instead. On Windows PowerShell, activate with
 
 ## Check the Installation
 
-Confirm the environment works before the longer runs (takes seconds):
+Install the test runner, then check the solver and archived results before
+the longer runs (takes seconds):
 
 ```bash
-pytest -q
+python -m pip install -r requirements-test.txt
+python -m pytest -q
 ```
 
 ## Reproduce the Paper
@@ -96,7 +98,9 @@ paper, so a modified run is not expected to match those values.
   reference, and `PROVENANCE.md`.
 - `expected_values.json`, `reproduce.py`: reproduction and verification entry
   point.
-- `tests/`: software checks (58 tests).
+- `tests/`: solver behavior, paired random streams, fit failures, safe study
+  resumption, and independent recomputation from archived profiles.
+  `reproduce.py verify` separately checks the pinned summary values.
 
 ## Citation
 

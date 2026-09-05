@@ -89,9 +89,8 @@ targets:
 
 notes:
   * Full reruns require scipy (tanh fits) and take roughly 10-20 minutes
-    per principal study on a laptop. Without scipy the studies fall back to a cruder
-    zero-crossing fit for the recovered shock parameters (xc, nu); the
-    E_bias/E_spread/E_total error columns do not depend on the fit.
+    per principal study on a laptop. Manuscript fitted-viscosity values require
+    successful SciPy fits; a failed fit cannot be replaced by an initial guess.
   * Function defaults inside the study modules are exploration settings.
     The paper configurations are exactly what these targets invoke
     (in particular, the T2 paper run is S=30 via studies/run_t2_S30.py).
