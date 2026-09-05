@@ -51,7 +51,7 @@ DATA = os.path.join(ROOT, 'output', 'final_prepublication_tests')
 OUT = os.path.join(DATA, 'paper2_figures')
 MIRROR_OUT = os.environ.get('PAPER2_MANUSCRIPT_FIGURE_DIR')
 
-NU = 0.5  # prescribed viscosity for the stationary/traveling shock studies
+NU = 0.5  # physical viscosity for the stationary/traveling shock studies
 
 # Publication palette: muted and colour-blind safe.
 EXACT = '#111111'          # total / exact reference
@@ -190,7 +190,7 @@ def gbmc_bias_vs_dt():
 
 
 # --------------------------------------------------------------------------- #
-# adt  joint relaxation-speed / time-step interaction
+# adt  joint particle-speed / time-step dependence
 # --------------------------------------------------------------------------- #
 def gbmc_a_dt_fitted_width():
     study = _json(os.path.join(DATA, 'gbmc_a_dt_interaction', 'summary.json'))
@@ -216,7 +216,7 @@ def gbmc_a_dt_fitted_width():
     ax.set_xticks(ticks)
     ax.set_xticklabels([f'{value:g}' for value in ticks])
     ax.set_xlabel(r'$\Delta t$')
-    ax.set_ylabel(r'fitted-viscosity offset $\hat\nu-\nu$')
+    ax.set_ylabel(r'fitted-viscosity difference $\hat\nu-\nu$')
     ax.legend(ncol=2)
     _save(fig, 'gbmc_a_dt_fitted_width')
 
@@ -235,33 +235,33 @@ def gbmc_multinu_paired_excess():
         nus = [p['nu'] for p in rows]
         return nus, [p['mean'] for p in rows], rows
 
-    def d_label(a, dt):
+    def d_vel(a, dt):
         return 0.5 * dt * (a * a - (1.0 / 3.0 + 2.0 / (3.0 * 6400 ** 2)))
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10.2, 4.2))
-    # Left: absolute paired excess vs nu at fixed dt, with D_label guides.
+    # Left: paired fitted-viscosity difference at fixed dt, with D_vel guides.
     for arm, a, color, marker in (('two_speed_a2', 2.0, GRW, 'o'),
                                   ('two_speed_a4', 4.0, SECONDARY, 's')):
         nus, means, _ = paired(fixed, arm)
         ax1.loglog(nus, means, marker=marker, linestyle='-', color=color,
                    label=rf'$a={a:g}$')
-        ax1.axhline(d_label(a, 0.0025), color=color, ls=':', lw=1.1)
+        ax1.axhline(d_vel(a, 0.0025), color=color, ls=':', lw=1.1)
     ax1.set_xlabel(r'$\nu$')
-    ax1.set_ylabel('paired fitted-viscosity excess')
+    ax1.set_ylabel('paired fitted-viscosity difference')
     ax1.invert_xaxis()
     ax1.legend()
-    # Right: excess as a fraction of D_label for both sweeps.
+    # Right: paired difference as a fraction of D_vel for both sweeps.
     for study, dt_of, ls, tag in ((fixed, lambda nu: 0.0025, '-', 'fixed'),
                                   (scaled, lambda nu: 0.005 * nu, '--', 'scaled')):
         for arm, a, color, marker in (('two_speed_a2', 2.0, GRW, 'o'),
                                       ('two_speed_a4', 4.0, SECONDARY, 's')):
             nus, means, _ = paired(study, arm)
-            ratio = [m / d_label(a, dt_of(nu)) for nu, m in zip(nus, means)]
+            ratio = [m / d_vel(a, dt_of(nu)) for nu, m in zip(nus, means)]
             ax2.semilogx(nus, ratio, marker=marker, linestyle=ls, color=color,
                          label=rf'$a={a:g}$, {tag} $\Delta t$')
     ax2.axhline(1.0, color=EXACT, lw=1.0, alpha=0.75)
     ax2.set_xlabel(r'$\nu$')
-    ax2.set_ylabel(r'paired excess / $D_{\mathrm{label}}$')
+    ax2.set_ylabel(r'paired difference / $D_{\mathrm{vel}}$')
     ax2.invert_xaxis()
     ax2.set_ylim(0.0, 1.15)
     ax2.legend(fontsize=8)
@@ -301,7 +301,7 @@ def gbmc_transient_profiles_excess():
     ax1.plot(x, u0, ':', color=GUIDE, lw=1.4, label=r'$u_0$')
     ax1.plot(x, u_ref, '-', color=EXACT, lw=2.0, label='reference, $T=1$',
              zorder=10)
-    for arm, color, label in (('cond_mean', GRW, 'control mean'),
+    for arm, color, label in (('cond_mean', GRW, 'conditional-mean control'),
                               ('two_speed_a4', SECONDARY, r'$a=4$ mean')):
         prof = np.load(os.path.join(
             base, f'cell_{arm}_dt0p005.npz'))['profiles']
@@ -324,7 +324,7 @@ def gbmc_transient_profiles_excess():
     ax2.loglog(dt_ref, c0 * dt_ref, ':', color=GUIDE, lw=1.1,
                label=r'$\Delta t$ guide')
     ax2.set_xlabel(r'$\Delta t$')
-    ax2.set_ylabel(r'paired $L^2$ excess over control')
+    ax2.set_ylabel(r'paired $L^2$ difference from control')
     ax2.legend(fontsize=8)
     fig.tight_layout()
     _save(fig, 'gbmc_transient_profiles_excess')
