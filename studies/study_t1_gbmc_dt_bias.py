@@ -96,22 +96,10 @@ def _fit_tanh(x, u, A, xc_init, nu_init):
         bounds = ([0.0, 1e-4], [float(x[-1]), 10.0])
         popt, _ = curve_fit(model, x, u, p0=p0, bounds=bounds, maxfev=4000)
         return float(popt[0]), float(popt[1])
-    except Exception:
-        # Fallback: zero-crossing for center, rough width for nu
-        try:
-            idx = int(np.argmin(np.abs(u)))
-            xc_fit = float(x[idx])
-            # nu ~ A*(x90-x10)/2*atanh(0.8) : width between u=±0.8A
-            above = x[u > 0.8 * A]
-            below = x[u < -0.8 * A]
-            if len(above) > 0 and len(below) > 0:
-                width = float(above[0] - below[-1])
-                nu_fit = float(A * width / (4.0 * np.arctanh(0.8))) if width > 0 else nu_init
-            else:
-                nu_fit = nu_init
-            return xc_fit, nu_fit
-        except Exception:
-            return xc_init, nu_init
+    except Exception as exc:
+        raise RuntimeError(
+            f"tanh curve_fit failed in the time-step study: {exc}"
+        ) from exc
 
 
 def _bootstrap_slope_ci(x_arr, y_arr, n_boot=2000, ci=0.95, rng=None):

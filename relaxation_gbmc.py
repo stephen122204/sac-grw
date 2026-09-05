@@ -65,8 +65,7 @@ Velocity labels are initialised once before the loop by steps 2-6 applied
 to the initial sorted configuration (transport step 1 is skipped at t=0).
 
 Output: u on a uniform grid [0, L] via the RAW cumulative-sum reconstruction.
-No smoothing is applied to the primary output.  A smoothed profile is
-available via _reconstruct_u_on_grid() for diagnostic plots only.
+The output uses the unsmoothed cumulative sum.
 
 RNG: a private numpy.random.Generator is used throughout.  If config.seed is
 not None it is seeded deterministically; otherwise a fresh non-seeded
@@ -175,21 +174,23 @@ def advance_rbgbmc_particles(x_p, m_p, u_left, nu, a, dt, n_steps, rng,
     transport -> diffuse -> sort/reconstruct -> verify -> redraw, so the
     velocity used by the next transport is set from the post-Brownian
     reconstruction instead of the post-transport one. Per step both schedules
-    draw the same label uniforms and the same Brownian normal array in the
+    draw the same velocity-resampling uniforms and the same Brownian normal array in the
     same order, so two runs sharing generators are paired through common
     random numbers. The default (False) leaves the production schedule
     bit-for-bit unchanged.
 
-    ``collect_label_diagnostics`` is a read-only diagnostic. When True the
+    ``collect_label_diagnostics`` is the legacy internal name of a read-only
+    velocity-sampling diagnostic. When True the
     stepper accumulates the mean of ``a**2 - u_i**2`` over the reconstructed
-    states at which the velocity labels *actually used for transport* were
-    drawn: the initial reconstruction (whose labels drive the first transport)
-    and every in-loop reconstruction except the final one (whose labels are
+    states at which the sampled velocities *actually used for transport* were
+    drawn: the initial reconstruction (whose velocities drive the first transport)
+    and every in-loop reconstruction except the final one (whose velocities are
     drawn but never used before the loop ends). It consumes no random numbers
     and does not alter the draw order, so the returned solution arrays are
-    identical whether or not it is enabled. The result feeds the label scale
-    ``D_label = (dt/2) * <a**2 - u**2>`` (manuscript label `eq:D-label`; for
-    the equal-mass shock this equals the closed form `eq:D-label-stationary`).
+    identical whether or not it is enabled. The manuscript denotes the resulting
+    scale by ``D_vel = (dt/2) * <a**2 - u**2>``. Archived outputs retain the
+    legacy key ``D_label``; for the equal-mass shock the quantity equals the
+    closed form in `eq:D-label-stationary`.
     """
     x_p = np.asarray(x_p, dtype=float).copy()
     m_p = np.asarray(m_p, dtype=float).copy()
@@ -329,67 +330,6 @@ def advance_rbgbmc_particles(x_p, m_p, u_left, nu, a, dt, n_steps, rng,
     }
 
 
-def _reconstruct_u_on_grid(x_p, m_p, u_left, x_out, sigma_bins=4):
-    """
-    Reconstruct u on a uniform reconstruction grid from sorted gradient particles.
-
-    Algorithm:
-      1. Bin particle masses onto the reconstruction grid (floor assignment).
-      2. Apply boundary-corrected Gaussian smoothing to suppress shot noise.
-         The kernel is divided by its effective support at each bin so that
-         boundary truncation does not bias the gradient near x=0 and x=L.
-      3. Enforce the correct total: for near-zero-total (symmetric IC) subtract
-         the mean; otherwise proportional rescale.
-      4. u_out[j] = u_left + cumsum(smoothed_bins)[j]
-
-    :param x_p: 1d array, sorted particle positions
-    :param m_p: 1d array, particle masses (same order as x_p)
-    :param u_left: float, left-boundary anchor value u(0)
-    :param x_out: 1d array, uniform reconstruction grid
-    :param sigma_bins: float, Gaussian smoothing width in units of bins (0 = off)
-    :return: 1d array, reconstructed u values on x_out
-    """
-    N = len(x_out)
-    if N < 2:
-        return np.full(N, float(u_left))
-
-    x0_grid = float(x_out[0])
-    dx = float(x_out[1] - x_out[0])
-
-    # Bin masses
-    bin_sums = np.zeros(N)
-    idx = np.clip(np.floor((x_p - x0_grid) / dx).astype(int), 0, N - 1)
-    np.add.at(bin_sums, idx, m_p)
-
-    total_raw = float(bin_sums.sum())
-
-    # Gaussian smoothing with boundary correction
-    if sigma_bins > 0:
-        kw = int(4.0 * sigma_bins) + 1
-        kx = np.arange(-kw, kw + 1, dtype=float)
-        kernel = np.exp(-0.5 * (kx / sigma_bins) ** 2)
-        kernel /= kernel.sum()
-        raw_conv = np.convolve(bin_sums, kernel, mode='same')
-        kernel_norm = np.convolve(np.ones(N, dtype=float), kernel, mode='same')
-        bin_sums_s = raw_conv / np.maximum(kernel_norm, 1e-12)
-    else:
-        bin_sums_s = bin_sums.copy()
-
-    # Restore correct total
-    near_zero_tol = 1e-6 * max(float(np.abs(bin_sums).max()), 1e-30)
-    if abs(total_raw) < near_zero_tol:
-        # Symmetric IC: enforce sum = 0 exactly
-        bin_sums_s -= bin_sums_s.mean()
-    else:
-        total_smooth = float(bin_sums_s.sum())
-        if abs(total_smooth) > 1e-30:
-            bin_sums_s *= total_raw / total_smooth
-
-    # Cumulative sum -> u field
-    u_out = u_left + np.cumsum(bin_sums_s)
-    return u_out
-
-
 def _save_rbmc_diagnostics(diag_dir, mass_t, u_min_t, u_max_t, snaps,
                             x_out, u_final, u_left, dt, n_steps):
     """Save a 2x2 diagnostic figure for the relaxation GBMC run."""
@@ -456,8 +396,9 @@ def simulate_burgers_relaxation_gbmc(globs, config, _diag_dir=None,
     Raw cumulative-sum primary output.  Private seeded RNG.
 
     :param globs: list of dicts with 'position' (float) and 'value' ([u_i]).
-        These are the signed gradient particles of `sec:gbmc-algorithm`;
-        the legacy parameter name is kept for interface stability.
+        These are reconstruction-grid samples, not gradient particles.
+        Their count sets the output grid; quantile particles are initialized
+        separately from config. The legacy name is kept for interface stability.
     :param config: SimulationConfig; required fields documented in module header.
     :param _diag_dir: optional path; if set, saves a 4-panel diagnostic figure.
     :return: updated globs, positions on uniform [0,L] grid, values = [u_i].
