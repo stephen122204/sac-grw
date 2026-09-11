@@ -23,8 +23,8 @@ sys.path.insert(0, str(CODE))
 
 plt.rcParams.update(
     {
-        "font.family": "serif",
-        "font.serif": ["DejaVu Serif"],
+        "font.family": "sans-serif",
+        "font.sans-serif": ["DejaVu Sans"],
         "font.size": 9,
         "axes.labelsize": 9,
         "axes.titlesize": 9,
@@ -91,7 +91,7 @@ def fig_construction():
     assert np.all(np.diff(xA) >= 0) and np.all(np.diff(xB) >= 0)
     sA, sB = np.sign(mA), np.sign(mB)
 
-    fig, axes = plt.subplots(1, 2, figsize=(6.6, 2.35))
+    fig, axes = plt.subplots(1, 2, figsize=(4.8, 2.5))
     for ax, rule in zip(axes, ("rank", "within")):
         for y, xx, ss in ((1.0, xA, sA), (0.0, xB, sB)):
             for xi, si in zip(xx, ss):
@@ -108,7 +108,7 @@ def fig_construction():
                 )
         if rule == "rank":
             pairs = [(i, i, sA[i] * sB[i]) for i in range(len(xA))]
-            ttl = "rank matching, multiplier $-\\,\\mathrm{sgn}(m_{A,i})\\mathrm{sgn}(m_{B,i})$"
+            ttl = "rank matching\nmultiplier $-\\,\\mathrm{sgn}(m_{A,i})\\mathrm{sgn}(m_{B,i})$"
         else:
             pairs = []
             for sgn in (1.0, -1.0):
@@ -116,7 +116,7 @@ def fig_construction():
                 ib = np.flatnonzero(sB == sgn)
                 q = min(len(ia), len(ib))
                 pairs += [(ia[k], ib[k], 1.0) for k in range(q)]
-            ttl = "within-sign matching, multiplier $-1$"
+            ttl = "within-sign matching\nmultiplier $-1$"
         for i, j, mult in pairs:
             sync = mult < 0
             ax.plot(
@@ -171,7 +171,7 @@ def fig_construction():
     ]
     fig.legend(
         handles=h,
-        ncol=4,
+        ncol=2,
         loc="lower center",
         bbox_to_anchor=(0.5, -0.10),
         frameon=False,
@@ -201,7 +201,7 @@ def fig_fields():
     x = z["x"]
     ref = z["reference"]
     fig, axes = plt.subplots(
-        1, 3, figsize=(6.8, 2.25), gridspec_kw={"width_ratios": [1, 1, 1.22]}
+        3, 1, figsize=(4.8, 5.5)
     )
     r = 3
     lim = 0
@@ -220,13 +220,13 @@ def fig_fields():
         ax.set_xlabel("$x$")
         ax.set_title(f"{NAME[a]} pairing", fontsize=8.5)
     axes[0].set_ylabel("$u(x,T)-u_{\\mathrm{ref}}(x,T)$")
-    axes[1].set_yticklabels([])
+    axes[1].set_ylabel("$u(x,T)-u_{\\mathrm{ref}}(x,T)$")
     axes[0].text(
         0.03,
         0.04,
         "faint: the two replicas\nbold: their mean",
         transform=axes[0].transAxes,
-        fontsize=7.2,
+        fontsize=8,
         color="#666666",
         va="bottom",
     )
@@ -265,7 +265,7 @@ def fig_fields():
     ax.set_xlabel("$x$")
     ax.set_ylabel("pointwise variance ratio")
     ax.set_title("pointwise variance ratio", fontsize=8.5)
-    ax.legend(frameon=False, loc="lower left", fontsize=7.2)
+    ax.legend(frameon=False, loc="lower left", fontsize=8)
     fig.tight_layout()
     fig.savefig(FIG / "fig2_fields.pdf")
     plt.close(fig)
@@ -289,7 +289,7 @@ def fig_profiles():
     }
     mk = {"P1 single bump": "o", "P2 two-pulse": "s", "P3 oscillatory": "^"}
     T = [0.25, 1.0, 2.0]
-    fig, axes = plt.subplots(1, 2, figsize=(6.6, 2.7), sharex=True)
+    fig, axes = plt.subplots(1, 2, figsize=(4.8, 2.9), sharex=True)
 
     ax = axes[0]
     for p in profiles:
@@ -311,7 +311,7 @@ def fig_profiles():
     ax.axhline(1.0, color="#111111", lw=0.7, ls=":")
     ax.set_xlabel("observation time $T$")
     ax.set_ylabel("variance ratio")
-    ax.set_title("integrated variance ratio", fontsize=8.5)
+    ax.set_title("integrated variance\nratio", fontsize=8.5)
     ax.set_xticks(T)
     ax.set_ylim(0.5, 1.08)
 
@@ -325,8 +325,8 @@ def fig_profiles():
         )
     ax.axhline(1.0, color="#111111", lw=0.7, ls=":")
     ax.set_xlabel("observation time $T$")
-    ax.set_ylabel("matched-separation ratio")
-    ax.set_title("matched-pair separation ratio", fontsize=8.5)
+    ax.set_ylabel("separation ratio")
+    ax.set_title("matched-pair separation\nratio", fontsize=8.5)
     ax.set_xticks(T)
     ax.set_ylim(0.5, 1.08)
 
@@ -383,7 +383,7 @@ def fig_bias():  # Figure 5 in the manuscript
     ax.set_title("sign-switched / reflected at fixed $N,h$", fontsize=8.5)
     ax.axhline(1.0, color="#111111", lw=0.7, ls=":")
     ax.set_ylim(0, 1.08)
-    ax.legend(frameon=False, loc="lower right", fontsize=7.5)
+    ax.legend(frameon=False, loc="lower right", fontsize=8)
 
     fig.tight_layout()
     fig.savefig(FIG / "fig5_bias.pdf")
@@ -395,7 +395,7 @@ def fig_bias():  # Figure 5 in the manuscript
 def fig_heldout():  # Figure 4 in the manuscript
     A = jload(HERE / "numbers.json")["heldout_A"]
     B = jload(HERE / "numbers.json")["heldout_B"]
-    fig, axes = plt.subplots(1, 2, figsize=(6.6, 2.5))
+    fig, axes = plt.subplots(2, 1, figsize=(4.8, 4.3))
 
     ax = axes[0]
     order = ["SINGLE", "RQMC", "RAW", "FULL"]
@@ -407,7 +407,7 @@ def fig_heldout():  # Figure 4 in the manuscript
             i,
             f"{w[i]:.2f} s  ({A['arms'][a]['trajectories']} traj.)",
             va="center",
-            fontsize=7.5,
+            fontsize=8,
         )
     ax.set_yticks(range(len(order)))
     ax.set_yticklabels([NAME[a] for a in order])
@@ -426,7 +426,7 @@ def fig_heldout():  # Figure 4 in the manuscript
             i,
             f"{w[i]:.3f} s  ({B['arms'][a]['trajectories']} traj.)",
             va="center",
-            fontsize=7.5,
+            fontsize=8,
         )
     ax.set_yticks(range(len(order)))
     ax.set_yticklabels([NAME[a] for a in order])

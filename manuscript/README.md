@@ -14,7 +14,14 @@ latexmk -pdf -interaction=nonstopmode -halt-on-error -outdir=build main-2-coupli
 
 The compiled output is `manuscript/build/main-2-coupling.pdf`; the reviewed PDF
 is also distributed at `manuscript/main-2-coupling.pdf`. A TeX installation with
-`algorithm2e`, `natbib`, and `latexmk` is needed. `arxiv.sty` is included.
+`algorithm2e`, `natbib`, `tabularx`, `longtable`, and `latexmk` is needed.
+The official Springer `svjour3.cls`, `svglov3.clo`, and `spmpsci.bst` are
+included. The document uses JSC's `smallextended` layout; `nospthms` allows
+the existing theorem environments and numbering to remain unchanged.
+The old `arxiv.sty` is retained for historical versions and is no longer loaded.
+
+See [JSC preparation notes](JSC-PREPARATION.md) for the template source,
+validation, and remaining author-supplied submission details.
 
 ## Levels of reproduction
 

@@ -3,35 +3,20 @@
 %  Coupled-estimation manuscript.  Separate from main-2.tex, which is
 %  the two-speed compensation paper and is left unchanged.
 % =====================================================================
-\documentclass{article}
-\usepackage{arxiv}
+% Springer author template specified by JSC. The nospthms option preserves
+% our existing shared theorem counter via amsthm.
+\RequirePackage{fix-cm}
+\documentclass[smallextended,nospthms]{svjour3}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{amsmath,amssymb,amsthm,booktabs,graphicx,microtype}
 \usepackage[numbers,sort&compress]{natbib}
 \usepackage{doi,hyperref,xcolor,placeins,float}
 \usepackage[ruled,lined,linesnumbered]{algorithm2e}
-\usepackage{array,needspace}
-\usepackage[font=small,labelfont={sf,bf},labelsep=space]{caption}
-\definecolor{sectionblue}{RGB}{28,65,115}
-\definecolor{citationpink}{RGB}{165,36,103}
+\usepackage{array,needspace,tabularx,longtable}
 \usepackage{etoolbox}
-\makeatletter
-\patchcmd{\section}{\bf}{\sffamily\bfseries}{}{\PackageError{coupling}{Section color patch failed}{Check the arxiv section definition}}
-\patchcmd{\subsection}{\bf}{\sffamily\bfseries}{}{\PackageError{coupling}{Section color patch failed}{Check the arxiv section definition}}
-\patchcmd{\subsubsection}{\bf}{\sffamily\bfseries}{}{\PackageError{coupling}{Section color patch failed}{Check the arxiv section definition}}
-% BPC-inspired title typography, without publisher branding.
-\renewcommand{\@toptitlebar}{\vskip 0.1in}
-\renewcommand{\@bottomtitlebar}{\vskip 0.15in}
-\patchcmd{\@maketitle}{\LARGE\sc}{\LARGE\sffamily\bfseries}{}{\PackageError{coupling}{Title patch failed}{Check arxiv title definition}}
-\makeatother
 \preto\section{\Needspace{7\baselineskip}}
-\urlstyle{tt}
-\renewcommand{\figurename}{Fig.}
-\renewenvironment{abstract}
-  {\par\medskip\noindent{\sffamily\bfseries Abstract}\par\nobreak\smallskip\noindent\ignorespaces}
-  {\par\medskip}
-
+\urlstyle{same}
 
 \theoremstyle{plain}
 \newtheorem{proposition}{Proposition}[section]
@@ -57,27 +42,23 @@
 \raggedbottom
 
 \title{Sign-Aware Antithetic Coupling for Signed Gradient-Particle Methods}
-\author{Stephen Abkin \\
-  Department of Mathematics \\
-  Texas A\&M University \\
-  College Station, TX, USA \\
-  \texttt{stephen122204@tamu.edu}
-  \And Prabir Daripa \\
-  Department of Mathematics \\
-  Texas A\&M University \\
-  College Station, TX, USA \\
-  \texttt{daripa@tamu.edu}}
-\date{September 10, 2026}
-\renewcommand{\shorttitle}{Sign-Aware Antithetic Coupling}
-\renewcommand{\headeright}{Preprint}
-\renewcommand{\undertitle}{Preprint}
+\author{Stephen Abkin \and Prabir Daripa}
+\titlerunning{Sign-Aware Antithetic Coupling}
+\authorrunning{Stephen Abkin and Prabir Daripa}
+\institute{S. Abkin \at
+  Department of Mathematics, Texas A\&M University, College Station, TX, USA\\
+  \email{stephen122204@tamu.edu}
+  \and P. Daripa \at
+  Department of Mathematics, Texas A\&M University, College Station, TX, USA\\
+  \email{daripa@tamu.edu}}
+\journalname{Journal of Scientific Computing}
+\date{}
 \hypersetup{pdftitle={Sign-Aware Antithetic Coupling for Signed Gradient-Particle Methods},
   pdfauthor={Stephen Abkin, Prabir Daripa},colorlinks=true,linkcolor=blue,
   citecolor=blue,urlcolor=blue,hypertexnames=false}
 
 \begin{document}
 \maketitle
-\thispagestyle{plain}
 
 \begin{abstract}
 Signed gradient-particle methods recover a field by cumulatively summing
@@ -102,10 +83,10 @@ common discretization bias dominates. These results support sign-aware spatial
 matching for repeated estimation of transient fields by one-dimensional signed
 gradient-particle solvers.
 
-\end{abstract}
-
 \keywords{gradient random walk \and signed particles \and antithetic coupling
   \and variance reduction \and viscous conservation laws \and Monte Carlo}
+\subclass{65C05 \and 65C35}
+\end{abstract}
 
 % =====================================================================
 \section{Introduction}
@@ -117,7 +98,7 @@ representation concentrates particles near steep gradients and supports a
 mesh-free field reconstruction. Gradient random walks have been developed for
 reaction--diffusion and viscous conservation equations
 \citep{ghoniem1985,shermanpeskin1986,shermanpeskin1988,roberts1989,shermanmascagni1994}.
-More recently, \citet{bertaglia2024} extended gradient-based Monte Carlo
+More recently, Bertaglia, Pareschi and Caflisch~\citep{bertaglia2024} extended gradient-based Monte Carlo
 constructions to relaxation approximations of hyperbolic conservation laws,
 including systems. The present work concerns repeated estimation of a transient
 field within an existing one-dimensional signed-particle solver.
@@ -139,7 +120,7 @@ these two sign-aware rules is central. It separates the benefit of retaining
 spatial matching from the benefit already obtained by respecting mass signs.
 
 The coupling principles have established antecedents.
-\citet{nusken2018} formulate variance reduction through couplings with preserved
+N{\"u}sken and Pavliotis~\citep{nusken2018} formulate variance reduction through couplings with preserved
 marginals. Their Proposition 54 and Corollaries 57--58 include
 reflection/synchronization switches based on products of response-related
 quantities. Section 5.2 describes repeated sorting and pairwise matching within
@@ -150,23 +131,23 @@ mass sign is our specific realization of these ideas for a cumulative field
 estimator. It requires no auxiliary equation, although computable switching
 criteria also occur in the cited special cases.
 
-Within the gradient-particle literature, \citet{lecot_rims2001} combines signed
+Within the gradient-particle literature, L{\'e}cot~\citep{lecot_rims2001} combines signed
 cumulative reconstruction, spatial ordering, and quasi-random diffusion inputs
 for a Burgers construction. A related treatment appears in
-\citet{lecot2002}. This is the closest representation-specific precedent for
+L{\'e}cot and Ogawa~\citep{lecot2002}. This is the closest representation-specific precedent for
 structuring the random inputs. Our randomized quasi-Monte Carlo comparison
 adapts that diffusion strategy to the transport update used here. It is not a
 reproduction of the complete published algorithm.
 
 Recent QMC particle constructions also couple noise within an interacting
-ensemble. \citet{benrached2024} prove weak convergence for additive-noise
+ensemble. Ben Rached et al.~\citep{benrached2024} prove weak convergence for additive-noise
 McKean--Vlasov dynamics and develop an antithetic multilevel QMC estimator.
 Their construction and regularity assumptions differ from our signed
 rank-dependent solver. Together with array-RQMC work for a Fokker--Planck
 particle model \citep{netterdon2026}, this places the diffusion adaptation below
 within a broader literature. Its result cannot rank QMC methods as a family.
 
-\citet{bencheikhjourdain2019} study bias and antithetic sampling for mean-field
+Bencheikh and Jourdain~\citep{bencheikhjourdain2019} study bias and antithetic sampling for mean-field
 particle approximations. Their equation (3.1) couples a $2N$-particle system
 with two $N$-particle systems to form a particle-number correction, an object
 different from our same-size replica average. Related convergence and bias
@@ -278,9 +259,9 @@ We first transport with the carried velocity and sort the particles. We then
 evaluate the new velocity from the cumulative mass at each rank, including
 that particle's own mass, and apply diffusion. This is our baseline convention.
 It is not a reproduction of the shock and rarefaction transport rules in
-\citet{lecot_rims2001}.
+L{\'e}cot~\citep{lecot_rims2001}.
 
-\begin{algorithm}[H]
+\begin{algorithm}[htbp]
 \caption{One step of a single replica (mean-transport gradient random walk)}
 \label{alg:single}
 \SetAlgoLined
@@ -311,7 +292,7 @@ without sampling a velocity label.
 Reflection and synchronization are established ways to couple Gaussian
 increments \citep{hammersley1956,nusken2018}. Reflection gives the partners
 opposite increments, whereas synchronization gives them the same increment.
-The sign-dependent switches in \citet[Proposition 54 and Corollaries 57--58]{nusken2018}
+The sign-dependent switches in N{\"u}sken and Pavliotis~\citep[Proposition 54 and Corollaries 57--58]{nusken2018}
 motivate this choice. Here we specify the matching and switching rule for
 signed cumulative reconstruction.
 
@@ -361,7 +342,7 @@ $Z^{(k)}$ for replica $A$. They differ only in $(\pi_k,\varepsilon_k)$.
   $\varepsilon_{k,j}=-1$. No matched pair ever has unlike masses.
 \end{description}
 
-\begin{algorithm}[H]
+\begin{algorithm}[htbp]
 \caption{Coupled advance of two replicas}
 \label{alg:pair}
 \SetAlgoLined
@@ -522,7 +503,7 @@ of the two changes.
 \end{proposition}
 
 This argument uses invariance of the Gaussian distribution, as do the adapted
-orthogonal transformations in \citet[Appendix A]{nusken2018}. In our proof
+orthogonal transformations in N{\"u}sken and Pavliotis~\citep[Appendix A]{nusken2018}. In our proof
 (Appendix~\ref{app:proofs}), a predictable permutation
 of an i.i.d.\ Gaussian vector is i.i.d.\ Gaussian, and predictable $\pm1$
 multipliers preserve $\mathcal N(0,\sigma^2)$ coordinatewise, so each replica's
@@ -794,8 +775,8 @@ comparisons with uncertainty.
 \centering
 \includegraphics[width=\textwidth]{fig2_fields.pdf}
 \caption{Two-pulse Burgers, $N=8192$, $48$ replicates, from the independently
-replayed archive. The left and centre panels show the pointwise error of each replica (faint)
-and of their mean (bold) on one replicate. The right panel shows the ratio of pointwise
+replayed archive. The top and middle panels show the pointwise error of each replica (faint)
+and of their mean (bold) on one replicate. The bottom panel shows the ratio of pointwise
 variance of the sign-switched pair mean to that of the reflected (red) and
 within-sign (blue) pair means. Thin lines are the raw ratios over $48$
 replicates and thick lines a $13$-point running mean. The shaded profile is
@@ -839,27 +820,30 @@ required, is listed separately and is not amortised in v$\times$c. $c^{*}$
 denotes a coefficient fitted on a disjoint batch and frozen.}
 \label{tab:controls}
 \small
-\begin{tabular}{llcccc}
+\setlength{\tabcolsep}{3pt}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xcccc@{}}
 \toprule
-flux & arm & variance $/$ reflected & v$\times$c & one-off (s) & variance $/$ within-sign\\
+arm & \shortstack{variance $/$\\reflected} & v$\times$c & \shortstack{training\\(s)} & \shortstack{variance $/$\\within-sign}\\
 \midrule
-Burgers & reflected              & 1.0000 & 1.000 & -- & --\\
-        & \;+ conditional final stage & 0.8813 $[0.852,0.909]$ & 1.612 & -- & --\\
-        & \;+ heat control, $c^{*}$   & 0.8440 $[0.821,0.869]$ & 1.170 & 0.488 & --\\
-        & \;+ frozen-velocity control, $c^{*}$ & 0.6724 $[0.617,0.740]$ & 0.923 & 0.466 & --\\
-        & within-sign            & 0.2083 $[0.179,0.245]$ & 0.243 & -- & 1\\
-        & sign-switched & 0.1649 $[0.142,0.194]$ & 0.174 & -- & 0.7916 $[0.762,0.825]$\\
-        & \;+ frozen-velocity control, $c^{*}$ & 0.1642 $[0.141,0.194]$ & 0.237 & 0.490 & 0.7886 $[0.758,0.822]$\\
-        & \;+ conditional final stage & 0.0804 $[0.069,0.095]$ & 0.151 & -- & 0.3861 $[0.362,0.412]$\\
+\multicolumn{5}{l}{Burgers flux}\\
+reflected              & 1.0000 & 1.000 & -- & --\\
+\;+ conditional final stage & 0.8813 $[0.852,0.909]$ & 1.612 & -- & --\\
+\;+ heat control, $c^{*}$   & 0.8440 $[0.821,0.869]$ & 1.170 & 0.488 & --\\
+\;+ frozen-velocity control, $c^{*}$ & 0.6724 $[0.617,0.740]$ & 0.923 & 0.466 & --\\
+within-sign            & 0.2083 $[0.179,0.245]$ & 0.243 & -- & 1\\
+sign-switched & 0.1649 $[0.142,0.194]$ & 0.174 & -- & 0.7916 $[0.762,0.825]$\\
+\;+ frozen-velocity control, $c^{*}$ & 0.1642 $[0.141,0.194]$ & 0.237 & 0.490 & 0.7886 $[0.758,0.822]$\\
+\;+ conditional final stage & 0.0804 $[0.069,0.095]$ & 0.151 & -- & 0.3861 $[0.362,0.412]$\\
 \midrule
-cubic   & reflected              & 1.0000 & 1.000 & -- & --\\
-        & \;+ frozen-velocity control, $c^{*}$ & 0.5031 $[0.458,0.552]$ & 0.697 & 0.448 & --\\
-        & within-sign            & 0.2263 $[0.196,0.262]$ & 0.268 & -- & 1\\
-        & sign-switched & 0.1739 $[0.151,0.201]$ & 0.184 & -- & 0.7688 $[0.741,0.797]$\\
-        & \;+ heat control, $c^{*}$ & 0.1684 $[0.146,0.194]$ & 0.248 & 0.496 & 0.7442 $[0.716,0.773]$\\
-        & \;+ conditional final stage & 0.0818 $[0.070,0.096]$ & 0.158 & -- & 0.3614 $[0.340,0.383]$\\
+\multicolumn{5}{l}{Cubic flux}\\
+reflected              & 1.0000 & 1.000 & -- & --\\
+\;+ frozen-velocity control, $c^{*}$ & 0.5031 $[0.458,0.552]$ & 0.697 & 0.448 & --\\
+within-sign            & 0.2263 $[0.196,0.262]$ & 0.268 & -- & 1\\
+sign-switched & 0.1739 $[0.151,0.201]$ & 0.184 & -- & 0.7688 $[0.741,0.797]$\\
+\;+ heat control, $c^{*}$ & 0.1684 $[0.146,0.194]$ & 0.248 & 0.496 & 0.7442 $[0.716,0.773]$\\
+\;+ conditional final stage & 0.0818 $[0.070,0.096]$ & 0.158 & -- & 0.3614 $[0.340,0.383]$\\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 In Table~\ref{tab:controls}, the frozen-velocity control on reflected
@@ -883,7 +867,7 @@ come with greater work. We report the coupling and conditional evaluation
 separately to distinguish their contributions.
 
 A randomized quasi-Monte Carlo adaptation of
-\citet{lecot_rims2001}'s diffusion construction applied to our transport solver is included in
+the diffusion construction of L{\'e}cot~\citep{lecot_rims2001} applied to our transport solver is included in
 the held-out experiment in \S\ref{sec:heldoutA}. It attained the target with
 $46$ trajectories against four.
 
@@ -914,6 +898,8 @@ Appendix~\ref{app:setup}.
 \caption{Integrated variance ratio of sign-switched to within-sign pairing,
 $N=2048$, $h=0.005$, $48$ replicates, whole-replicate bootstrap intervals.}
 \label{tab:ladder}
+\small
+\setlength{\tabcolsep}{3pt}
 \begin{tabular}{lcccc}
 \toprule
 profile & sign regions & $T=0.25$ & $T=1.0$ & $T=2.0$\\
@@ -946,6 +932,8 @@ within-sign matching, both rules applied to the same paired state so the
 history is held fixed, with $N=2048$, $24$ replicates, $\pm2$ standard errors. By
 Remark~\ref{rem:sorted} every entry is at most $1$ with probability one.}
 \label{tab:separation}
+\small
+\setlength{\tabcolsep}{3pt}
 \begin{tabular}{lcccc}
 \toprule
 profile & sign regions & $T=0.25$ & $T=1.0$ & $T=2.0$\\
@@ -1022,8 +1010,8 @@ Experiment A uses $N=8192$ and targets expected integrated squared error
 $7\times10^{-6}$. The pilot and evaluation seed keys are $1601$ and $1702$. The target was chosen from the pilot,
 so it is a pilot-informed target with an independent evaluation batch.
 
-The quasi-Monte Carlo arm is an adaptation of \citet{lecot_rims2001}'s
-rank-based diffusion to our transport solver, not a reproduction of his method.
+The quasi-Monte Carlo arm is an adaptation of the rank-based diffusion
+of L{\'e}cot~\citep{lecot_rims2001} to our transport solver, not a reproduction of his method.
 At each step, the first coordinate of a two-dimensional scrambled net
 assigns the zero-based particle rank, and the second supplies its Gaussian increment,
 \[
@@ -1043,9 +1031,11 @@ which is $2B$ for a paired arm and $B$ otherwise. The upper bound is a
 Bonferroni-corrected $95\%$ $t$ bound across the four arms
 ($t_{31,\,1-0.05/8}=2.652$). Every arm's bound lies below the target.}
 \label{tab:heldoutA}
+\small
+\setlength{\tabcolsep}{3pt}
 \begin{tabular}{lccccc}
 \toprule
-arm & $B$ & trajectories & attained error & simultaneous upper bound & measured work (s)\\
+arm & $B$ & trajectories & \shortstack{attained\\error} & \shortstack{simultaneous\\upper bound} & \shortstack{work\\(s)}\\
 \midrule
 unpaired ensemble        & 65 & 65 & $5.347\times10^{-6}$ & $6.743\times10^{-6}$ & 6.658\\
 reflected pairing        & 17 & 34 & $5.031\times10^{-6}$ & $6.362\times10^{-6}$ & 3.340\\
@@ -1070,9 +1060,11 @@ favours the construction.
 blocks, $N=2048$, target $2.5\times10^{-5}$, Bonferroni bound across three arms
 ($t_{31,\,1-0.05/6}=2.531$). Work is end-to-end with interleaved arm order.}
 \label{tab:heldoutB}
+\small
+\setlength{\tabcolsep}{3pt}
 \begin{tabular}{lccccc}
 \toprule
-arm & $B$ & trajectories & attained error & simultaneous upper bound & measured work (s)\\
+arm & $B$ & trajectories & \shortstack{attained\\error} & \shortstack{simultaneous\\upper bound} & \shortstack{work\\(s)}\\
 \midrule
 reflected pairing        & 18 & 36 & $1.404\times10^{-5}$ & $1.830\times10^{-5}$ & 0.615\\
 within-sign pairing      &  3 &  6 & $1.769\times10^{-5}$ & $1.936\times10^{-5}$ & 0.119\\
@@ -1107,8 +1099,8 @@ errors remain those of the original held-out batch.
 \includegraphics[width=\textwidth]{fig4_heldout.pdf}
 \caption{Measured work to attain a common expected-error target in the two
 held-out experiments, which have different targets, different $N$ and different
-arms and are not to be pooled. The left panel reports experiment A
-(Table~\ref{tab:heldoutA}), and the right reports experiment B (Table~\ref{tab:heldoutB}).}
+arms and are not to be pooled. The top panel reports experiment A
+(Table~\ref{tab:heldoutA}), and the bottom reports experiment B (Table~\ref{tab:heldoutB}).}
 \label{fig:heldout}
 \end{figure}
 
@@ -1169,9 +1161,11 @@ intervals. The last column is the squared-bias share of the sign-switched arm's
 empirical MSE. An interval containing $1$ is unresolved.}
 \label{tab:nonlinear}
 \small
+\small
+\setlength{\tabcolsep}{3pt}
 \begin{tabular}{llccc}
 \toprule
-functional & estimator & switched $/$ reflected & switched $/$ within-sign & bias$^2$ share\\
+functional & estimator & \shortstack{switched $/$\\reflected} & \shortstack{switched $/$\\within-sign} & \shortstack{bias$^2$\\share}\\
 \midrule
 $\max|\partial_x u|$ & $Q$ of the mean      & 0.416 $[0.244,0.702]$ & 0.602 $[0.359,0.984]$ & 0.56\\
                      & mean of $Q$          & 0.832 $[0.603,1.139]$ & 1.058 $[0.803,1.394]$ & 0.87\\
@@ -1219,7 +1213,7 @@ The crossover marks equal sampling and bias contributions in the switched arm. I
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.52\textwidth]{fig5_bias.pdf}
+\includegraphics[width=0.85\textwidth]{fig5_bias.pdf}
 \caption{Model mean squared error ratio \eqref{eq:equalwork} at equal work, at three
 archived $(N,h)$ cells of the two-pulse problem with $64$ paired seeds. The
 shared squared bias $b^2$ is the same estimate in numerator and denominator,
@@ -1251,6 +1245,8 @@ therefore an estimate of a quantity that Corollary~\ref{cor:onesign} makes
 exactly $1$, and its departure from $1$ is sampling noise. Exact identity is
 established separately, by a matched-seed full-state comparison.}
 \label{tab:structure}
+\small
+\setlength{\tabcolsep}{3pt}
 \begin{tabular}{llcc}
 \toprule
 structure & dynamics & variance ratio & reading\\
@@ -1714,6 +1710,8 @@ resamples the sign-switched and reflected empirical shapes separately.
 standardised sample.}
 \label{tab:calibration}
 \small
+\small
+\setlength{\tabcolsep}{3pt}
 \begin{tabular}{lcccccc}
 \toprule
 & \multicolumn{2}{c}{two-shape, $r=0.15$} & \multicolumn{2}{c}{two-shape, $r=0.75$}
@@ -1751,16 +1749,24 @@ which is omitted here for width. The file
 \texttt{analysis/numbers.json} contains each quantity together with the archive
 it was read from.
 
-\begin{table}[htbp]
-\centering
-\caption{Provenance of reported results.}
-\label{tab:provenance}
+\begingroup
 \small
 \renewcommand{\arraystretch}{1.15}
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.0cm}>{\raggedright\arraybackslash}p{3.3cm}>{\raggedright\arraybackslash}p{7.2cm}@{}}
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.0cm}>{\raggedright\arraybackslash}p{2.5cm}>{\raggedright\arraybackslash}p{6.5cm}@{}}
+\caption{Provenance of reported results.}\label{tab:provenance}\\
 \toprule
 item & what it answers & archive\\
 \midrule
+\endfirsthead
+\multicolumn{3}{l}{Table~\ref{tab:provenance} continued}\\
+\toprule
+item & what it answers & archive\\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+
 Table~\ref{tab:headline}, Fig.~\ref{fig:fields}
   & principal field comparison
   & independent replay of \path{round22_corrections};
@@ -1781,10 +1787,10 @@ Table~\ref{tab:separation}, Fig.~\ref{fig:profiles} (right)
   & \path{round24_separation/separation.json}
     (\path{matched_state} rows; the \path{own_history} rows are the
     association-only variant, one of nine cells containing $1$)\\
-Table~\ref{tab:heldoutA}, Fig.~\ref{fig:heldout} (left)
+Table~\ref{tab:heldoutA}, Fig.~\ref{fig:heldout} (top)
   & held-out work, experiment A
   & \path{round17_compare/compare.json}\\
-Table~\ref{tab:heldoutB}, Fig.~\ref{fig:heldout} (right)
+Table~\ref{tab:heldoutB}, Fig.~\ref{fig:heldout} (bottom)
   & held-out work, experiment B
   & \path{round23_mechanism/worktarget.json};
     interleaved timings from
@@ -1823,13 +1829,12 @@ Table~\ref{tab:calibration}
   & \path{round25_calibration/calibration.json}
     (supersedes the single-shape design in
     \path{round22_corrections/calibration.json})\\
-\bottomrule
-\end{tabular}
-\end{table}
+\end{longtable}
+\endgroup
 
 \FloatBarrier
 
-\bibliographystyle{unsrtnat}
+\bibliographystyle{spmpsci}
 \bibliography{references-coupling}
 
 \end{document}
