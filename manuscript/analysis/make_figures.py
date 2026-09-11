@@ -117,10 +117,8 @@ def fig_construction():
                 q = min(len(ia), len(ib))
                 pairs += [(ia[k], ib[k], 1.0) for k in range(q)]
             ttl = "within-sign matching, multiplier $-1$"
-        nsw = 0
         for i, j, mult in pairs:
             sync = mult < 0
-            nsw += sync
             ax.plot(
                 [xA[i], xB[j]],
                 [1.0, 0.0],
@@ -139,16 +137,7 @@ def fig_construction():
         ax.grid(axis="x", alpha=0.2)
         ax.grid(axis="y", alpha=0)
         ax.set_axisbelow(True)
-        ax.text(
-            0.985,
-            0.06,
-            f"{nsw} of {len(pairs)} synchronised",
-            transform=ax.transAxes,
-            ha="right",
-            va="bottom",
-            fontsize=7.5,
-            color="#666666",
-        )
+
     h = [
         Line2D(
             [],
@@ -275,7 +264,7 @@ def fig_fields():
     ax.patch.set_visible(False)
     ax.set_xlabel("$x$")
     ax.set_ylabel("pointwise variance ratio")
-    ax.set_title("where the reduction sits", fontsize=8.5)
+    ax.set_title("pointwise variance ratio", fontsize=8.5)
     ax.legend(frameon=False, loc="lower left", fontsize=7.2)
     fig.tight_layout()
     fig.savefig(FIG / "fig2_fields.pdf")
@@ -340,16 +329,7 @@ def fig_profiles():
     ax.set_title("matched-pair separation ratio", fontsize=8.5)
     ax.set_xticks(T)
     ax.set_ylim(0.5, 1.08)
-    ax.text(
-        0.98,
-        0.05,
-        r"$\leq 1$ by construction",
-        transform=ax.transAxes,
-        ha="right",
-        va="bottom",
-        fontsize=7.5,
-        color="#666666",
-    )
+
     h = [
         Line2D([], [], color=col[p], marker=mk[p], ms=4.2, lw=1.1, label=lab[p])
         for p in profiles
@@ -404,15 +384,7 @@ def fig_bias():  # Figure 5 in the manuscript
     ax.axhline(1.0, color="#111111", lw=0.7, ls=":")
     ax.set_ylim(0, 1.08)
     ax.legend(frameon=False, loc="lower right", fontsize=7.5)
-    ax.text(
-        0.03,
-        0.06,
-        r"$\circ$  $W=C_{\rm switch}V_{\rm switch}/b^{2}$",
-        transform=ax.transAxes,
-        fontsize=7.5,
-        color="#666666",
-        va="bottom",
-    )
+
     fig.tight_layout()
     fig.savefig(FIG / "fig5_bias.pdf")
     plt.close(fig)
