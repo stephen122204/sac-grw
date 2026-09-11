@@ -1,0 +1,117 @@
+{
+ "claim": "coordinatewise monotonicity of E[U(x,T)|state] with orientation -sign(m_i)",
+ "verdict": "REFUTED without resolution restrictions, for this discrete solver",
+ "config": {
+  "u_left": 0.0,
+  "a": 2.0,
+  "h": 0.005,
+  "nu": 1e-10,
+  "steps": 2,
+  "m": [
+   0.5,
+   -0.5
+  ],
+  "probe": 0.00125,
+  "states": {
+   "L": -0.00275,
+   "R": -0.00225
+  },
+  "sigma": 1e-06
+ },
+ "zero_noise": {
+  "L": {
+   "x_pos_init": -0.00275,
+   "terminal_x": [
+    0.0,
+    0.0022500000000000003
+   ],
+   "terminal_m": [
+    -0.5,
+    0.5
+   ],
+   "U_probe": -0.5
+  },
+  "R": {
+   "x_pos_init": -0.00225,
+   "terminal_x": [
+    -0.0025,
+    0.0002500000000000002
+   ],
+   "terminal_m": [
+    -0.5,
+    0.5
+   ],
+   "U_probe": 0.0
+  }
+ },
+ "delta_U": 0.5,
+ "production_512_seeds": {
+  "L": {
+   "unique": [
+    -0.5
+   ],
+   "mean": -0.5
+  },
+  "R": {
+   "unique": [
+    0.0
+   ],
+   "mean": 0.0
+  }
+ },
+ "margins": {
+  "L": {
+   "order_gap_after_step1": 0.0002499999999999998,
+   "probe_margin": 0.0010000000000000002
+  },
+  "R": {
+   "order_gap_after_step1": 0.0002500000000000002,
+   "probe_margin": 0.0009999999999999998
+  }
+ },
+ "displacement_cap": 0.0001,
+ "log_exceptional_probability": -5003.444767152528,
+ "regime": [
+  {
+   "configuration": "counterexample",
+   "m": 0.5,
+   "h": 0.005,
+   "nu": 1e-10,
+   "sigma": 1e-06,
+   "R": 2500.0
+  },
+  {
+   "configuration": "twopulse N=1600 h=0.005",
+   "m": 0.0014375,
+   "h": 0.005,
+   "nu": 0.1,
+   "sigma": 0.03162277660168379,
+   "R": 0.0002272887068246023
+  },
+  {
+   "configuration": "twopulse N=1600 h=0.0025",
+   "m": 0.0014375,
+   "h": 0.0025,
+   "nu": 0.1,
+   "sigma": 0.022360679774997897,
+   "R": 0.0001607173858827974
+  },
+  {
+   "configuration": "gaussian N=1600 h=0.005",
+   "m": 0.001,
+   "h": 0.005,
+   "nu": 0.1,
+   "sigma": 0.03162277660168379,
+   "R": 0.000158113883008419
+  },
+  {
+   "configuration": "twopulse N=6400 h=0.005",
+   "m": 0.000359375,
+   "h": 0.005,
+   "nu": 0.1,
+   "sigma": 0.03162277660168379,
+   "R": 5.682217670615057e-05
+  }
+ ],
+ "scope": "two particles, strongly transport-dominated (R ~ 2.5e3). It does NOT show FULL worse than RAW, does not invalidate the measured gains at nu=0.1 with large N (R ~ 1e-4), and does not exclude a theorem carrying explicit resolution assumptions."
+}

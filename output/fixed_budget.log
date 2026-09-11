@@ -1,0 +1,16 @@
+    shock A_ref            N=6400  S=50      rms(ubar)=4.88781e-03 [4.1481e-03,5.5899e-03] work=1.6e+08 t=10.89s
+    shock B_manyruns       N=1600  S=200     rms(ubar)=6.01466e-03 [5.0481e-03,6.9302e-03] work=1.6e+08 t=9.13s
+    shock C_fewruns        N=25600 S=12      rms(ubar)=5.59574e-03 [4.7154e-03,6.3789e-03] work=1.54e+08 t=12.50s
+    shock D_finer_dt       N=6400  S=25      rms(ubar)=6.22156e-03 [4.9093e-03,7.4540e-03] work=1.6e+08 t=10.01s
+    shock E_bigN           N=12800 S=25      rms(ubar)=5.04598e-03 [4.2762e-03,5.8281e-03] work=1.6e+08 t=11.66s
+    shock F_antithetic     N=6400  S=50      rms(ubar)=3.54261e-03 [3.4782e-03,3.6102e-03] work=1.6e+08 t=10.51s
+    shock G_comp_antith    N=6400  S=50      rms(ubar)=3.51841e-03 [3.4274e-03,3.6153e-03] work=1.6e+08 t=12.83s
+    shock H_twospeed_diag  N=6400  S=50      rms(ubar)=1.43841e-02 [1.3705e-02,1.5107e-02] work=1.6e+08 t=11.80s
+ gaussian A_ref            N=6400  S=50      rms(ubar)=1.98571e-03 [1.7920e-03,2.1695e-03] work=6.4e+07 t=3.83s
+ gaussian B_manyruns       N=1600  S=200     rms(ubar)=2.46569e-03 [2.1920e-03,2.7462e-03] work=6.4e+07 t=3.20s
+ gaussian C_fewruns        N=25600 S=12      rms(ubar)=1.87936e-03 [1.6415e-03,2.1154e-03] work=6.14e+07 t=4.73s
+ gaussian D_finer_dt       N=6400  S=25      rms(ubar)=2.57139e-03 [2.2887e-03,2.8368e-03] work=6.4e+07 t=3.70s
+ gaussian E_bigN           N=12800 S=25      rms(ubar)=1.80679e-03 [1.6025e-03,2.0132e-03] work=6.4e+07 t=4.36s
+ gaussian F_antithetic     N=6400  S=50      rms(ubar)=1.49343e-03 [1.3092e-03,1.6844e-03] work=6.4e+07 t=3.92s
+ gaussian G_comp_antith    N=6400  S=50      rms(ubar)=1.08565e-03 [9.8066e-04,1.1818e-03] work=6.4e+07 t=4.67s
+ gaussian H_twospeed_diag  N=6400  S=50      rms(ubar)=5.62247e-02 [5.5876e-02,5.6563e-02] work=6.4e+07 t=4.21s

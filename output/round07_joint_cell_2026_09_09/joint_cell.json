@@ -1,0 +1,52 @@
+{
+ "purpose": "decide whether the usable ensemble window survives joint N,h refinement",
+ "baseline": "two-pulse, nu=0.1, T=1, spectral reference, 64 paired seeds",
+ "rows": [
+  {
+   "N": 6400,
+   "h": 0.0025,
+   "b2_full": 5.658663278688129e-07,
+   "b2_ci": [
+    4.325306399279938e-07,
+    6.882832914274295e-07
+   ],
+   "V_full": 5.85200940365326e-06,
+   "V_raw": 5.9351849656211167e-05,
+   "Bstar_full": 10.34168162239538,
+   "var_ratio": 0.0985986020242058,
+   "cost_full": 0.2575590988753902,
+   "cost_raw": 0.25292197596888855
+  },
+  {
+   "N": 6400,
+   "h": 0.005,
+   "b2_full": 1.7143923858487891e-06,
+   "b2_ci": [
+    1.357030921713869e-06,
+    2.030316898447002e-06
+   ],
+   "V_full": 7.686247882814673e-06,
+   "V_raw": 5.731992124793642e-05,
+   "Bstar_full": 4.483365620531055,
+   "var_ratio": 0.1340938318733539,
+   "cost_full": 0.13912462767177658,
+   "cost_raw": 0.13738436517189712
+  },
+  {
+   "N": 1600,
+   "h": 0.0025,
+   "b2_full": 1.0934477696250692e-06,
+   "b2_ci": [
+    2.646242902159013e-07,
+    1.659014825611969e-06
+   ],
+   "V_full": 3.8617506356183206e-05,
+   "V_raw": 0.00025358858365920036,
+   "Bstar_full": 35.3171934032338,
+   "var_ratio": 0.15228408865629997,
+   "cost_full": 0.047212474593152365,
+   "cost_raw": 0.044524106812559694
+  }
+ ],
+ "caveat": "three cells indicate a direction; they do not establish an asymptotic rate or separate all N/h interactions"
+}

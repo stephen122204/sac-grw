@@ -1,0 +1,73 @@
+{
+ "cut_robustness": [
+  {
+   "cut": 0.01,
+   "q": 0.40668261245355636,
+   "acc": 1.0,
+   "cal": 0.4307168698332029
+  },
+  {
+   "cut": 0.001,
+   "q": 0.5552927179960635,
+   "acc": 0.9,
+   "cal": 0.3779343877677578
+  },
+  {
+   "cut": 0.0001,
+   "q": 0.6759745801000047,
+   "acc": 0.8,
+   "cal": 0.39719967353977104
+  }
+ ],
+ "cost": {
+  "RAW": 0.030115208501229063,
+  "FULL": 0.03200160450433032
+ },
+ "work": [
+  {
+   "profile": "P1 three-pulse",
+   "label": "predicted HELP  (95th pct)",
+   "x": -0.6390977443609023,
+   "bias_raw": -0.0027158644776913987,
+   "bias_full": -0.0035281121356877665,
+   "V_raw": 0.0002337677539595982,
+   "V_full": 1.9910226014245467e-05,
+   "var_ratio": 0.08517096852325719,
+   "work_ratio": 0.09050601956884359
+  },
+  {
+   "profile": "P1 three-pulse",
+   "label": "predicted NONE  (20th pct)",
+   "x": 2.4185463659147866,
+   "bias_raw": -1.2159242502725667e-05,
+   "bias_full": 7.398823637570773e-05,
+   "V_raw": 3.8906825540338965e-06,
+   "V_full": 2.8058087972224376e-06,
+   "var_ratio": 0.7211610709060158,
+   "work_ratio": 0.766334105709803
+  },
+  {
+   "profile": "P2 wide-narrow",
+   "label": "predicted HELP  (95th pct)",
+   "x": 0.162907268170426,
+   "bias_raw": -0.003005816898764224,
+   "bias_full": -0.0027520610800812195,
+   "V_raw": 0.00014735885693065506,
+   "V_full": 1.962298867477343e-05,
+   "var_ratio": 0.13316463688373834,
+   "work_ratio": 0.14150597839434623
+  },
+  {
+   "profile": "P2 wide-narrow",
+   "label": "predicted NONE  (20th pct)",
+   "x": 1.6917293233082704,
+   "bias_raw": -0.0001137265498718466,
+   "bias_full": -0.00013997715174643606,
+   "V_raw": 1.3128713107317612e-06,
+   "V_full": 6.742086926639661e-07,
+   "var_ratio": 0.5135375319369111,
+   "work_ratio": 0.5457051706782711
+  }
+ ],
+ "note": "station work uses the shared-bias model with measured b, V and cost; target frozen at 4x the shared bias^2"
+}

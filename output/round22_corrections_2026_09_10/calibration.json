@@ -1,0 +1,96 @@
+{
+ "M": 1500,
+ "n": 48,
+ "rows": [
+  {
+   "observable": "station x=+0.1",
+   "skew": -0.1531466535338266,
+   "kurtosis": -0.540117151928257,
+   "shapiro_p": 0.8065961341628243,
+   "true_ratio": 0.15,
+   "boot_coverage": 0.9406666666666667,
+   "boot_se": 0.00609988463764624,
+   "F_coverage": 0.9766666666666667,
+   "F_se": 0.0038977676422014412
+  },
+  {
+   "observable": "station x=+0.1",
+   "skew": -0.1531466535338266,
+   "kurtosis": -0.540117151928257,
+   "shapiro_p": 0.8065961341628243,
+   "true_ratio": 0.75,
+   "boot_coverage": 0.9373333333333334,
+   "boot_se": 0.006257771464643279,
+   "F_coverage": 0.9713333333333334,
+   "F_se": 0.004308510097383924
+  },
+  {
+   "observable": "station x=-2.0",
+   "skew": -0.23238964183167085,
+   "kurtosis": -0.5866317398680208,
+   "shapiro_p": 0.34097220232574754,
+   "true_ratio": 0.15,
+   "boot_coverage": 0.944,
+   "boot_se": 0.005936553433320271,
+   "F_coverage": 0.978,
+   "F_se": 0.003787347356660069
+  },
+  {
+   "observable": "station x=-2.0",
+   "skew": -0.23238964183167085,
+   "kurtosis": -0.5866317398680208,
+   "shapiro_p": 0.34097220232574754,
+   "true_ratio": 0.75,
+   "boot_coverage": 0.9366666666666666,
+   "boot_se": 0.006288731839421058,
+   "F_coverage": 0.974,
+   "F_se": 0.004108852232274444
+  },
+  {
+   "observable": "max|grad u|",
+   "skew": -0.23493769546220228,
+   "kurtosis": 0.06606004229814522,
+   "shapiro_p": 0.4910972498017976,
+   "true_ratio": 0.15,
+   "boot_coverage": 0.9426666666666667,
+   "boot_se": 0.006002567351959895,
+   "F_coverage": 0.9433333333333334,
+   "F_se": 0.005969676459996557
+  },
+  {
+   "observable": "max|grad u|",
+   "skew": -0.23493769546220228,
+   "kurtosis": 0.06606004229814522,
+   "shapiro_p": 0.4910972498017976,
+   "true_ratio": 0.75,
+   "boot_coverage": 0.9313333333333333,
+   "boot_se": 0.006529500009217425,
+   "F_coverage": 0.9373333333333334,
+   "F_se": 0.006257771464643279
+  },
+  {
+   "observable": "level x(u=0.25)",
+   "skew": -0.17268793145139724,
+   "kurtosis": -0.32643791982439696,
+   "shapiro_p": 0.9158060908577964,
+   "true_ratio": 0.15,
+   "boot_coverage": 0.9366666666666666,
+   "boot_se": 0.006288731839421058,
+   "F_coverage": 0.9666666666666667,
+   "F_se": 0.004634811914358713
+  },
+  {
+   "observable": "level x(u=0.25)",
+   "skew": -0.17268793145139724,
+   "kurtosis": -0.32643791982439696,
+   "shapiro_p": 0.9158060908577964,
+   "true_ratio": 0.75,
+   "boot_coverage": 0.9473333333333334,
+   "boot_se": 0.005767315313551524,
+   "F_coverage": 0.9753333333333334,
+   "F_se": 0.00400484891285736
+  }
+ ],
+ "construction": "centre/scale the empirical per-replicate values, resample to impose a known ratio, count coverage",
+ "limitation": "performance under this empirical distribution and configuration; not a guarantee for other problems"
+}

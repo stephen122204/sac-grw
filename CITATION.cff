@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite the paper below."
-title: "RB-GBMC: Relaxation-Brownian Gradient Monte Carlo for Viscous Burgers' Equation"
+title: "Sign-Aware Antithetic Coupling for Signed Gradient-Particle Methods"
 authors:
   - family-names: Abkin
     given-names: Stephen
@@ -10,12 +10,11 @@ license: NOASSERTION
 preferred-citation:
   type: article
   title: >-
-    A Relaxation-Brownian Gradient Monte Carlo Algorithm for Viscous Burgers'
-    Equation
+    Sign-Aware Antithetic Coupling for Signed Gradient-Particle Methods
   authors:
     - family-names: Abkin
       given-names: Stephen
     - family-names: Daripa
       given-names: Prabir
   year: 2026
-  notes: "Preprint identifier to be added before public release."
+  notes: "Unpublished manuscript, September 2026; no DOI assigned."

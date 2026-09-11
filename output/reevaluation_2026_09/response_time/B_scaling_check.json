@@ -1,0 +1,17 @@
+{
+ "metadata": {
+  "mode": "B",
+  "S": 20,
+  "versions": {
+   "python": "3.11.4",
+   "numpy": "1.26.4",
+   "scipy": "1.17.1"
+  },
+  "purpose": "exact dimensionless equivalence check"
+ },
+ "g_B1": 0.9891951562596618,
+ "g_B2": 0.9891951992167611,
+ "max_abs_X_diff": 7.105427357601002e-15,
+ "max_abs_U_diff": 0.0,
+ "g_difference": -4.295709932211622e-08
+}

@@ -1,0 +1,132 @@
+{
+ "rows": [
+  {
+   "config": "clustered",
+   "drift": "heat",
+   "h": 0.005,
+   "var_raw": 0.0003525502494444883,
+   "var_sign": 2.7079992122859432e-05,
+   "ratio": 0.07681172305374692,
+   "seeds": 128,
+   "verdict": "ok"
+  },
+  {
+   "config": "clustered",
+   "drift": "heat",
+   "h": 0.0025,
+   "var_raw": 0.00028679406971594183,
+   "var_sign": 2.4313605040414528e-05,
+   "ratio": 0.08477722382647658,
+   "seeds": 128,
+   "verdict": "ok"
+  },
+  {
+   "config": "clustered",
+   "drift": "burgers",
+   "h": 0.005,
+   "var_raw": 0.00030019312880186,
+   "var_sign": 2.817178190820998e-05,
+   "ratio": 0.09384552544773446,
+   "seeds": 128,
+   "verdict": "ok"
+  },
+  {
+   "config": "clustered",
+   "drift": "burgers",
+   "h": 0.0025,
+   "var_raw": 0.0003175724346109181,
+   "var_sign": 2.7583664184770506e-05,
+   "ratio": 0.08685786667399306,
+   "seeds": 128,
+   "verdict": "ok"
+  },
+  {
+   "config": "separated",
+   "drift": "heat",
+   "h": 0.005,
+   "var_raw": 4.8017584242994497e-05,
+   "var_sign": 4.799892938638997e-05,
+   "ratio": 0.9996114994767308,
+   "seeds": 128,
+   "verdict": "ok"
+  },
+  {
+   "config": "separated",
+   "drift": "heat",
+   "h": 0.0025,
+   "var_raw": 4.707774163832456e-05,
+   "var_sign": 4.708903191722873e-05,
+   "ratio": 1.0002398220159094,
+   "seeds": 128,
+   "verdict": "REVERSAL",
+   "confirm_ratio_256_fresh_seeds": 0.9999518977190098
+  },
+  {
+   "config": "separated",
+   "drift": "burgers",
+   "h": 0.005,
+   "var_raw": 4.8055261866460685e-05,
+   "var_sign": 4.805859025907418e-05,
+   "ratio": 1.0000692617724725,
+   "seeds": 128,
+   "verdict": "REVERSAL",
+   "confirm_ratio_256_fresh_seeds": 0.9996861234802953
+  },
+  {
+   "config": "separated",
+   "drift": "burgers",
+   "h": 0.0025,
+   "var_raw": 4.6751369848339854e-05,
+   "var_sign": 4.676842182717017e-05,
+   "ratio": 1.0003647375228926,
+   "seeds": 128,
+   "verdict": "REVERSAL",
+   "confirm_ratio_256_fresh_seeds": 0.9996909052250472
+  },
+  {
+   "config": "merging",
+   "drift": "heat",
+   "h": 0.005,
+   "var_raw": 6.940198559095341e-05,
+   "var_sign": 4.271682182186411e-05,
+   "ratio": 0.6154985546614141,
+   "seeds": 128,
+   "verdict": "ok"
+  },
+  {
+   "config": "merging",
+   "drift": "heat",
+   "h": 0.0025,
+   "var_raw": 6.919904518263319e-05,
+   "var_sign": 4.204622283177208e-05,
+   "ratio": 0.6076127599853701,
+   "seeds": 128,
+   "verdict": "ok"
+  },
+  {
+   "config": "merging",
+   "drift": "burgers",
+   "h": 0.005,
+   "var_raw": 7.432935806994538e-05,
+   "var_sign": 4.3602344193813594e-05,
+   "ratio": 0.5866099926866438,
+   "seeds": 128,
+   "verdict": "ok"
+  },
+  {
+   "config": "merging",
+   "drift": "burgers",
+   "h": 0.0025,
+   "var_raw": 7.099483201697464e-05,
+   "var_sign": 4.143874980982627e-05,
+   "ratio": 0.5836868492050012,
+   "seeds": 128,
+   "verdict": "ok"
+  }
+ ],
+ "matrix": "predeclared: 3 configs x 2 drifts x 2 h x 2 couplings",
+ "N": 400,
+ "T": 1.0,
+ "nu": 0.1,
+ "seeds": 128
+}

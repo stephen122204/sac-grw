@@ -1,0 +1,81 @@
+{
+ "inference": {
+  "SINGLE": {
+   "mean": 4.860274722037834e-06,
+   "se": 4.2401957403103825e-07,
+   "ci": [
+    3.995481099266254e-06,
+    5.725068344809414e-06
+   ],
+   "verdict": "interval straddles tol"
+  },
+  "RAW": {
+   "mean": 6.535113727576519e-06,
+   "se": 7.035565225005837e-07,
+   "ci": [
+    5.100200739636682e-06,
+    7.970026715516357e-06
+   ],
+   "verdict": "interval above tol"
+  },
+  "FULL": {
+   "mean": 4.57770017905571e-06,
+   "se": 1.8233592550158199e-07,
+   "ci": [
+    4.2058236072341e-06,
+    4.949576750877321e-06
+   ],
+   "verdict": "interval below tol"
+  }
+ },
+ "differences": {
+  "FULL-SINGLE": {
+   "diff": -2.825745429821235e-07,
+   "ci": [
+    -1.2139871158462063e-06,
+    6.488380298819594e-07
+   ],
+   "verdict": "UNRESOLVED"
+  },
+  "FULL-RAW": {
+   "diff": -1.957413548520809e-06,
+   "ci": [
+    -3.4326774740895818e-06,
+    -4.821496229520363e-07
+   ],
+   "verdict": "resolved"
+  },
+  "SINGLE-RAW": {
+   "diff": -1.6748390055386854e-06,
+   "ci": [
+    -3.3240564765712527e-06,
+    -2.562153450611806e-08
+   ],
+   "verdict": "resolved"
+  }
+ },
+ "inference_note": "pointwise approximate t intervals on 32 scalar block errors; unpaired across arms; not simultaneous and not a probability guarantee",
+ "reproducibility": {
+  "hash_stable": false,
+  "hash_samples": [
+   "8365452826272897736",
+   "-8786583653101969840",
+   "-3543667445290360174"
+  ],
+  "pythonhashseed_recorded": false,
+  "pythonhashseed_env": null
+ },
+ "fixtures": {
+  "seed_deterministic": true,
+  "single_vs_production": {
+   "max_abs_dx": 0.0,
+   "max_abs_dm": 0.0,
+   "max_abs_dfield": 0.0
+  }
+ },
+ "arm_ids": {
+  "SINGLE": 1,
+  "RAW": 2,
+  "FULL": 3
+ }
+}

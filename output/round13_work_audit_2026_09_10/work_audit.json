@@ -1,0 +1,144 @@
+{
+ "integer_choices": [
+  {
+   "tol": 3e-05,
+   "SINGLE": {
+    "cell": "6400_0.005",
+    "B_int": 9,
+    "B_cont": 8.56226640954917,
+    "work": 0.6748439984803554
+   },
+   "RAW": {
+    "cell": "1600_0.005",
+    "B_int": 11,
+    "B_cont": 10.492447295937565,
+    "work": 0.27488701901529566
+   },
+   "FULL": {
+    "cell": "1600_0.005",
+    "B_int": 2,
+    "B_cont": 1.5169874355873407,
+    "work": 0.05289624899887713
+   }
+  },
+  {
+   "tol": 1e-05,
+   "SINGLE": {
+    "cell": "6400_0.005",
+    "B_int": 30,
+    "B_cont": 29.230072099322474,
+    "work": 2.249479994934518
+   },
+   "RAW": {
+    "cell": "1600_0.005",
+    "B_int": 40,
+    "B_cont": 39.801028982904796,
+    "work": 0.9995891600556206
+   },
+   "FULL": {
+    "cell": "6400_0.005",
+    "B_int": 1,
+    "B_cont": 0.927662549417272,
+    "work": 0.14637429199865437
+   }
+  },
+  {
+   "tol": 5e-06,
+   "SINGLE": {
+    "cell": "6400_0.005",
+    "B_int": 74,
+    "B_cont": 73.71206071754284,
+    "work": 5.5487173208384775
+   },
+   "RAW": {
+    "cell": "6400_0.005",
+    "B_int": 18,
+    "B_cont": 17.44575980438376,
+    "work": 2.5953990029884153
+   },
+   "FULL": {
+    "cell": "6400_0.005",
+    "B_int": 3,
+    "B_cont": 2.339368782111951,
+    "work": 0.4391228759959631
+   }
+  },
+  {
+   "tol": 3e-06,
+   "SINGLE": {
+    "cell": "6400_0.0025",
+    "B_int": 96,
+    "B_cont": 95.33964953091059,
+    "work": 13.564088015933521
+   },
+   "RAW": {
+    "cell": "1600_0.0025",
+    "B_int": 134,
+    "B_cont": 133.00898848668373,
+    "work": 6.123294686120062
+   },
+   "FULL": {
+    "cell": "6400_0.0025",
+    "B_int": 3,
+    "B_cont": 2.40414463291557,
+    "work": 0.782982250508212
+   }
+  },
+  {
+   "tol": 2e-06,
+   "SINGLE": {
+    "cell": "6400_0.0025",
+    "B_int": 162,
+    "B_cont": 161.81856386337418,
+    "work": 22.889398526887817
+   },
+   "RAW": {
+    "cell": "6400_0.0025",
+    "B_int": 42,
+    "B_cont": 41.38515872653046,
+    "work": 10.78631664585555
+   },
+   "FULL": {
+    "cell": "6400_0.0025",
+    "B_int": 5,
+    "B_cont": 4.080518794985765,
+    "work": 1.3049704175136867
+   }
+  }
+ ],
+ "bias_endpoint_sensitivity": [
+  {
+   "tol": 3e-05,
+   "ratio_b2_lo": 0.2116719592914905,
+   "ratio_b2_point": 0.192429053901355,
+   "ratio_b2_hi": 0.192429053901355
+  },
+  {
+   "tol": 1e-05,
+   "ratio_b2_lo": 0.15564114653786065,
+   "ratio_b2_point": 0.14643445312122993,
+   "ratio_b2_hi": 0.12689461490035195
+  },
+  {
+   "tol": 5e-06,
+   "ratio_b2_lo": 0.1567940439196226,
+   "ratio_b2_point": 0.1691928198671359,
+   "ratio_b2_hi": 0.15227353788042233
+  },
+  {
+   "tol": 3e-06,
+   "ratio_b2_lo": 0.1627822509231833,
+   "ratio_b2_point": 0.12786943804665027,
+   "ratio_b2_hi": 0.11726129717100159
+  },
+  {
+   "tol": 2e-06,
+   "ratio_b2_lo": 0.14835069002814835,
+   "ratio_b2_point": 0.12098387803357306,
+   "ratio_b2_hi": 0.11046354081326236
+  }
+ ],
+ "tol_units": "expected integrated squared error of the reconstructed field over the output window [-5,5]",
+ "caveat": "oracle plug-in: bias, variance and cost are ESTIMATED, then the cheapest cell and replicate count are SELECTED from those same estimates. Selection and evaluation share evidence.",
+ "sensitivity_caveat": "bias-endpoint one-factor sensitivity with V and C fixed; not a confidence interval"
+}

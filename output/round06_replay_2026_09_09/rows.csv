@@ -1,0 +1,9 @@
+problem,N,coupling,seeds,grid_var,mse,secs_round05_mean,secs_replay_solver_only_mean,timing_note
+gaussian,1600,raw_rank,64,0.00012780596510807778,0.0001344107254928255,0.02619856639057616,0.024440201281493046,round-5 and replay timings are NOT comparable: round-5 included the estimator and the audit scan
+gaussian,1600,sign_adjusted,64,2.7228130664271525e-05,2.8783054182580567e-05,0.027467441406429316,0.025958262406049926,round-5 and replay timings are NOT comparable: round-5 included the estimator and the audit scan
+gaussian,1600,within_sign,64,3.271584169920611e-05,3.422010536905502e-05,0.03034135807831717,0.02875593223427586,round-5 and replay timings are NOT comparable: round-5 included the estimator and the audit scan
+gaussian,1600,independent,64,0.00031406788018454717,0.00031659912298154496,0.028425300171818435,0.026464287734427216,round-5 and replay timings are NOT comparable: round-5 included the estimator and the audit scan
+twopulse,1600,raw_rank,64,0.0002553315812208593,0.00025534485941805616,0.02696859051576439,0.02491275646889335,round-5 and replay timings are NOT comparable: round-5 included the estimator and the audit scan
+twopulse,1600,sign_adjusted,64,4.1886103688323917e-05,4.531947011140422e-05,0.028547726515682825,0.026375156312383297,round-5 and replay timings are NOT comparable: round-5 included the estimator and the audit scan
+twopulse,1600,within_sign,64,5.163343624187171e-05,5.5421623256571715e-05,0.0314745280153943,0.0315027310939513,round-5 and replay timings are NOT comparable: round-5 included the estimator and the audit scan
+twopulse,1600,independent,64,0.0004892152875212224,0.0004900010685709404,0.028661356843713293,0.026985307968743655,round-5 and replay timings are NOT comparable: round-5 included the estimator and the audit scan

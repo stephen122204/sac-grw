@@ -1,0 +1,149 @@
+{
+ "N": 2048,
+ "h": 0.005,
+ "nu": 0.1,
+ "reps": 48,
+ "times": [
+  0.25,
+  1.0,
+  2.0
+ ],
+ "rows": [
+  {
+   "profile": "P1 single bump",
+   "sign_regions": 2,
+   "T": 0.25,
+   "within_over_raw": 0.7256658177623193,
+   "full_over_raw": 0.6953496212511877,
+   "full_over_within": 0.958222923322177,
+   "ci": [
+    0.8861075041409455,
+    1.0386852655619536
+   ],
+   "sep_full": 0.021613437839723235,
+   "sep_within": 0.02393006292043786,
+   "sep_ratio": 0.9031918516713939
+  },
+  {
+   "profile": "P1 single bump",
+   "sign_regions": 2,
+   "T": 1.0,
+   "within_over_raw": 0.2498026463973313,
+   "full_over_raw": 0.19737995517205903,
+   "full_over_within": 0.7901435714100092,
+   "ci": [
+    0.7273607709764895,
+    0.8615945698929593
+   ],
+   "sep_full": 0.014502150928787687,
+   "sep_within": 0.02007305804844379,
+   "sep_ratio": 0.722468439725954
+  },
+  {
+   "profile": "P1 single bump",
+   "sign_regions": 2,
+   "T": 2.0,
+   "within_over_raw": 0.1302013046268008,
+   "full_over_raw": 0.10544719504249926,
+   "full_over_within": 0.8098781755278502,
+   "ci": [
+    0.7349228597793195,
+    0.8931290900577288
+   ],
+   "sep_full": 0.02666286673928466,
+   "sep_within": 0.039346336560885306,
+   "sep_ratio": 0.6776454701958341
+  },
+  {
+   "profile": "P2 two-pulse",
+   "sign_regions": 3,
+   "T": 0.25,
+   "within_over_raw": 0.5510331710514715,
+   "full_over_raw": 0.49296558845650035,
+   "full_over_within": 0.8946205316747672,
+   "ci": [
+    0.829965328284471,
+    0.9670905588949127
+   ],
+   "sep_full": 0.021531335567776737,
+   "sep_within": 0.023733941088908465,
+   "sep_ratio": 0.9071959640887005
+  },
+  {
+   "profile": "P2 two-pulse",
+   "sign_regions": 3,
+   "T": 1.0,
+   "within_over_raw": 0.22635023445429933,
+   "full_over_raw": 0.1777464965047018,
+   "full_over_within": 0.7852719787687663,
+   "ci": [
+    0.7128182909119335,
+    0.8663097927912508
+   ],
+   "sep_full": 0.0177524452574032,
+   "sep_within": 0.022800980341888988,
+   "sep_ratio": 0.7785825429965907
+  },
+  {
+   "profile": "P2 two-pulse",
+   "sign_regions": 3,
+   "T": 2.0,
+   "within_over_raw": 0.11251725130909,
+   "full_over_raw": 0.08924876071815785,
+   "full_over_within": 0.7932006841598668,
+   "ci": [
+    0.701635815692928,
+    0.889337534008323
+   ],
+   "sep_full": 0.022706046203924357,
+   "sep_within": 0.04174613596773592,
+   "sep_ratio": 0.5439077336755919
+  },
+  {
+   "profile": "P3 oscillatory",
+   "sign_regions": 13,
+   "T": 0.25,
+   "within_over_raw": 0.5034276131243484,
+   "full_over_raw": 0.4690487790409988,
+   "full_over_within": 0.93171047199817,
+   "ci": [
+    0.8762300980596687,
+    0.9896796668833127
+   ],
+   "sep_full": 0.03017724263954241,
+   "sep_within": 0.03545735587924709,
+   "sep_ratio": 0.8510855333464081
+  },
+  {
+   "profile": "P3 oscillatory",
+   "sign_regions": 13,
+   "T": 1.0,
+   "within_over_raw": 0.20510204017843367,
+   "full_over_raw": 0.13670550740867216,
+   "full_over_within": 0.6665243665530667,
+   "ci": [
+    0.6131964733148327,
+    0.7246613237805791
+   ],
+   "sep_full": 0.03025491196942191,
+   "sep_within": 0.04156802281248877,
+   "sep_ratio": 0.7278410162999639
+  },
+  {
+   "profile": "P3 oscillatory",
+   "sign_regions": 13,
+   "T": 2.0,
+   "within_over_raw": 0.1390556386247835,
+   "full_over_raw": 0.08276463162969895,
+   "full_over_within": 0.595190762835762,
+   "ci": [
+    0.5435446153439145,
+    0.6547759965582419
+   ],
+   "sep_full": 0.029640512958901508,
+   "sep_within": 0.07067111701222123,
+   "sep_ratio": 0.4194148078029635
+  }
+ ],
+ "prediction": "FULL/WITHIN improves with sign-region interleaving; weakest for 2 separated sign regions"
+}

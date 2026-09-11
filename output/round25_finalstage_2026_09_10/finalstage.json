@@ -1,0 +1,122 @@
+{
+ "nu": 0.1,
+ "h": 0.005,
+ "T": 1.0,
+ "draws": 12000,
+ "batches": 40,
+ "grid_points": 8001,
+ "conditional_checks": [
+  {
+   "N": 200,
+   "seed": 11,
+   "unlike_pairs": 74,
+   "closed_form": 5.5964532257607504e-05,
+   "measured": 5.614727956420038e-05,
+   "measured_se": 4.124905879124986e-07,
+   "ci": [
+    5.5312938597429144e-05,
+    5.6981620530971613e-05
+   ],
+   "agrees": true
+  },
+  {
+   "N": 200,
+   "seed": 12,
+   "unlike_pairs": 70,
+   "closed_form": 1.1657986596292305e-05,
+   "measured": 1.1827237331188832e-05,
+   "measured_se": 5.18687420166154e-07,
+   "ci": [
+    1.077809299608146e-05,
+    1.2876381666296205e-05
+   ],
+   "agrees": true
+  },
+  {
+   "N": 200,
+   "seed": 13,
+   "unlike_pairs": 74,
+   "closed_form": 3.9511083121129745e-05,
+   "measured": 3.948674900767272e-05,
+   "measured_se": 3.9810156219978167e-07,
+   "ci": [
+    3.868151259255877e-05,
+    4.029198542278667e-05
+   ],
+   "agrees": true
+  },
+  {
+   "N": 400,
+   "seed": 11,
+   "unlike_pairs": 122,
+   "closed_form": 2.9738489991091835e-05,
+   "measured": 2.9773818795463432e-05,
+   "measured_se": 1.4657922407670153e-07,
+   "ci": [
+    2.9477334329857455e-05,
+    3.007030326106941e-05
+   ],
+   "agrees": true
+  },
+  {
+   "N": 400,
+   "seed": 12,
+   "unlike_pairs": 128,
+   "closed_form": 3.360464295352653e-05,
+   "measured": 3.349639446452735e-05,
+   "measured_se": 1.2625867566006255e-07,
+   "ci": [
+    3.324101218769388e-05,
+    3.375177674136083e-05
+   ],
+   "agrees": true
+  },
+  {
+   "N": 400,
+   "seed": 13,
+   "unlike_pairs": 134,
+   "closed_form": 4.52724531071832e-05,
+   "measured": 4.528146643205974e-05,
+   "measured_se": 1.5845504016119716e-07,
+   "ci": [
+    4.496096086109162e-05,
+    4.5601972003027856e-05
+   ],
+   "agrees": true
+  }
+ ],
+ "share": [
+  {
+   "problem": "gaussian",
+   "N": 1600,
+   "h": 0.005,
+   "E_Delta": 3.2952126904235354e-06,
+   "E_Delta_se": 1.1527310239879274e-07,
+   "RAW_minus_FULL": 8.795056299433645e-05,
+   "guaranteed_share": 0.037466646923405476,
+   "measured_share": 0.042331876079080816
+  },
+  {
+   "problem": "twopulse",
+   "N": 1600,
+   "h": 0.005,
+   "E_Delta": 8.047624241201388e-06,
+   "E_Delta_se": 2.87599416013801e-07,
+   "RAW_minus_FULL": 0.00021673187462209042,
+   "guaranteed_share": 0.03713170596265,
+   "measured_share": 0.052290600973201554
+  },
+  {
+   "problem": "twopulse",
+   "N": 1600,
+   "h": 0.0025,
+   "E_Delta": 4.673454927667721e-06,
+   "E_Delta_se": 1.8946086324628225e-07,
+   "RAW_minus_FULL": 0.00023919246812994745,
+   "guaranteed_share": 0.019538470271266012,
+   "measured_share": 0.02905048483489467
+  }
+ ],
+ "statement": "V_reflect - V_switch = (1/4) sum_{unlike} |m_A m_B| [g_{2 sigma}(d) - |d|], conditional on the pre-final paired state, whole-line integrated variance of the pair mean",
+ "note": "the Monte Carlo estimate uses a bounded window containing every realised particle plus 8 sigma; the identity is whole-line. Refining the window grid from 6001 to 16001 points moved the estimate by 0.02% at the checked state, so the residual gap at 4000 draws was Monte Carlo error, not quadrature error."
+}

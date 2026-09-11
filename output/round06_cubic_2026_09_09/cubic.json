@@ -1,0 +1,483 @@
+{
+ "purpose": "controlled nonquadratic-flux transfer screen, flux is the only variable",
+ "predeclared": {
+  "primary": "V_FULL/V_RAW for cubic at h=0.005 and h=0.0025",
+  "directional": "V_FINAL/V_RAW <= 1 (Corollary 3)",
+  "comparator": "V_WITHIN/V_RAW",
+  "control": "same four ratios for Burgers at identical parameters",
+  "diagnostic": "cubic h=0.005 repeated on seed key 2",
+  "reading": "interval containing 1 = UNRESOLVED, not Burgers-specific"
+ },
+ "bridge_burgers": {
+  "RAW": 0.0,
+  "FULL": 0.0,
+  "WITHIN": 0.0
+ },
+ "reference": {
+  "method": "Fourier pseudospectral, dealiased 2/3, integrating-factor RK4",
+  "domain": "[-16,16] periodic",
+  "M": 2048,
+  "dt": 0.0001,
+  "validation_vs_cole_hopf_max_abs": 5.566531109034613e-14,
+  "self_convergence_cubic_max_abs": 1.6e-13
+ },
+ "nu": 0.1,
+ "T": 1.0,
+ "N": 1600,
+ "seeds": 64,
+ "h_values": [
+  0.005,
+  0.0025
+ ],
+ "policies": [
+  "RAW",
+  "FULL",
+  "FINAL",
+  "WITHIN"
+ ],
+ "seed_scheme": "np.random.SeedSequence([6064, key, seed_index])",
+ "bootstrap": 4000,
+ "warnings_recorded": [
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent.",
+  "IntegrationWarning: The integral is probably divergent, or slowly convergent."
+ ],
+ "rows": [
+  {
+   "flux": "burgers",
+   "h": 0.005,
+   "seed_key": 1,
+   "N": 1600,
+   "seeds": 64,
+   "policy": "RAW",
+   "exact_var": 0.0002846521543470015,
+   "grid_var": 0.00028497468993043257,
+   "mse": 0.0002850900138284504,
+   "cost_s": 0.025086416640306197,
+   "var_ratio": 1.0,
+   "var_ratio_ci": [
+    1.0,
+    1.0
+   ],
+   "resolved_gain": false,
+   "mse_ratio": 1.0,
+   "var_cost_ratio": 1.0
+  },
+  {
+   "flux": "burgers",
+   "h": 0.005,
+   "seed_key": 1,
+   "N": 1600,
+   "seeds": 64,
+   "policy": "FULL",
+   "exact_var": 4.1214252618489795e-05,
+   "grid_var": 4.120135292480738e-05,
+   "mse": 4.404136994917036e-05,
+   "cost_s": 0.026118701781456366,
+   "var_ratio": 0.14478812820874734,
+   "var_ratio_ci": [
+    0.11775042311464695,
+    0.17890102436152838
+   ],
+   "resolved_gain": true,
+   "mse_ratio": 0.154482331238974,
+   "var_cost_ratio": 0.15074603903785694
+  },
+  {
+   "flux": "burgers",
+   "h": 0.005,
+   "seed_key": 1,
+   "N": 1600,
+   "seeds": 64,
+   "policy": "FINAL",
+   "exact_var": 0.0002767697755597314,
+   "grid_var": 0.0002762220280941643,
+   "mse": 0.0002767700545888518,
+   "cost_s": 0.025189182406279542,
+   "var_ratio": 0.9723087330733453,
+   "var_ratio_ci": [
+    0.9470953366643077,
+    0.9974550920389493
+   ],
+   "resolved_gain": true,
+   "mse_ratio": 0.9708163778595028,
+   "var_cost_ratio": 0.9762917671251802
+  },
+  {
+   "flux": "burgers",
+   "h": 0.005,
+   "seed_key": 1,
+   "N": 1600,
+   "seeds": 64,
+   "policy": "WITHIN",
+   "exact_var": 5.3229744912765824e-05,
+   "grid_var": 5.342381090513849e-05,
+   "mse": 5.661805306018953e-05,
+   "cost_s": 0.02895533728127475,
+   "var_ratio": 0.1869992694588104,
+   "var_ratio_ci": [
+    0.15197873726837746,
+    0.2309201876269519
+   ],
+   "resolved_gain": true,
+   "mse_ratio": 0.19859711078571407,
+   "var_cost_ratio": 0.21583899351460928
+  },
+  {
+   "flux": "burgers",
+   "h": 0.0025,
+   "seed_key": 1,
+   "N": 1600,
+   "seeds": 64,
+   "policy": "RAW",
+   "exact_var": 0.0002540233119977266,
+   "grid_var": 0.00025358858365920036,
+   "mse": 0.00025117212083866495,
+   "cost_s": 0.04463434901583696,
+   "var_ratio": 1.0,
+   "var_ratio_ci": [
+    1.0,
+    1.0
+   ],
+   "resolved_gain": false,
+   "mse_ratio": 1.0,
+   "var_cost_ratio": 1.0
+  },
+  {
+   "flux": "burgers",
+   "h": 0.0025,
+   "seed_key": 1,
+   "N": 1600,
+   "seeds": 64,
+   "policy": "FULL",
+   "exact_var": 3.888230770683554e-05,
+   "grid_var": 3.8617506356183206e-05,
+   "mse": 3.971095412580828e-05,
+   "cost_s": 0.04729347717187693,
+   "var_ratio": 0.15306590328679565,
+   "var_ratio_ci": [
+    0.1323509945563424,
+    0.17766874027740834
+   ],
+   "resolved_gain": true,
+   "mse_ratio": 0.15810255530435946,
+   "var_cost_ratio": 0.16218493072046994
+  },
+  {
+   "flux": "burgers",
+   "h": 0.0025,
+   "seed_key": 1,
+   "N": 1600,
+   "seeds": 64,
+   "policy": "FINAL",
+   "exact_var": 0.000254433827084342,
+   "grid_var": 0.0002536817620862237,
+   "mse": 0.0002514299737707998,
+   "cost_s": 0.04445836200011399,
+   "var_ratio": 1.0016160528078584,
+   "var_ratio_ci": [
+    0.983258259979873,
+    1.0203147398061965
+   ],
+   "resolved_gain": false,
+   "mse_ratio": 1.0010265985383802,
+   "var_cost_ratio": 0.9976668203462999
+  },
+  {
+   "flux": "burgers",
+   "h": 0.0025,
+   "seed_key": 1,
+   "N": 1600,
+   "seeds": 64,
+   "policy": "WITHIN",
+   "exact_var": 4.959790597825625e-05,
+   "grid_var": 4.9222535744971665e-05,
+   "mse": 5.023318576901003e-05,
+   "cost_s": 0.053480053452688026,
+   "var_ratio": 0.19524942647271729,
+   "var_ratio_ci": [
+    0.1703443952725952,
+    0.22397838637699477
+   ],
+   "resolved_gain": true,
+   "mse_ratio": 0.1999950695215742,
+   "var_cost_ratio": 0.23394426029743676
+  },
+  {
+   "flux": "cubic",
+   "h": 0.005,
+   "seed_key": 1,
+   "N": 1600,
+   "seeds": 64,
+   "policy": "RAW",
+   "exact_var": 0.00022876504305407202,
+   "grid_var": 0.0002305309551041441,
+   "mse": 0.00023378655676309688,
+   "cost_s": 0.024371511765480136,
+   "var_ratio": 1.0,
+   "var_ratio_ci": [
+    1.0,
+    1.0
+   ],
+   "resolved_gain": false,
+   "mse_ratio": 1.0,
+   "var_cost_ratio": 1.0
+  },
+  {
+   "flux": "cubic",
+   "h": 0.005,
+   "seed_key": 1,
+   "N": 1600,
+   "seeds": 64,
+   "policy": "FULL",
+   "exact_var": 4.302755042663609e-05,
+   "grid_var": 4.344632233481984e-05,
+   "mse": 4.495818854930276e-05,
+   "cost_s": 0.025304994156101657,
+   "var_ratio": 0.18808621217738186,
+   "var_ratio_ci": [
+    0.16427172600019527,
+    0.2143254665382302
+   ],
+   "resolved_gain": true,
+   "mse_ratio": 0.19230442148502266,
+   "var_cost_ratio": 0.19529032691083775
+  },
+  {
+   "flux": "cubic",
+   "h": 0.005,
+   "seed_key": 1,
+   "N": 1600,
+   "seeds": 64,
+   "policy": "FINAL",
+   "exact_var": 0.0002190428390792232,
+   "grid_var": 0.00022088441290355482,
+   "mse": 0.00022508099636656473,
+   "cost_s": 0.024492834656030027,
+   "var_ratio": 0.9575013566537313,
+   "var_ratio_ci": [
+    0.9356911742270092,
+    0.9800185596265462
+   ],
+   "resolved_gain": true,
+   "mse_ratio": 0.9627627844942609,
+   "var_cost_ratio": 0.9622678575344527
+  },
+  {
+   "flux": "cubic",
+   "h": 0.005,
+   "seed_key": 1,
+   "N": 1600,
+   "seeds": 64,
+   "policy": "WITHIN",
+   "exact_var": 5.458159721420377e-05,
+   "grid_var": 5.455297875505376e-05,
+   "mse": 5.6235390970267194e-05,
+   "cost_s": 0.029176015562427438,
+   "var_ratio": 0.23859238494450655,
+   "var_ratio_ci": [
+    0.2068861128466154,
+    0.2742821094175364
+   ],
+   "resolved_gain": true,
+   "mse_ratio": 0.24054159378912557,
+   "var_cost_ratio": 0.2856275475728767
+  },
+  {
+   "flux": "cubic",
+   "h": 0.0025,
+   "seed_key": 1,
+   "N": 1600,
+   "seeds": 64,
+   "policy": "RAW",
+   "exact_var": 0.00022211195702367387,
+   "grid_var": 0.00022068235761092588,
+   "mse": 0.00022163397382386052,
+   "cost_s": 0.04480302860906704,
+   "var_ratio": 1.0,
+   "var_ratio_ci": [
+    1.0,
+    1.0
+   ],
+   "resolved_gain": false,
+   "mse_ratio": 1.0,
+   "var_cost_ratio": 1.0
+  },
+  {
+   "flux": "cubic",
+   "h": 0.0025,
+   "seed_key": 1,
+   "N": 1600,
+   "seeds": 64,
+   "policy": "FULL",
+   "exact_var": 3.796755619713539e-05,
+   "grid_var": 3.742346101965562e-05,
+   "mse": 3.855574370902166e-05,
+   "cost_s": 0.04926968096839346,
+   "var_ratio": 0.17093882160107485,
+   "var_ratio_ci": [
+    0.1512448298161665,
+    0.19332827485025736
+   ],
+   "resolved_gain": true,
+   "mse_ratio": 0.1739613428565023,
+   "var_cost_ratio": 0.18798062244599362
+  },
+  {
+   "flux": "cubic",
+   "h": 0.0025,
+   "seed_key": 1,
+   "N": 1600,
+   "seeds": 64,
+   "policy": "FINAL",
+   "exact_var": 0.00021845838789451882,
+   "grid_var": 0.0002170819425975143,
+   "mse": 0.00021792044075760153,
+   "cost_s": 0.04546043626584151,
+   "var_ratio": 0.9835507769229838,
+   "var_ratio_ci": [
+    0.9691390363886864,
+    0.9981272342934532
+   ],
+   "resolved_gain": true,
+   "mse_ratio": 0.9832447480763474,
+   "var_cost_ratio": 0.9979826988632964
+  },
+  {
+   "flux": "cubic",
+   "h": 0.0025,
+   "seed_key": 1,
+   "N": 1600,
+   "seeds": 64,
+   "policy": "WITHIN",
+   "exact_var": 4.857315293787814e-05,
+   "grid_var": 4.828773710757632e-05,
+   "mse": 4.937064455840478e-05,
+   "cost_s": 0.05386488479689433,
+   "var_ratio": 0.21868769961223183,
+   "var_ratio_ci": [
+    0.1936145743200253,
+    0.24680859484017845
+   ],
+   "resolved_gain": true,
+   "mse_ratio": 0.2227575660293001,
+   "var_cost_ratio": 0.26291945236324493
+  },
+  {
+   "flux": "cubic",
+   "h": 0.005,
+   "seed_key": 2,
+   "N": 1600,
+   "seeds": 64,
+   "policy": "RAW",
+   "exact_var": 0.0002015748871300394,
+   "grid_var": 0.00020098596348956576,
+   "mse": 0.00019930049042747415,
+   "cost_s": 0.02498631901562476,
+   "var_ratio": 1.0,
+   "var_ratio_ci": [
+    1.0,
+    1.0
+   ],
+   "resolved_gain": false,
+   "mse_ratio": 1.0,
+   "var_cost_ratio": 1.0
+  },
+  {
+   "flux": "cubic",
+   "h": 0.005,
+   "seed_key": 2,
+   "N": 1600,
+   "seeds": 64,
+   "policy": "FULL",
+   "exact_var": 3.91462160452069e-05,
+   "grid_var": 3.899970438309854e-05,
+   "mse": 4.028318198746656e-05,
+   "cost_s": 0.026201303421714783,
+   "var_ratio": 0.19420185025306752,
+   "var_ratio_ci": [
+    0.1746061155318643,
+    0.21725036206539589
+   ],
+   "resolved_gain": true,
+   "mse_ratio": 0.20212284425926033,
+   "var_cost_ratio": 0.20364510676251013
+  },
+  {
+   "flux": "cubic",
+   "h": 0.005,
+   "seed_key": 2,
+   "N": 1600,
+   "seeds": 64,
+   "policy": "FINAL",
+   "exact_var": 0.00019600491817294867,
+   "grid_var": 0.00019579115958639508,
+   "mse": 0.00019415627443621113,
+   "cost_s": 0.02492729031246199,
+   "var_ratio": 0.9723677436391298,
+   "var_ratio_ci": [
+    0.9541642593845988,
+    0.9910835485157142
+   ],
+   "resolved_gain": true,
+   "mse_ratio": 0.9741886435892388,
+   "var_cost_ratio": 0.9700705822658026
+  },
+  {
+   "flux": "cubic",
+   "h": 0.005,
+   "seed_key": 2,
+   "N": 1600,
+   "seeds": 64,
+   "policy": "WITHIN",
+   "exact_var": 4.8762516290615456e-05,
+   "grid_var": 4.887523096451344e-05,
+   "mse": 5.006027665890925e-05,
+   "cost_s": 0.030002434968537273,
+   "var_ratio": 0.24190769487648492,
+   "var_ratio_ci": [
+    0.2178024139477595,
+    0.2691333181769776
+   ],
+   "resolved_gain": true,
+   "mse_ratio": 0.2511798970064566,
+   "var_cost_ratio": 0.2904717529373553
+  }
+ ],
+ "hashes": {
+  "this_driver": "26e4763f3642f270",
+  "spectral": "f8d8b6653ba49231",
+  "coupler": "2089bf5551a1ab12",
+  "derivation": "041af0fac95ed6f8"
+ }
+}

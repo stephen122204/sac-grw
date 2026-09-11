@@ -150,7 +150,10 @@ def advance_rbgbmc_particles(x_p, m_p, u_left, nu, a, dt, n_steps, rng,
                              collect_label_diagnostics=False,
                              rng_brownian=None,
                              conditional_mean_transport=False,
-                             redraw_after_diffusion=False):
+                             redraw_after_diffusion=False,
+                             compensate_transport_variance=False,
+                             min_variance_three_speed=False,
+                             antithetic=False):
     """Advance signed gradient particles with the paper's shared stepper.
 
     One step is exactly the Lie composition stated in the manuscript:
@@ -179,6 +182,29 @@ def advance_rbgbmc_particles(x_p, m_p, u_left, nu, a, dt, n_steps, rng,
     random numbers. The default (False) leaves the production schedule
     bit-for-bit unchanged.
 
+    ``compensate_transport_variance`` is an OPT-IN experimental variant, not the
+    default path and not used by the sign-aware coupling manuscript. When True the Brownian
+    standard deviation is reduced per particle from sqrt(2*nu*dt) to
+    sqrt(2*nu*dt - (a**2 - u_i**2) * dt**2), using the same reconstructed state
+    u_i that set the switching probability for the velocity carried into the
+    next transport. The conditional displacement variance between interior velocity-sampling
+    stages is then 2*nu*dt; this does not cover the initial transport-first loop. It is admissible
+    only while every radicand is positive, i.e. dt < 2*nu/(a**2 - u_i**2) for
+    every particle; a violation raises RuntimeError rather than clipping. The
+    default (False) leaves the production path bit-for-bit unchanged.
+
+    ``min_variance_three_speed`` is an archived experimental option using
+    {-a,0,+a}, with mean u and variance a*abs(u)-u**2. It is not the method
+    evaluated in the sign-aware coupling manuscript.
+
+    ``antithetic`` is an OPT-IN pairing flag for variance-reduction pilots. When
+    True the drawn uniforms are reflected (xi -> 1-xi) and the drawn normals are
+    negated (Z -> -Z). Both consume the identical underlying stream, so a run
+    with ``antithetic=True`` and one with ``antithetic=False`` on the same
+    generators form an antithetic pair: each retains the correct sampling law
+    marginally, while their inputs are maximally negatively coupled. The default
+    (False) leaves the production path bit-for-bit unchanged.
+
     ``collect_label_diagnostics`` is the legacy internal name of a read-only
     velocity-sampling diagnostic. When True the
     stepper accumulates the mean of ``a**2 - u_i**2`` over the reconstructed
@@ -192,6 +218,8 @@ def advance_rbgbmc_particles(x_p, m_p, u_left, nu, a, dt, n_steps, rng,
     legacy key ``D_label``; for the equal-mass shock the quantity equals the
     closed form in `eq:D-label-stationary`.
     """
+    if compensate_transport_variance and (conditional_mean_transport or redraw_after_diffusion):
+        raise ValueError("compensation requires sampled transport with the carried-velocity schedule")
     x_p = np.asarray(x_p, dtype=float).copy()
     m_p = np.asarray(m_p, dtype=float).copy()
     u_left = float(u_left)
@@ -239,10 +267,24 @@ def advance_rbgbmc_particles(x_p, m_p, u_left, nu, a, dt, n_steps, rng,
             "Invalid BPC equilibrium probability despite subcharacteristic check."
         )
     rng_brownian_stream = rng if rng_brownian is None else rng_brownian
+    def _draw_velocity(u_state, p_state, n):
+        """Velocity draw. Two-speed is the BPC choice on {-a,+a}, the unique
+        distribution there with mean u.  The three-speed option is the
+        minimum-variance distribution on {-a,0,+a} with the same mean: move at
+        a*sign(u) with probability |u|/a, otherwise stay.  Its conditional
+        variance is a|u| - u^2 rather than a^2 - u^2.  Both consume one uniform
+        per particle, so paired streams stay aligned."""
+        xi = rng.random(n)
+        if antithetic:
+            xi = 1.0 - xi
+        if min_variance_three_speed:
+            return np.where(xi < np.abs(u_state) / a, a * np.sign(u_state), 0.0)
+        return np.where(xi < p_state, +a, -a)
+
     if conditional_mean_transport:
         v = u.copy()
     else:
-        v = np.where(rng.random(len(x_p)) < p_plus, +a, -a)
+        v = _draw_velocity(u, p_plus, len(x_p))
 
     # Read-only label-variance diagnostic. The initial labels (drawn just above
     # from u^(0)) drive the first transport, so u^(0) is a used label state
@@ -254,6 +296,34 @@ def advance_rbgbmc_particles(x_p, m_p, u_left, nu, a, dt, n_steps, rng,
         label_excess_count += len(u)
 
     sigma = np.sqrt(2.0 * nu * dt)
+
+    def _brownian(sd, n):
+        """Brownian increment; negated under ``antithetic`` so the reflected run
+        consumes the same normals with opposite sign. The generator is called
+        with the scale argument, as the interface contract test requires."""
+        z = rng_brownian_stream.normal(0.0, sd, size=n)
+        return -z if antithetic else z
+
+    def _sigma_for(u_state):
+        """Per-particle Brownian sigma. Without compensation this is the scalar
+        sqrt(2*nu*dt); with it, the transport variance sampled at ``u_state`` is
+        subtracted so the interior sampling-stage-to-sampling-stage conditional
+        displacement variance is 2*nu*dt. This does not cover the initial
+        transport-first loop or arbitrary output-to-output intervals."""
+        if not compensate_transport_variance:
+            return sigma
+        q = (a * np.abs(u_state) - u_state * u_state) if min_variance_three_speed \
+            else (a * a - u_state * u_state)
+        var = 2.0 * nu * dt - q * dt * dt
+        if np.any(var <= 0.0):
+            raise RuntimeError(
+                'compensate_transport_variance is inadmissible at this dt: '
+                f'min residual Brownian variance {float(var.min()):.6g} <= 0. '
+                f'Require q*dt < 2*nu for the selected velocity law; here 2*nu*dt={2.0 * nu * dt:.6g} '
+                f'and max transport variance='
+                f'{float(np.max(q) * dt * dt):.6g}.')
+        return np.sqrt(var)
+
     snapshots = {}
     mass_history = []
     u_min_history = []
@@ -269,7 +339,7 @@ def advance_rbgbmc_particles(x_p, m_p, u_left, nu, a, dt, n_steps, rng,
             # Ordering-pilot schedule: diffuse BEFORE the reconstruction that
             # sets the next transport velocity. Same Brownian draw per step as
             # the production schedule, so paired runs stay aligned.
-            x_p = x_p + rng_brownian_stream.normal(0.0, sigma, size=len(x_p))
+            x_p = x_p + _brownian(sigma, len(x_p))
         order = np.argsort(x_p, kind='stable')
         x_p = x_p[order]
         m_p = m_p[order]
@@ -301,9 +371,9 @@ def advance_rbgbmc_particles(x_p, m_p, u_left, nu, a, dt, n_steps, rng,
         if conditional_mean_transport:
             v = u.copy()
         else:
-            v = np.where(rng.random(len(x_p)) < p_plus, +a, -a)
+            v = _draw_velocity(u, p_plus, len(x_p))
         if not redraw_after_diffusion:
-            x_p = x_p + rng_brownian_stream.normal(0.0, sigma, size=len(x_p))
+            x_p = x_p + _brownian(_sigma_for(u), len(x_p))
 
         if record_history:
             mass_history.append(float(m_p.sum()))

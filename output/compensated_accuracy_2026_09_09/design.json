@@ -1,0 +1,70 @@
+{
+  "N": 6400,
+  "S": 50,
+  "cases": [
+    {
+      "name": "shock_a2_h0.02",
+      "problem": "shock",
+      "a": 2.0,
+      "nu": 0.5,
+      "dt": 0.01,
+      "T": 2.5
+    },
+    {
+      "name": "shock_a2_h0.01",
+      "problem": "shock",
+      "a": 2.0,
+      "nu": 0.5,
+      "dt": 0.005,
+      "T": 2.5
+    },
+    {
+      "name": "shock_a2_h0.005",
+      "problem": "shock",
+      "a": 2.0,
+      "nu": 0.5,
+      "dt": 0.0025,
+      "T": 2.5
+    },
+    {
+      "name": "gaussian_a2_dt0.005",
+      "problem": "gaussian",
+      "a": 2.0,
+      "nu": 0.1,
+      "dt": 0.005,
+      "T": 1.0
+    },
+    {
+      "name": "gaussian_a2_dt0.00125",
+      "problem": "gaussian",
+      "a": 2.0,
+      "nu": 0.1,
+      "dt": 0.00125,
+      "T": 1.0
+    },
+    {
+      "name": "gaussian_a4_dt0.005",
+      "problem": "gaussian",
+      "a": 4.0,
+      "nu": 0.1,
+      "dt": 0.005,
+      "T": 1.0
+    },
+    {
+      "name": "gaussian_a4_dt0.00125",
+      "problem": "gaussian",
+      "a": 4.0,
+      "nu": 0.1,
+      "dt": 0.00125,
+      "T": 1.0
+    }
+  ],
+  "primary": "RMS L2 error against exact reference",
+  "secondary": [
+    "ensemble-mean error",
+    "spread",
+    "runtime"
+  ],
+  "pairing": "normals by sorted rank within case and seed",
+  "schedule": "transport, reconstruct, sample next velocity, diffuse"
+}
