@@ -1,5 +1,9 @@
 # Writing and attribution revision
 
+Historical record of the first prose pass. The subsequent
+[BPC presentation pass](BPC-STYLE-REVISION.md) supersedes its color and
+section-placement choices; the initialization correction remains in force.
+
 September 11, 2026. This pass applies the supplied editing prompts and the
 error-attribution paper's prose conventions to the coupled-estimation paper.
 The title and scientific subject remain unchanged.
