@@ -1,0 +1,166 @@
+PASS  [t6   ] gbmc_production_per_N_errors
+PASS  [t6   ] gbmc_production_spread_fit
+PASS  [t1   ] gbmc_dt_bias_fit
+PASS  [t1   ] gbmc_dt_bias_errors_dt0.01
+PASS  [t1   ] gbmc_dt_bias_errors_dt0.005
+PASS  [t1   ] gbmc_dt_bias_errors_dt0.0025
+PASS  [t1   ] gbmc_dt_bias_errors_dt0.00125
+PASS  [t1   ] gbmc_dt_bias_errors_dt0.000625
+PASS  [t2   ] gbmc_traveling_T1_N100
+PASS  [t2   ] gbmc_traveling_T1_N200
+PASS  [t2   ] gbmc_traveling_T1_N400
+PASS  [t2   ] gbmc_traveling_T1_N800
+PASS  [t2   ] gbmc_traveling_T1_N1600
+PASS  [t2   ] gbmc_traveling_T1_N3200
+PASS  [t2   ] gbmc_traveling_N_slope
+PASS  [t6   ] regen_per_N_fitted_viscosity
+PASS  [t6   ] t6_fitted_param_exponents
+PASS  [t1   ] t1_dt_recovered_viscosities
+PASS  [ta   ] relaxation_speed_sensitivity_errors
+PASS  [ta   ] relaxation_speed_sensitivity_widths
+PASS  [adt  ] gbmc_a_dt_representative_cells
+PASS  [adt  ] gbmc_a_dt_cross_check_and_analytic
+PASS  [ablation] gbmc_ablation_control_near_zero_offset
+PASS  [ablation] gbmc_ablation_two_speed_a4_offset
+PASS  [ablation] gbmc_ablation_paired_a2_minus_control
+PASS  [ablation] gbmc_ablation_paired_a4_minus_control
+PASS  [ablation] gbmc_ablation_finest_a2_contrast
+PASS  [ablation] gbmc_ablation_finest_a4_contrast
+PASS  [ablation] gbmc_ablation_control_offset_includes_zero
+PASS  [ablation] gbmc_ablation_zero_failures
+PASS  [ablation] gbmc_ablation_decomposition_identity
+PASS  [multinu] multinu_two_speed_a2_nu0p5
+PASS  [multinu] multinu_two_speed_a4_nu0p5
+PASS  [multinu] multinu_cond_mean_nu0p5
+PASS  [multinu] multinu_two_speed_a2_nu0p25
+PASS  [multinu] multinu_two_speed_a4_nu0p25
+PASS  [multinu] multinu_cond_mean_nu0p25
+PASS  [multinu] multinu_two_speed_a2_nu0p1
+PASS  [multinu] multinu_two_speed_a4_nu0p1
+PASS  [multinu] multinu_cond_mean_nu0p1
+PASS  [multinu] multinu_two_speed_a2_nu0p05
+PASS  [multinu] multinu_two_speed_a4_nu0p05
+PASS  [multinu] multinu_cond_mean_nu0p05
+PASS  [multinu] multinu_two_speed_a2_nu0p025
+PASS  [multinu] multinu_two_speed_a4_nu0p025
+PASS  [multinu] multinu_cond_mean_nu0p025
+PASS  [multinu] multinu_paired_two_speed_a2_nu0p5
+PASS  [multinu] multinu_paired_two_speed_a4_nu0p5
+PASS  [multinu] multinu_paired_two_speed_a4_nu0p5
+PASS  [multinu] multinu_paired_two_speed_a2_nu0p25
+PASS  [multinu] multinu_paired_two_speed_a4_nu0p25
+PASS  [multinu] multinu_paired_two_speed_a4_nu0p25
+PASS  [multinu] multinu_paired_two_speed_a2_nu0p1
+PASS  [multinu] multinu_paired_two_speed_a4_nu0p1
+PASS  [multinu] multinu_paired_two_speed_a4_nu0p1
+PASS  [multinu] multinu_paired_two_speed_a2_nu0p05
+PASS  [multinu] multinu_paired_two_speed_a4_nu0p05
+PASS  [multinu] multinu_paired_two_speed_a4_nu0p05
+PASS  [multinu] multinu_paired_two_speed_a2_nu0p025
+PASS  [multinu] multinu_paired_two_speed_a4_nu0p025
+PASS  [multinu] multinu_paired_two_speed_a4_nu0p025
+PASS  [multinu] multinu_design_and_health
+PASS  [pilot] pilot_ctrl_carried_nu0p1_dt0p0025
+PASS  [pilot] pilot_ctrl_postdiff_nu0p1_dt0p0025
+PASS  [pilot] pilot_ctrl_carried_nu0p1_dt0p00125
+PASS  [pilot] pilot_ctrl_postdiff_nu0p1_dt0p00125
+PASS  [pilot] pilot_ctrl_carried_nu0p05_dt0p0025
+PASS  [pilot] pilot_ctrl_postdiff_nu0p05_dt0p0025
+PASS  [pilot] pilot_ctrl_carried_nu0p05_dt0p00125
+PASS  [pilot] pilot_ctrl_postdiff_nu0p05_dt0p00125
+PASS  [pilot] pilot_ctrl_carried_nu0p025_dt0p0025
+PASS  [pilot] pilot_ctrl_postdiff_nu0p025_dt0p0025
+PASS  [pilot] pilot_ctrl_carried_nu0p025_dt0p00125
+PASS  [pilot] pilot_ctrl_postdiff_nu0p025_dt0p00125
+PASS  [pilot] pilot_sched_cond_mean_nu0p1_dt0p0025
+PASS  [pilot] pilot_sched_two_speed_a2_nu0p1_dt0p0025
+PASS  [pilot] pilot_sched_two_speed_a4_nu0p1_dt0p0025
+PASS  [pilot] pilot_sched_cond_mean_nu0p1_dt0p00125
+PASS  [pilot] pilot_sched_two_speed_a2_nu0p1_dt0p00125
+PASS  [pilot] pilot_sched_two_speed_a4_nu0p1_dt0p00125
+PASS  [pilot] pilot_sched_cond_mean_nu0p05_dt0p0025
+PASS  [pilot] pilot_sched_two_speed_a2_nu0p05_dt0p0025
+PASS  [pilot] pilot_sched_two_speed_a4_nu0p05_dt0p0025
+PASS  [pilot] pilot_sched_cond_mean_nu0p05_dt0p00125
+PASS  [pilot] pilot_sched_two_speed_a2_nu0p05_dt0p00125
+PASS  [pilot] pilot_sched_two_speed_a4_nu0p05_dt0p00125
+PASS  [pilot] pilot_sched_cond_mean_nu0p025_dt0p0025
+PASS  [pilot] pilot_sched_two_speed_a2_nu0p025_dt0p0025
+PASS  [pilot] pilot_sched_two_speed_a4_nu0p025_dt0p0025
+PASS  [pilot] pilot_sched_cond_mean_nu0p025_dt0p00125
+PASS  [pilot] pilot_sched_two_speed_a2_nu0p025_dt0p00125
+PASS  [pilot] pilot_sched_two_speed_a4_nu0p025_dt0p00125
+PASS  [pilot] pilot_label_two_speed_a2_carried_nu0p1_dt0p0025
+PASS  [pilot] pilot_label_two_speed_a4_carried_nu0p1_dt0p0025
+PASS  [pilot] pilot_label_two_speed_a2_postdiff_nu0p1_dt0p0025
+PASS  [pilot] pilot_label_two_speed_a4_postdiff_nu0p1_dt0p0025
+PASS  [pilot] pilot_label_two_speed_a2_carried_nu0p1_dt0p00125
+PASS  [pilot] pilot_label_two_speed_a4_carried_nu0p1_dt0p00125
+PASS  [pilot] pilot_label_two_speed_a2_postdiff_nu0p1_dt0p00125
+PASS  [pilot] pilot_label_two_speed_a4_postdiff_nu0p1_dt0p00125
+PASS  [pilot] pilot_label_two_speed_a2_carried_nu0p05_dt0p0025
+PASS  [pilot] pilot_label_two_speed_a4_carried_nu0p05_dt0p0025
+PASS  [pilot] pilot_label_two_speed_a2_postdiff_nu0p05_dt0p0025
+PASS  [pilot] pilot_label_two_speed_a4_postdiff_nu0p05_dt0p0025
+PASS  [pilot] pilot_label_two_speed_a2_carried_nu0p05_dt0p00125
+PASS  [pilot] pilot_label_two_speed_a4_carried_nu0p05_dt0p00125
+PASS  [pilot] pilot_label_two_speed_a2_postdiff_nu0p05_dt0p00125
+PASS  [pilot] pilot_label_two_speed_a4_postdiff_nu0p05_dt0p00125
+PASS  [pilot] pilot_label_two_speed_a2_carried_nu0p025_dt0p0025
+PASS  [pilot] pilot_label_two_speed_a4_carried_nu0p025_dt0p0025
+PASS  [pilot] pilot_label_two_speed_a2_postdiff_nu0p025_dt0p0025
+PASS  [pilot] pilot_label_two_speed_a4_postdiff_nu0p025_dt0p0025
+PASS  [pilot] pilot_label_two_speed_a2_carried_nu0p025_dt0p00125
+PASS  [pilot] pilot_label_two_speed_a4_carried_nu0p025_dt0p00125
+PASS  [pilot] pilot_label_two_speed_a2_postdiff_nu0p025_dt0p00125
+PASS  [pilot] pilot_label_two_speed_a4_postdiff_nu0p025_dt0p00125
+PASS  [pilot] pilot_design_and_health
+PASS  [mnsc ] mnsc_two_speed_a2_nu0p5
+PASS  [mnsc ] mnsc_two_speed_a4_nu0p5
+PASS  [mnsc ] mnsc_cond_mean_nu0p5
+PASS  [mnsc ] mnsc_two_speed_a2_nu0p25
+PASS  [mnsc ] mnsc_two_speed_a4_nu0p25
+PASS  [mnsc ] mnsc_cond_mean_nu0p25
+PASS  [mnsc ] mnsc_two_speed_a2_nu0p1
+PASS  [mnsc ] mnsc_two_speed_a4_nu0p1
+PASS  [mnsc ] mnsc_cond_mean_nu0p1
+PASS  [mnsc ] mnsc_two_speed_a2_nu0p05
+PASS  [mnsc ] mnsc_two_speed_a4_nu0p05
+PASS  [mnsc ] mnsc_cond_mean_nu0p05
+PASS  [mnsc ] mnsc_two_speed_a2_nu0p025
+PASS  [mnsc ] mnsc_two_speed_a4_nu0p025
+PASS  [mnsc ] mnsc_cond_mean_nu0p025
+PASS  [mnsc ] mnsc_paired_two_speed_a2_vs_cond_mean_nu0p5
+PASS  [mnsc ] mnsc_paired_two_speed_a4_vs_cond_mean_nu0p5
+PASS  [mnsc ] mnsc_paired_two_speed_a4_vs_two_speed_a2_nu0p5
+PASS  [mnsc ] mnsc_paired_two_speed_a2_vs_cond_mean_nu0p25
+PASS  [mnsc ] mnsc_paired_two_speed_a4_vs_cond_mean_nu0p25
+PASS  [mnsc ] mnsc_paired_two_speed_a4_vs_two_speed_a2_nu0p25
+PASS  [mnsc ] mnsc_paired_two_speed_a2_vs_cond_mean_nu0p1
+PASS  [mnsc ] mnsc_paired_two_speed_a4_vs_cond_mean_nu0p1
+PASS  [mnsc ] mnsc_paired_two_speed_a4_vs_two_speed_a2_nu0p1
+PASS  [mnsc ] mnsc_paired_two_speed_a2_vs_cond_mean_nu0p05
+PASS  [mnsc ] mnsc_paired_two_speed_a4_vs_cond_mean_nu0p05
+PASS  [mnsc ] mnsc_paired_two_speed_a4_vs_two_speed_a2_nu0p05
+PASS  [mnsc ] mnsc_paired_two_speed_a2_vs_cond_mean_nu0p025
+PASS  [mnsc ] mnsc_paired_two_speed_a4_vs_cond_mean_nu0p025
+PASS  [mnsc ] mnsc_paired_two_speed_a4_vs_two_speed_a2_nu0p025
+PASS  [mnsc ] mnsc_design_and_health
+PASS  [trans] trans_two_speed_a2_dt0p005
+PASS  [trans] trans_two_speed_a4_dt0p005
+PASS  [trans] trans_cond_mean_dt0p005
+PASS  [trans] trans_two_speed_a2_dt0p0025
+PASS  [trans] trans_two_speed_a4_dt0p0025
+PASS  [trans] trans_cond_mean_dt0p0025
+PASS  [trans] trans_two_speed_a2_dt0p00125
+PASS  [trans] trans_two_speed_a4_dt0p00125
+PASS  [trans] trans_cond_mean_dt0p00125
+PASS  [trans] trans_paired_two_speed_a2_dt0p005
+PASS  [trans] trans_paired_two_speed_a4_dt0p005
+PASS  [trans] trans_paired_two_speed_a2_dt0p0025
+PASS  [trans] trans_paired_two_speed_a4_dt0p0025
+PASS  [trans] trans_paired_two_speed_a2_dt0p00125
+PASS  [trans] trans_paired_two_speed_a4_dt0p00125
+PASS  [trans] trans_reference_and_health
+
+verify (Paper 2): 164 passed, 0 failed, 164 total

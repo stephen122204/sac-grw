@@ -1,0 +1,118 @@
+{
+ "key": 1803,
+ "reps": 48,
+ "N": 8192,
+ "h": 0.005,
+ "rows": [
+  {
+   "observable": "integrated squared field error (mean)",
+   "ratio": 0.15003322528245303
+  },
+  {
+   "observable": "u at x=-2.0",
+   "tag": "flat left flank",
+   "ratio": 0.6363855897784908,
+   "ci": [
+    0.3899397591928883,
+    1.0535390475947617
+   ],
+   "verdict": "unresolved"
+  },
+  {
+   "observable": "u at x=-0.7",
+   "tag": "left pulse",
+   "ratio": 0.1430823691023397,
+   "ci": [
+    0.08666871174761853,
+    0.23304441350450103
+   ],
+   "verdict": "help"
+  },
+  {
+   "observable": "u at x=0.1",
+   "tag": "steepest core",
+   "ratio": 0.09303457706509169,
+   "ci": [
+    0.05398858896114632,
+    0.15942243984699367
+   ],
+   "verdict": "help"
+  },
+  {
+   "observable": "u at x=1.5",
+   "tag": "right flank",
+   "ratio": 0.7348893004461655,
+   "ci": [
+    0.41330223686652695,
+    1.2810437374797912
+   ],
+   "verdict": "unresolved"
+  },
+  {
+   "observable": "Q_of_mean max|grad u| (peak gradient)",
+   "ratio": 0.4534877654300901,
+   "ci": [
+    0.2797254480262211,
+    0.7904427710545315
+   ],
+   "verdict": "help"
+  },
+  {
+   "observable": "Q_of_mean level crossing u=0.25",
+   "ratio": 0.08895767634375536,
+   "ci": [
+    0.05035809424916263,
+    0.1516268319719927
+   ],
+   "verdict": "help"
+  },
+  {
+   "observable": "mean_of_Q max|grad u| (peak gradient)",
+   "ratio": 0.49844177651116894,
+   "ci": [
+    0.2803309389610444,
+    0.9679231258349982
+   ],
+   "verdict": "help"
+  },
+  {
+   "observable": "mean_of_Q level crossing u=0.25",
+   "ratio": 0.0859667660103463,
+   "ci": [
+    0.04971555778065428,
+    0.15065181533269503
+   ],
+   "verdict": "help"
+  }
+ ],
+ "quintiles": [
+  {
+   "q": 1,
+   "median_ratio": 0.8398836501386723,
+   "var_share": 0.03468935219009905
+  },
+  {
+   "q": 2,
+   "median_ratio": 0.5188524590163933,
+   "var_share": 0.08824754077401287
+  },
+  {
+   "q": 3,
+   "median_ratio": 0.31863297720760286,
+   "var_share": 0.10429545045500041
+  },
+  {
+   "q": 4,
+   "median_ratio": 0.4993444576877291,
+   "var_share": 0.11940522442484819
+  },
+  {
+   "q": 5,
+   "median_ratio": 0.09470667839954507,
+   "var_share": 0.6533624321560395
+  }
+ ],
+ "integrated_pointwise": 0.11673729517423553,
+ "median_pointwise": 0.49489698996581916,
+ "note": "confirmation on a fresh unused key of an effect first seen in the round-17 pilot fields; exploratory and confirmatory evidence kept separate"
+}

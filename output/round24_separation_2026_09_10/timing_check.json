@@ -1,0 +1,18 @@
+{
+ "B": {
+  "RAW": 18,
+  "WITHIN": 3,
+  "FULL": 2
+ },
+ "sequential": {
+  "RAW": 0.617,
+  "WITHIN": 0.118,
+  "FULL": 0.072
+ },
+ "interleaved": {
+  "RAW": 0.6150229164923076,
+  "WITHIN": 0.11939641700155335,
+  "FULL": 0.07147416700172471
+ },
+ "note": "round-23 evaluation timing was sequential by arm, not interleaved; re-timed here with randomised order"
+}

@@ -1,0 +1,220 @@
+{
+  "replicates": 48,
+  "bootstrap_resamples": 6000,
+  "bootstrap_seed": 2026091022,
+  "environment": {
+    "python": "3.12.14 (main, Aug 25 2026, 13:50:33) [Clang 22.1.3 ]",
+    "numpy": "2.3.5",
+    "scipy": "1.17.1"
+  },
+  "resampling": "independent whole-pair replicate multinomial bootstrap; approximate percentile intervals",
+  "replay_int_var": {
+    "RAW": 4.3262959901823955e-05,
+    "FULL": 5.492166526106905e-06,
+    "WITHIN": 7.4327820441853265e-06
+  },
+  "replay_MSE": {
+    "RAW": 4.389666435566424e-05,
+    "FULL": 7.3932564541893015e-06,
+    "WITHIN": 9.023786476694596e-06
+  },
+  "comparisons": {
+    "WITHIN/RAW": {
+      "variance_ratio": 0.17180475078571686,
+      "variance_CI": [
+        0.14622363504350777,
+        0.20397235135459668
+      ],
+      "MSE_ratio": 0.20556884239725165,
+      "MSE_CI": [
+        0.17396332270810788,
+        0.24455593911798432
+      ]
+    },
+    "FULL/RAW": {
+      "variance_ratio": 0.12694846904997265,
+      "variance_CI": [
+        0.10782629987564382,
+        0.1503329603449807
+      ],
+      "MSE_ratio": 0.16842410608439107,
+      "MSE_CI": [
+        0.1422566868178235,
+        0.20008605495120876
+      ]
+    },
+    "FULL/WITHIN": {
+      "variance_ratio": 0.7389112842886915,
+      "variance_CI": [
+        0.683170953659844,
+        0.8032826084447503
+      ],
+      "MSE_ratio": 0.8193075571195745,
+      "MSE_CI": [
+        0.754220978169965,
+        0.8941833462220774
+      ]
+    }
+  },
+  "nonlinear": [
+    {
+      "observable": "max|grad u|",
+      "arm": "RAW",
+      "estimator": "Q_of_mean",
+      "count": 48,
+      "censored_pairs": 0,
+      "reference": 1.287374096326672,
+      "variance": 0.0030184647374066047,
+      "sample_mean_bias": 0.06024967459195274,
+      "published_plugin_mse": 0.0066484880258428,
+      "empirical_mse": 0.006585603343813512,
+      "plugin_excess": 6.288468202930427e-05
+    },
+    {
+      "observable": "max|grad u|",
+      "arm": "RAW",
+      "estimator": "mean_of_Q",
+      "count": 48,
+      "censored_pairs": 0,
+      "reference": 1.287374096326672,
+      "variance": 0.002542987345409106,
+      "sample_mean_bias": 0.11322674304630276,
+      "published_plugin_mse": 0.015363282686282577,
+      "empirical_mse": 0.015310303783253223,
+      "plugin_excess": 5.297890302935637e-05
+    },
+    {
+      "observable": "max|grad u|",
+      "arm": "FULL",
+      "estimator": "Q_of_mean",
+      "count": 48,
+      "censored_pairs": 0,
+      "reference": 1.287374096326672,
+      "variance": 0.0012371275684307916,
+      "sample_mean_bias": 0.03905884721021091,
+      "published_plugin_mse": 0.0027627211138213925,
+      "empirical_mse": 0.002736947622812422,
+      "plugin_excess": 2.5773491008974824e-05
+    },
+    {
+      "observable": "max|grad u|",
+      "arm": "FULL",
+      "estimator": "mean_of_Q",
+      "count": 48,
+      "censored_pairs": 0,
+      "reference": 1.287374096326672,
+      "variance": 0.0017434706274953617,
+      "sample_mean_bias": 0.10501373006698955,
+      "published_plugin_mse": 0.012771354130077907,
+      "empirical_mse": 0.012735031825338443,
+      "plugin_excess": 3.63223047394867e-05
+    },
+    {
+      "observable": "max|grad u|",
+      "arm": "WITHIN",
+      "estimator": "Q_of_mean",
+      "count": 48,
+      "censored_pairs": 0,
+      "reference": 1.287374096326672,
+      "variance": 0.0015942564630341566,
+      "sample_mean_bias": 0.054669841346462134,
+      "published_plugin_mse": 0.004583048015881497,
+      "empirical_mse": 0.004549834339568273,
+      "plugin_excess": 3.32136763132116e-05
+    },
+    {
+      "observable": "max|grad u|",
+      "arm": "WITHIN",
+      "estimator": "mean_of_Q",
+      "count": 48,
+      "censored_pairs": 0,
+      "reference": 1.287374096326672,
+      "variance": 0.0012548906815498387,
+      "sample_mean_bias": 0.10394791922234559,
+      "published_plugin_mse": 0.012060060592205123,
+      "empirical_mse": 0.012033917036339449,
+      "plugin_excess": 2.614355586562164e-05
+    },
+    {
+      "observable": "level x(u=0.25)",
+      "arm": "RAW",
+      "estimator": "Q_of_mean",
+      "count": 48,
+      "censored_pairs": 0,
+      "reference": 0.085746757486546,
+      "variance": 2.441464125291681e-05,
+      "sample_mean_bias": -0.0012575700200452011,
+      "published_plugin_mse": 2.59961236082333e-05,
+      "empirical_mse": 2.5487485248797492e-05,
+      "plugin_excess": 5.086383594357669e-07
+    },
+    {
+      "observable": "level x(u=0.25)",
+      "arm": "RAW",
+      "estimator": "mean_of_Q",
+      "count": 48,
+      "censored_pairs": 0,
+      "reference": 0.085746757486546,
+      "variance": 2.643539307767646e-05,
+      "sample_mean_bias": -0.001164805836187735,
+      "published_plugin_mse": 2.779216571369347e-05,
+      "empirical_mse": 2.7241428357908557e-05,
+      "plugin_excess": 5.507373557849262e-07
+    },
+    {
+      "observable": "level x(u=0.25)",
+      "arm": "FULL",
+      "estimator": "Q_of_mean",
+      "count": 48,
+      "censored_pairs": 0,
+      "reference": 0.085746757486546,
+      "variance": 2.741379334793552e-06,
+      "sample_mean_bias": -0.0007827859927401065,
+      "published_plugin_mse": 3.3541332452236662e-06,
+      "empirical_mse": 3.297021175748825e-06,
+      "plugin_excess": 5.711206947486567e-08
+    },
+    {
+      "observable": "level x(u=0.25)",
+      "arm": "FULL",
+      "estimator": "mean_of_Q",
+      "count": 48,
+      "censored_pairs": 0,
+      "reference": 0.085746757486546,
+      "variance": 1.7419347155346976e-06,
+      "sample_mean_bias": -0.0008601767890147743,
+      "published_plugin_mse": 2.481838823894465e-06,
+      "empirical_mse": 2.4455485173208474e-06,
+      "plugin_excess": 3.629030657363953e-08
+    },
+    {
+      "observable": "level x(u=0.25)",
+      "arm": "WITHIN",
+      "estimator": "Q_of_mean",
+      "count": 48,
+      "censored_pairs": 0,
+      "reference": 0.085746757486546,
+      "variance": 3.824845004387247e-06,
+      "sample_mean_bias": -0.00033611085101067917,
+      "published_plugin_mse": 3.93781550855437e-06,
+      "empirical_mse": 3.858131237629627e-06,
+      "plugin_excess": 7.968427092473431e-08
+    },
+    {
+      "observable": "level x(u=0.25)",
+      "arm": "WITHIN",
+      "estimator": "mean_of_Q",
+      "count": 48,
+      "censored_pairs": 0,
+      "reference": 0.085746757486546,
+      "variance": 2.7757648346384078e-06,
+      "sample_mean_bias": -0.00041349774236683345,
+      "published_plugin_mse": 2.946745217580876e-06,
+      "empirical_mse": 2.888916783525916e-06,
+      "plugin_excess": 5.7828434054966826e-08
+    }
+  ],
+  "archived_cost_FULL_WITHIN": 0.9427839681602309,
+  "archived_cost_times_replayed_variance": 0.696633712720065,
+  "cost_scope": "arithmetic from archived timings, not an independent timing validation"
+}

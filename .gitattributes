@@ -1,0 +1,5 @@
+# Preserve archived CSV bytes and recognize csv.writer's CRLF terminators.
+*.csv -text whitespace=cr-at-eol
+*.npz binary
+*.npy binary
+*.pdf binary

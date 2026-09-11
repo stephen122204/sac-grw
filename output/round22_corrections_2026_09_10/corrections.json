@@ -1,0 +1,134 @@
+{
+ "divergence": [
+  {
+   "structure": "one_sign",
+   "dynamics": "heat",
+   "diverged": 0,
+   "seeds": 40,
+   "median_first_step": "--",
+   "max_state_diff": 0.0
+  },
+  {
+   "structure": "one_sign",
+   "dynamics": "burgers",
+   "diverged": 0,
+   "seeds": 40,
+   "median_first_step": "--",
+   "max_state_diff": 0.0
+  },
+  {
+   "structure": "separated",
+   "dynamics": "heat",
+   "diverged": 11,
+   "seeds": 40,
+   "median_first_step": "185",
+   "max_state_diff": 0.18966122564990504
+  },
+  {
+   "structure": "separated",
+   "dynamics": "burgers",
+   "diverged": 13,
+   "seeds": 40,
+   "median_first_step": "188",
+   "max_state_diff": 0.24656336654050637
+  },
+  {
+   "structure": "merging",
+   "dynamics": "heat",
+   "diverged": 40,
+   "seeds": 40,
+   "median_first_step": "31",
+   "max_state_diff": 0.23309677216018898
+  },
+  {
+   "structure": "merging",
+   "dynamics": "burgers",
+   "diverged": 40,
+   "seeds": 40,
+   "median_first_step": "31",
+   "max_state_diff": 0.24831492240594222
+  },
+  {
+   "structure": "clustered",
+   "dynamics": "heat",
+   "diverged": 40,
+   "seeds": 40,
+   "median_first_step": "1",
+   "max_state_diff": 0.653956570233174
+  },
+  {
+   "structure": "clustered",
+   "dynamics": "burgers",
+   "diverged": 40,
+   "seeds": 40,
+   "median_first_step": "1",
+   "max_state_diff": 0.6157738353886097
+  }
+ ],
+ "configurations": [
+  {
+   "config": "clustered",
+   "N": 400,
+   "amplitude": 0.0025,
+   "total_variation": 0.9999999999999998,
+   "width": 0.5
+  },
+  {
+   "config": "clustered",
+   "N": 2048,
+   "amplitude": 0.00048828125,
+   "total_variation": 1.0,
+   "width": 0.5
+  },
+  {
+   "config": "clustered",
+   "N": 8192,
+   "amplitude": 0.0001220703125,
+   "total_variation": 1.0,
+   "width": 0.5
+  },
+  {
+   "config": "merging",
+   "N": 400,
+   "amplitude": 0.5000000000000004,
+   "total_variation": 0.9999999999999998,
+   "width": 1.8
+  },
+  {
+   "config": "merging",
+   "N": 2048,
+   "amplitude": 0.5,
+   "total_variation": 1.0,
+   "width": 1.8
+  },
+  {
+   "config": "merging",
+   "N": 8192,
+   "amplitude": 0.5,
+   "total_variation": 1.0,
+   "width": 1.8
+  },
+  {
+   "config": "separated",
+   "N": 400,
+   "amplitude": 0.5000000000000004,
+   "total_variation": 0.9999999999999998,
+   "width": 4.0
+  },
+  {
+   "config": "separated",
+   "N": 2048,
+   "amplitude": 0.5,
+   "total_variation": 1.0,
+   "width": 4.0
+  },
+  {
+   "config": "separated",
+   "N": 8192,
+   "amplitude": 0.5,
+   "total_variation": 1.0,
+   "width": 4.0
+  }
+ ],
+ "note": "Prop 3 corrected: conditional lemma; one-sign is the only unconditional case. Separated diverges in a substantial fraction of seeds; the earlier single-seed 0.0e+00 is withdrawn. Interleaved config is a mechanism test."
+}

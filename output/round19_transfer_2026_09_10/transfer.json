@@ -1,0 +1,118 @@
+{
+ "frozen": {
+  "C": 0.0021429545048762665,
+  "q": 0.5552927179960635,
+  "const": 0.3968450180203355,
+  "cut": 0.001,
+  "thresh": 0.5,
+  "criteria": "S1 acc>=0.70 and S2 median|log|<0.50"
+ },
+ "rows": [
+  {
+   "profile": "P1 three-pulse",
+   "x": 2.4185463659147866,
+   "Vpilot": 2.9305900504879618e-06,
+   "rhat": 0.6188684212490612,
+   "rmeas": 0.7211610709060158,
+   "decision": false,
+   "truth": false,
+   "ok": true
+  },
+  {
+   "profile": "P1 three-pulse",
+   "x": -1.8170426065162908,
+   "Vpilot": 8.488202441608811e-06,
+   "rhat": 0.3856608239735087,
+   "rmeas": 0.6550862150066551,
+   "decision": true,
+   "truth": false,
+   "ok": false
+  },
+  {
+   "profile": "P1 three-pulse",
+   "x": 1.7167919799498748,
+   "Vpilot": 4.0086169937726884e-05,
+   "rhat": 0.1933718658471921,
+   "rmeas": 0.21445605573419352,
+   "decision": true,
+   "truth": true,
+   "ok": true
+  },
+  {
+   "profile": "P1 three-pulse",
+   "x": 1.265664160401002,
+   "Vpilot": 8.159047651089888e-05,
+   "rhat": 0.14097322996898065,
+   "rmeas": 0.07593608437540955,
+   "decision": true,
+   "truth": true,
+   "ok": true
+  },
+  {
+   "profile": "P1 three-pulse",
+   "x": -0.6390977443609023,
+   "Vpilot": 0.00020231610825368482,
+   "rhat": 0.09413434475168188,
+   "rmeas": 0.08517096852325719,
+   "decision": true,
+   "truth": true,
+   "ok": true
+  },
+  {
+   "profile": "P2 wide-narrow (nu=0.05)",
+   "x": 1.6917293233082704,
+   "Vpilot": 1.2270007064692788e-06,
+   "rhat": 0.9114790853165846,
+   "rmeas": 0.5135375319369111,
+   "decision": false,
+   "truth": false,
+   "ok": true
+  },
+  {
+   "profile": "P2 wide-narrow (nu=0.05)",
+   "x": -2.192982456140351,
+   "Vpilot": 2.955691081112213e-06,
+   "rhat": 0.6165256363605233,
+   "rmeas": 0.7726031170381243,
+   "decision": false,
+   "truth": false,
+   "ok": true
+  },
+  {
+   "profile": "P2 wide-narrow (nu=0.05)",
+   "x": -0.9147869674185465,
+   "Vpilot": 4.566620502467301e-06,
+   "rhat": 0.5080775177941361,
+   "rmeas": 1.1051856525964745,
+   "decision": false,
+   "truth": false,
+   "ok": true
+  },
+  {
+   "profile": "P2 wide-narrow (nu=0.05)",
+   "x": -0.3132832080200503,
+   "Vpilot": 1.24437705876792e-05,
+   "rhat": 0.3253295534219042,
+   "rmeas": 0.13983945714500115,
+   "decision": true,
+   "truth": true,
+   "ok": true
+  },
+  {
+   "profile": "P2 wide-narrow (nu=0.05)",
+   "x": 0.162907268170426,
+   "Vpilot": 0.00015418992570584878,
+   "rhat": 0.10622144540777591,
+   "rmeas": 0.13316463688373834,
+   "decision": true,
+   "truth": true,
+   "ok": true
+  }
+ ],
+ "accuracy": 0.9,
+ "calibration": 0.3779343877677578,
+ "const_accuracy": 0.5,
+ "const_calibration": 0.845221226323149,
+ "verdict": "TRANSFERABLE",
+ "runtime_s": 19.703513624997868
+}

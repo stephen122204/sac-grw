@@ -1,0 +1,98 @@
+{
+ "N": 2048,
+ "h": 0.005,
+ "nu": 0.1,
+ "T": 1.0,
+ "reps": 48,
+ "rows": [
+  {
+   "structure": "clustered",
+   "dynamics": "heat",
+   "ratio": 0.04918311633890481,
+   "ci": [
+    0.04048584823521698,
+    0.06081431516905831
+   ],
+   "verdict": "help",
+   "pathwise_max_diff": 0.019287109375
+  },
+  {
+   "structure": "clustered",
+   "dynamics": "burgers",
+   "ratio": 0.06251079810800449,
+   "ci": [
+    0.051619593923796364,
+    0.07658644490695916
+   ],
+   "verdict": "help",
+   "pathwise_max_diff": 0.0087890625
+  },
+  {
+   "structure": "merging",
+   "dynamics": "heat",
+   "ratio": 0.4762452807803169,
+   "ci": [
+    0.4207262570406387,
+    0.5445171766615325
+   ],
+   "verdict": "help",
+   "pathwise_max_diff": 0.00634765625
+  },
+  {
+   "structure": "merging",
+   "dynamics": "burgers",
+   "ratio": 0.48138825914140226,
+   "ci": [
+    0.42620282474862625,
+    0.5444687200028971
+   ],
+   "verdict": "help",
+   "pathwise_max_diff": 0.007080078125
+  },
+  {
+   "structure": "separated",
+   "dynamics": "heat",
+   "ratio": 0.9938342562675665,
+   "ci": [
+    0.9166215341082447,
+    1.0759859057010055
+   ],
+   "verdict": "unresolved",
+   "pathwise_max_diff": 0.00634765625
+  },
+  {
+   "structure": "separated",
+   "dynamics": "burgers",
+   "ratio": 1.0129393663231752,
+   "ci": [
+    0.9300443464864999,
+    1.1007488731032908
+   ],
+   "verdict": "unresolved",
+   "pathwise_max_diff": 0.0048828125
+  },
+  {
+   "structure": "one_sign",
+   "dynamics": "heat",
+   "ratio": 0.9871294708494683,
+   "ci": [
+    0.9016269045089301,
+    1.0780728291291752
+   ],
+   "verdict": "unresolved",
+   "pathwise_max_diff": 0.01123046875
+  },
+  {
+   "structure": "one_sign",
+   "dynamics": "burgers",
+   "ratio": 0.9669799090631824,
+   "ci": [
+    0.8220276248936836,
+    1.1739210189856415
+   ],
+   "verdict": "unresolved",
+   "pathwise_max_diff": 0.0107421875
+  }
+ ],
+ "note": "replaces the N=400 round-5 screen for the applicability map; whole-replicate percentile bootstrap intervals"
+}

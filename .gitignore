@@ -3,3 +3,13 @@
 .pytest_cache/
 __pycache__/
 *.py[cod]
+
+# Local manuscript build intermediates
+manuscript/build/
+build/
+*.aux
+*.bbl
+*.blg
+*.fls
+*.fdb_latexmk
+*.synctex.gz

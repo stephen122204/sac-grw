@@ -1,0 +1,59 @@
+{
+ "purpose": "raise detection power so the wrong-sign statement is a bound, not a count at an unstated floor",
+ "seeds": 48000,
+ "nu": 0.1,
+ "T": 0.5,
+ "h": 0.005,
+ "N": 60,
+ "alpha": 0.05,
+ "displaced_particle": 28,
+ "rows": [
+  {
+   "drift": "burgers",
+   "displacement": 0.05,
+   "seed_key": 11,
+   "seeds": 48000,
+   "peak_abs_response": 0.0010770833333332995,
+   "detection_floor": 7.518440397274282e-05,
+   "floor_over_peak": 0.06980370194761641,
+   "n_resolved": 146,
+   "n_wrong_sign": 0,
+   "max_wrong_sign_response": 3.4722222222222224e-07,
+   "bound_wrong_over_peak": 0.06980370194761641,
+   "integrated_wrong_relative": 1.042883363924597e-05,
+   "bonferroni_z": 3.7097440540201014
+  },
+  {
+   "drift": "burgers",
+   "displacement": 0.1,
+   "seed_key": 12,
+   "seeds": 48000,
+   "peak_abs_response": 0.0020940972222221305,
+   "detection_floor": 0.00010307366610155427,
+   "floor_over_peak": 0.049221050965426845,
+   "n_resolved": 149,
+   "n_wrong_sign": 0,
+   "max_wrong_sign_response": 0.0,
+   "bound_wrong_over_peak": 0.049221050965426845,
+   "integrated_wrong_relative": 0.0,
+   "bonferroni_z": 3.7097440540201014
+  },
+  {
+   "drift": "heat",
+   "displacement": 0.05,
+   "seed_key": 13,
+   "seeds": 48000,
+   "peak_abs_response": 0.0010802083333332987,
+   "detection_floor": 6.947928424077113e-05,
+   "floor_over_peak": 0.06432026313514216,
+   "n_resolved": 149,
+   "n_wrong_sign": 0,
+   "max_wrong_sign_response": 0.0,
+   "bound_wrong_over_peak": 0.06432026313514216,
+   "integrated_wrong_relative": 0.0,
+   "bonferroni_z": 3.7097440540201014
+  }
+ ],
+ "interpretation": "no resolved wrong-sign point; any wrong-sign response is bounded by the reported floor/peak ratio. This does NOT prove monotonicity, it bounds any violation.",
+ "runtime_s": 123.2039417499982
+}

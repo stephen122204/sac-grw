@@ -1,0 +1,197 @@
+{
+ "M": 1500,
+ "n": 48,
+ "n_boot": 400,
+ "seed": 2500,
+ "rows": [
+  {
+   "observable": "station x=+0.1",
+   "design": "two-shape",
+   "true_ratio": 0.15,
+   "boot_coverage": 0.9206666666666666,
+   "boot_se": 0.0069780396270755765,
+   "F_coverage": 0.958,
+   "F_se": 0.00517918912572229
+  },
+  {
+   "observable": "station x=+0.1",
+   "design": "common-shape",
+   "true_ratio": 0.15,
+   "boot_coverage": 0.9386666666666666,
+   "boot_se": 0.006195243097493193,
+   "F_coverage": 0.9733333333333334,
+   "F_se": 0.004159772073528028
+  },
+  {
+   "observable": "station x=+0.1",
+   "design": "two-shape",
+   "true_ratio": 0.75,
+   "boot_coverage": 0.9326666666666666,
+   "boot_se": 0.006470422735059154,
+   "F_coverage": 0.9673333333333334,
+   "F_se": 0.004589811583319117
+  },
+  {
+   "observable": "station x=+0.1",
+   "design": "common-shape",
+   "true_ratio": 0.75,
+   "boot_coverage": 0.9446666666666667,
+   "boot_se": 0.0059031943643847356,
+   "F_coverage": 0.9773333333333334,
+   "F_se": 0.0038429926610120606
+  },
+  {
+   "observable": "station x=-2.0",
+   "design": "two-shape",
+   "true_ratio": 0.15,
+   "boot_coverage": 0.95,
+   "boot_se": 0.00562731433871138,
+   "F_coverage": 0.982,
+   "F_se": 0.003432783127434649
+  },
+  {
+   "observable": "station x=-2.0",
+   "design": "common-shape",
+   "true_ratio": 0.15,
+   "boot_coverage": 0.9306666666666666,
+   "boot_se": 0.006558771339319698,
+   "F_coverage": 0.9706666666666667,
+   "F_se": 0.004356825211771287
+  },
+  {
+   "observable": "station x=-2.0",
+   "design": "two-shape",
+   "true_ratio": 0.75,
+   "boot_coverage": 0.946,
+   "boot_se": 0.0058357518795781604,
+   "F_coverage": 0.9733333333333334,
+   "F_se": 0.004159772073528028
+  },
+  {
+   "observable": "station x=-2.0",
+   "design": "common-shape",
+   "true_ratio": 0.75,
+   "boot_coverage": 0.942,
+   "boot_se": 0.006035229904485829,
+   "F_coverage": 0.9773333333333334,
+   "F_se": 0.0038429926610120606
+  },
+  {
+   "observable": "max|grad u|",
+   "design": "two-shape",
+   "true_ratio": 0.15,
+   "boot_coverage": 0.9413333333333334,
+   "boot_se": 0.006067667805062549,
+   "F_coverage": 0.9646666666666667,
+   "F_se": 0.004766891991566335
+  },
+  {
+   "observable": "max|grad u|",
+   "design": "common-shape",
+   "true_ratio": 0.15,
+   "boot_coverage": 0.9413333333333334,
+   "boot_se": 0.006067667805062549,
+   "F_coverage": 0.9473333333333334,
+   "F_se": 0.005767315313551524
+  },
+  {
+   "observable": "max|grad u|",
+   "design": "two-shape",
+   "true_ratio": 0.75,
+   "boot_coverage": 0.9306666666666666,
+   "boot_se": 0.006558771339319698,
+   "F_coverage": 0.96,
+   "F_se": 0.005059644256269409
+  },
+  {
+   "observable": "max|grad u|",
+   "design": "common-shape",
+   "true_ratio": 0.75,
+   "boot_coverage": 0.9466666666666667,
+   "boot_se": 0.005801660043406478,
+   "F_coverage": 0.954,
+   "F_se": 0.005408881584948964
+  },
+  {
+   "observable": "level x(u=0.25)",
+   "design": "two-shape",
+   "true_ratio": 0.15,
+   "boot_coverage": 0.9333333333333333,
+   "boot_se": 0.006440611887195306,
+   "F_coverage": 0.9586666666666667,
+   "F_se": 0.005139707442315428
+  },
+  {
+   "observable": "level x(u=0.25)",
+   "design": "common-shape",
+   "true_ratio": 0.15,
+   "boot_coverage": 0.938,
+   "boot_se": 0.006226609564334888,
+   "F_coverage": 0.97,
+   "F_se": 0.00440454310910905
+  },
+  {
+   "observable": "level x(u=0.25)",
+   "design": "two-shape",
+   "true_ratio": 0.75,
+   "boot_coverage": 0.928,
+   "boot_se": 0.006674129156676545,
+   "F_coverage": 0.9486666666666667,
+   "F_se": 0.005697848846843999
+  },
+  {
+   "observable": "level x(u=0.25)",
+   "design": "common-shape",
+   "true_ratio": 0.75,
+   "boot_coverage": 0.9346666666666666,
+   "boot_se": 0.0063804330515981385,
+   "F_coverage": 0.9633333333333334,
+   "F_se": 0.004852643418606824
+  }
+ ],
+ "shapes": [
+  {
+   "observable": "station x=+0.1",
+   "skew_raw": -0.1531466535338266,
+   "kurt_raw": -0.540117151928257,
+   "shapiro_p_raw": 0.8065961341628243,
+   "skew_full": -0.07112921716818223,
+   "kurt_full": -0.019584118196713796,
+   "shapiro_p_full": 0.7424492128546789,
+   "ks_shape_p": 0.9601715180757678
+  },
+  {
+   "observable": "station x=-2.0",
+   "skew_raw": -0.23238964183167085,
+   "kurt_raw": -0.5866317398680208,
+   "shapiro_p_raw": 0.34097220232574754,
+   "skew_full": 0.257866457270701,
+   "kurt_full": -0.5469364234489897,
+   "shapiro_p_full": 0.38983054785937793,
+   "ks_shape_p": 0.6926601395134386
+  },
+  {
+   "observable": "max|grad u|",
+   "skew_raw": -0.23493769546220228,
+   "kurt_raw": 0.06606004229814522,
+   "shapiro_p_raw": 0.4910972498017976,
+   "skew_full": 0.0671533346694665,
+   "kurt_full": -0.7747988085357513,
+   "shapiro_p_full": 0.5993956799714721,
+   "ks_shape_p": 0.6926601395134386
+  },
+  {
+   "observable": "level x(u=0.25)",
+   "skew_raw": -0.17268793145139724,
+   "kurt_raw": -0.32643791982439696,
+   "shapiro_p_raw": 0.9158060908577964,
+   "skew_full": -0.0066872820369568604,
+   "kurt_full": 0.07494348194630396,
+   "shapiro_p_full": 0.9961795535849032,
+   "ks_shape_p": 0.9601715180757678
+  }
+ ],
+ "source": "output/round18_observable_2026_09_10/fields.npz",
+ "construction": "standardise the RAW and FULL per-replicate samples separately; resample the FULL shape (scaled) against the RAW shape to impose a known variance ratio; count coverage. The common-shape design of round 22 is rerun as a control.",
+ "limitation": "performance under these empirical distributions and this configuration; not a guarantee for other problems"
+}

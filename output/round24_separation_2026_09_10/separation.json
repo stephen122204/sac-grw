@@ -1,0 +1,146 @@
+{
+ "reps": 24,
+ "times": [
+  0.25,
+  1.0,
+  2.0
+ ],
+ "rows": [
+  {
+   "kind": "matched_state",
+   "profile": "P1 single bump",
+   "regions": 2,
+   "T": 0.25,
+   "ratio": 0.9282873302244763,
+   "se": 0.009975117182225298
+  },
+  {
+   "kind": "matched_state",
+   "profile": "P1 single bump",
+   "regions": 2,
+   "T": 1.0,
+   "ratio": 0.8509034047227102,
+   "se": 0.017195306095302648
+  },
+  {
+   "kind": "matched_state",
+   "profile": "P1 single bump",
+   "regions": 2,
+   "T": 2.0,
+   "ratio": 0.7904350594900649,
+   "se": 0.02488114520498907
+  },
+  {
+   "kind": "matched_state",
+   "profile": "P2 two-pulse",
+   "regions": 3,
+   "T": 0.25,
+   "ratio": 0.8972129965430019,
+   "se": 0.009169101343215892
+  },
+  {
+   "kind": "matched_state",
+   "profile": "P2 two-pulse",
+   "regions": 3,
+   "T": 1.0,
+   "ratio": 0.838998097922893,
+   "se": 0.018201993131994956
+  },
+  {
+   "kind": "matched_state",
+   "profile": "P2 two-pulse",
+   "regions": 3,
+   "T": 2.0,
+   "ratio": 0.82020742485911,
+   "se": 0.029115579925664645
+  },
+  {
+   "kind": "matched_state",
+   "profile": "P3 oscillatory",
+   "regions": 13,
+   "T": 0.25,
+   "ratio": 0.8471012136886754,
+   "se": 0.007443340848074539
+  },
+  {
+   "kind": "matched_state",
+   "profile": "P3 oscillatory",
+   "regions": 13,
+   "T": 1.0,
+   "ratio": 0.6934137738754633,
+   "se": 0.01921342820238919
+  },
+  {
+   "kind": "matched_state",
+   "profile": "P3 oscillatory",
+   "regions": 13,
+   "T": 2.0,
+   "ratio": 0.6760460774005059,
+   "se": 0.02613044735606693
+  },
+  {
+   "kind": "own_history",
+   "profile": "P1 single bump",
+   "T": 0.25,
+   "ratio": 0.8668611688318361,
+   "se": 0.03373309631535228
+  },
+  {
+   "kind": "own_history",
+   "profile": "P1 single bump",
+   "T": 1.0,
+   "ratio": 0.8307691591471306,
+   "se": 0.05951583318453475
+  },
+  {
+   "kind": "own_history",
+   "profile": "P1 single bump",
+   "T": 2.0,
+   "ratio": 0.7498615670478977,
+   "se": 0.07450849954815175
+  },
+  {
+   "kind": "own_history",
+   "profile": "P2 two-pulse",
+   "T": 0.25,
+   "ratio": 0.8347452766440147,
+   "se": 0.03176286721026303
+  },
+  {
+   "kind": "own_history",
+   "profile": "P2 two-pulse",
+   "T": 1.0,
+   "ratio": 0.7700027083396354,
+   "se": 0.06786474869967449
+  },
+  {
+   "kind": "own_history",
+   "profile": "P2 two-pulse",
+   "T": 2.0,
+   "ratio": 0.87670470429685,
+   "se": 0.07228795926627628
+  },
+  {
+   "kind": "own_history",
+   "profile": "P3 oscillatory",
+   "T": 0.25,
+   "ratio": 0.7793694990341441,
+   "se": 0.022056175205538833
+  },
+  {
+   "kind": "own_history",
+   "profile": "P3 oscillatory",
+   "T": 1.0,
+   "ratio": 0.6694662637674565,
+   "se": 0.035030838078146415
+  },
+  {
+   "kind": "own_history",
+   "profile": "P3 oscillatory",
+   "T": 2.0,
+   "ratio": 0.6103030172373044,
+   "se": 0.040527564878975
+  }
+ ],
+ "defect": "round-23 evolved WITHIN with reflected coupling and applied within-sign matching only at the final step; variance comparisons were unaffected"
+}

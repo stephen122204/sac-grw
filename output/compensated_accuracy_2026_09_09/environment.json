@@ -1,0 +1,15 @@
+{
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "machine": "arm64",
+  "python": "3.11.4",
+  "numpy": "2.4.4",
+  "scipy": "1.17.1",
+  "matplotlib": "3.10.8",
+  "source_hashes": {
+    "relaxation_gbmc.py": "cf36fbc13822e869a2395fcc1d3c9874e95e3adda97a1f5384b82db5c3c5fb84",
+    "studies/study_compensated_accuracy.py": "456d6c0e9450f110678c53bc82b01cf85405eb094f34b47641f1cff5aeedcd4a",
+    "studies/study_smooth_transient.py": "5ededf44c00572ea75ad11ee4108c3806e5fdc96f311028464d26703c3129ba4",
+    "analysis/effective_equation.py": "7e1cccac81f209d40dfcc950f12cfce8453b1d60914472eb0a2c89e59a08119f",
+    "output/final_prepublication_tests/gbmc_smooth_transient/reference.npz": "54457ae1b9ce3da2f4c7df0bcb23970e3e134daec0374ac59b2a5284427dc05e"
+  }
+}

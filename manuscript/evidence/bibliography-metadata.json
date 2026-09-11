@@ -1,0 +1,192 @@
+[
+  {
+    "key": "bertaglia2024",
+    "error": "HTTP Error 429: Too Many Requests"
+  },
+  {
+    "key": "bossy2004",
+    "doi": "10.1090/S0025-5718-03-01551-5",
+    "title": [
+      "Optimal rate of convergence of a stochastic particle method to solutions of 1D viscous scalar conservation laws"
+    ],
+    "authors": [
+      "Mireille Bossy"
+    ],
+    "year": {
+      "date-parts": [
+        [
+          2003,
+          6,
+          18
+        ]
+      ]
+    },
+    "volume": "73",
+    "page": "777-812"
+  },
+  {
+    "key": "bossyjourdain2002",
+    "error": "HTTP Error 429: Too Many Requests"
+  },
+  {
+    "key": "bossytalay1997",
+    "doi": "10.1090/S0025-5718-97-00776-X",
+    "title": [
+      "A stochastic particle method for the McKean-Vlasov and the Burgers\nequation"
+    ],
+    "authors": [
+      "Mireille Bossy",
+      "Denis Talay"
+    ],
+    "year": {
+      "date-parts": [
+        [
+          1997,
+          1,
+          1
+        ]
+      ]
+    },
+    "volume": "66",
+    "page": "157-193"
+  },
+  {
+    "key": "cole1951",
+    "error": "HTTP Error 429: Too Many Requests"
+  },
+  {
+    "key": "ghoniem1985",
+    "doi": "10.1016/0021-9991(85)90058-0",
+    "title": [
+      "Grid-free simulation of diffusion using random walk methods"
+    ],
+    "authors": [
+      "Ahmed F. Ghoniem",
+      "Frederick S. Sherman"
+    ],
+    "year": {
+      "date-parts": [
+        [
+          1985,
+          10
+        ]
+      ]
+    },
+    "volume": "61",
+    "page": "1-37"
+  },
+  {
+    "key": "hopf1950",
+    "doi": "10.1002/cpa.3160030302",
+    "title": [
+      "The partial differential equation u\n                    <sub>t</sub>\n                    + uu\n                    <sub>x</sub>\n                    = \u03bc\n                    <sub>xx</sub>"
+    ],
+    "authors": [
+      "Eberhard Hopf"
+    ],
+    "year": {
+      "date-parts": [
+        [
+          1950,
+          9
+        ]
+      ]
+    },
+    "volume": "3",
+    "page": "201-230"
+  },
+  {
+    "key": "jourdain2000",
+    "doi": "10.1023/A:1010059302049",
+    "title": [
+      "Diffusion Processes Associated with Nonlinear Evolution Equations for Signed Measures"
+    ],
+    "authors": [
+      "B. Jourdain"
+    ],
+    "year": {
+      "date-parts": [
+        [
+          2000,
+          4
+        ]
+      ]
+    },
+    "volume": "2",
+    "page": "69-91"
+  },
+  {
+    "key": "lecot2002",
+    "doi": "10.1007/978-3-642-56046-0_5",
+    "title": [
+      "Quasirandom Walk Methods"
+    ],
+    "authors": [
+      "Christian L\u00e9cot",
+      "Shigeyoshi Ogawa"
+    ],
+    "year": {
+      "date-parts": [
+        [
+          2002
+        ]
+      ]
+    },
+    "volume": null,
+    "page": "63-85"
+  },
+  {
+    "key": "roberts1989",
+    "error": "HTTP Error 429: Too Many Requests"
+  },
+  {
+    "key": "shermanmascagni1994",
+    "error": "HTTP Error 429: Too Many Requests"
+  },
+  {
+    "key": "shermanpeskin1986",
+    "doi": "10.1137/0907090",
+    "title": [
+      "A Monte Carlo Method for Scalar Reaction Diffusion Equations"
+    ],
+    "authors": [
+      "Arthur S. Sherman",
+      "Charles S. Peskin"
+    ],
+    "year": {
+      "date-parts": [
+        [
+          1986,
+          10
+        ]
+      ]
+    },
+    "volume": "7",
+    "page": "1360-1372"
+  },
+  {
+    "key": "shermanpeskin1988",
+    "doi": "10.1137/0909012",
+    "title": [
+      "Solving the Hodgkin\u2013Huxley Equations by a Random Walk Method"
+    ],
+    "authors": [
+      "Arthur S. Sherman",
+      "Charles S. Peskin"
+    ],
+    "year": {
+      "date-parts": [
+        [
+          1988,
+          1
+        ]
+      ]
+    },
+    "volume": "9",
+    "page": "170-190"
+  },
+  {
+    "key": "virtanen2020",
+    "error": "HTTP Error 429: Too Many Requests"
+  }
+]

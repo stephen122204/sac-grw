@@ -1,0 +1,6 @@
+{
+  "checks": 62,
+  "status": "passed",
+  "scope": "partner-array arithmetic, headline table rows, both held-out block means/SEs/nominal bounds/counts, sorted construction state, LaTeX labels",
+  "does_not_establish": "statistical coverage, optimal plans, universal variance ordering, novelty, or new timing"
+}
