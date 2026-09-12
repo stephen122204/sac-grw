@@ -6,7 +6,7 @@ authors:
     given-names: Stephen
   - family-names: Daripa
     given-names: Prabir
-repository-code: "https://github.com/stephen122204/rb-gbmc-viscous-burgers"
+repository-code: "https://github.com/stephen122204/sac-grw"
 license: NOASSERTION
 preferred-citation:
   type: article
