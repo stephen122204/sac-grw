@@ -1,4 +1,8 @@
-"""reproduce.py — entry points for reproducing the Paper 2 (RB-GBMC) studies.
+"""Reproduce SAC-GRW results from archives, or run legacy RB-GBMC studies.
+
+Current paper: `paper` rebuilds numerical summaries and figures;
+`verify-paper` rebuilds summaries and checks archived partner/block arithmetic.
+Neither target repeats the experimental simulations or measures new timings.
 
 Thin wrapper: each target invokes the corresponding checked-in study script
 with the paper configuration. `verify` reruns nothing; it checks the
@@ -234,12 +238,18 @@ def verify():
 def main():
     parser = argparse.ArgumentParser(
         prog='reproduce.py',
-        description='Reproduce the Paper 2 (RB-GBMC) studies, or verify the '
-                    'checked-in results without rerunning anything.',
+        description='Reproduce SAC-GRW paper summaries and figures; legacy targets are retained.',
         epilog=EPILOG,
         formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('target', choices=list(TARGETS) + ['verify'])
+    parser.add_argument('target', choices=['paper', 'verify-paper'] + list(TARGETS) + ['verify'])
     args = parser.parse_args()
+    if args.target in ('paper', 'verify-paper'):
+        scripts = ['build_numbers.py', 'verify_evidence.py']
+        if args.target == 'paper':
+            scripts.append('make_figures.py')
+        for script in scripts:
+            subprocess.run([sys.executable, os.path.join(ROOT, 'reproduction', 'analysis', script)], cwd=ROOT, check=True)
+        return
     if args.target == 'verify':
         sys.exit(verify())
     if args.target == 'all':

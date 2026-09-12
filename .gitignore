@@ -19,3 +19,15 @@ build/
 !/README.md
 /OVERLEAF/
 /PAPER-2-Overleaf.zip
+
+# Manuscript and submission materials stay local.
+/manuscript/
+/reproduction/figures/
+/reproduction/evidence/verification.json
+/output/custom/
+
+# Regenerate plots and exported tables from numerical archives.
+/output/**/*.pdf
+/output/**/*.png
+/output/**/*.svg
+/output/**/*.tex
