@@ -36,3 +36,7 @@ regen_output/
 
 # Jupyter
 .ipynb_checkpoints/
+
+# Keep only the root README as public Markdown documentation.
+*.[mM][dD]
+!/README.md

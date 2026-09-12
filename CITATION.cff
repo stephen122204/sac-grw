@@ -9,7 +9,7 @@ authors:
     given-names: Stephen
   - family-names: Daripa
     given-names: Prabir
-# TODO(license): no license chosen yet; update before public release.
+repository-code: "https://github.com/stephen122204/sac-grw"
 license: NOASSERTION
 preferred-citation:
   type: article
@@ -23,4 +23,4 @@ preferred-citation:
     - family-names: Daripa
       given-names: Prabir
   year: 2026
-  notes: "arXiv identifier: TBD (placeholder until posted)"
+  notes: "Historical manuscript; no arXiv identifier assigned."
