@@ -61,27 +61,27 @@
 \maketitle
 
 \begin{abstract}
-Signed gradient-particle methods recover a field by cumulatively summing
-positive and negative particle masses. Averaging repeated simulations reduces
-sampling error, but the benefit of pairing their random increments depends on
-both the mass signs and the particle positions. We study a coupling that matches
-two simulations by spatial rank and reflects their Gaussian increments when
-the matched masses have the same sign. Opposite-sign masses instead receive
-the same increment. The construction specializes established coupling
-principles while preserving the probability law of each simulation. We derive
-an exact reduction in conditional integrated variance for the final diffusion
-stage, with contributions determined by mass products and particle separations.
-We then compare the complete nonlinear evolution with reflected pairing,
-within-sign pairing, control variates, and a randomized quasi-Monte Carlo
-adaptation. Viscous Burgers and cubic-flux tests show an additional reduction
-in field variance over within-sign pairing. Separate experiments with plans
-selected before evaluation show lower execution time at specified
-expected-error targets. Heat and one-sign controls distinguish the effect of
-the coupling from nonlinear transport. The benefit depends on the initial
-profile, observation time, and requested observable, and decreases as the
-common discretization bias dominates. These results support sign-aware spatial
-matching for repeated estimation of transient fields by one-dimensional signed
-gradient-particle solvers.
+Gradient random-walk methods represent the spatial derivative of a scalar
+solution by signed particles and recover the field by cumulative summation.
+When such a field is estimated by averaging repeated simulations, the accuracy
+of the average depends on how the random increments of the simulations are
+coupled. At a fixed diffusion stage, reflecting the Gaussian increments
+maximizes a matched pair's conditional variance contribution when its masses
+have opposite signs. We therefore reflect
+matched increments when the masses agree in sign and synchronize them when they
+do not. For a single matched pair this rule minimizes the covariance of the two
+contributions pointwise, and it leaves the discrete law of each simulation
+exactly unchanged, so the average retains the bias of the underlying solver. We
+derive an exact expression for the resulting reduction of conditional
+integrated variance at one diffusion stage, and we identify the configurations
+in which the rule provably does nothing. Numerical experiments on viscous
+Burgers and cubic-flux problems compare the coupling with reflected pairing,
+with pairing restricted to each sign class, with conditional expectation and
+control variates, and with a randomized quasi-Monte Carlo adaptation. Against
+within-sign pairing the integrated field variance falls to
+$0.739\,[0.682,0.801]$ of its value at comparable cost, and in an experiment
+with plans selected before evaluation the coupled estimator reaches a
+prescribed expected-error target using four solver trajectories against six.
 
 \keywords{gradient random walk \and signed particles \and antithetic coupling
   \and variance reduction \and viscous conservation laws \and Monte Carlo}
@@ -92,228 +92,446 @@ gradient-particle solvers.
 \section{Introduction}
 \label{sec:intro}
 
-Gradient-particle methods approximate the spatial derivative of a solution by a
-signed particle measure and recover the field by cumulative summation. This
-representation concentrates particles near steep gradients and supports a
-mesh-free field reconstruction. Gradient random walks have been developed for
-reaction--diffusion and viscous conservation equations
+Monte Carlo methods offer a way to approximate solutions of partial
+differential equations through averages of simulated trajectories. With
+independent samples and finite variance, the standard error decays as the
+inverse square root of the sample count. The variance and the cost of a sample
+still depend on the problem, so reducing either can make a substantial
+difference to the work needed for a given accuracy. Among the Monte Carlo
+methods developed for one-dimensional
+parabolic and viscous problems, one family replaces the solution by its spatial
+derivative and carries that derivative on signed particles
 \citep{ghoniem1985,shermanpeskin1986,shermanpeskin1988,roberts1989,shermanmascagni1994}.
-More recently, Bertaglia, Pareschi and Caflisch~\citep{bertaglia2024} extended gradient-based Monte Carlo
-constructions to relaxation approximations of hyperbolic conservation laws,
-including systems. The present work concerns repeated estimation of a transient
-field within an existing one-dimensional signed-particle solver.
+The field is then recovered as a cumulative sum of particle masses rather than
+as a histogram. Because particles accumulate where the derivative is large, the
+representation resolves fronts and steep layers automatically, and the
+reconstruction requires no grid. These gradient random-walk methods have been
+analyzed for viscous scalar conservation laws
+\citep{roberts1989,bossytalay1997,bossy2004,bossyjourdain2002,jourdain2000,bencheikh2020,towers2025},
+and have recently been extended by Bertaglia, Pareschi and
+Caflisch~\citep{bertaglia2024} to relaxation approximations of hyperbolic
+conservation laws, including systems.
 
-The computational question is how to couple the randomness in two replicas.
-Independent averaging reduces sampling variance but requires additional
-trajectories. Antithetic sampling instead seeks a negative covariance between
-the outputs of two runs with unchanged marginal laws
-\citep{hammersley1956,glasserman2004}. In a signed cumulative reconstruction,
-opposite masses reverse the response to a particle displacement. Reflection
-of all matched Gaussian increments therefore need not give a favorable field
-covariance, even when the particles are close in space.
+We are concerned with a question that arises once such a solver has been
+chosen. A single simulation returns a field with sampling error; the usual
+remedy is to average several independent simulations, at a cost proportional to
+their number. Antithetic sampling seeks to improve the accuracy obtained from
+the same number of simulations: run two
+simulations whose random inputs are negatively related, so that their errors
+partly cancel in the average, while each simulation individually retains its
+correct law \citep{hammersley1956,glasserman2004}. For a particle solver the
+natural implementation is immediate. The solver already sorts its particles by
+position at every step, so the two simulations can be matched at equal spatial
+rank, and the matched Gaussian diffusion increments can be reflected,
+$Z\mapsto-Z$.
 
-We match particles by spatial rank and reflect their increments when the
-matched masses have the same sign. When their signs differ, we use synchronous
-increments. A natural alternative pairs particles within
-each sign class and reflects every matched increment. The comparison between
-these two sign-aware rules is central. It separates the benefit of retaining
-spatial matching from the benefit already obtained by respecting mass signs.
+The signed representation gives us a reason to reconsider that choice at each
+matched pair. Reflecting the increments of two matched particles
+makes their positions move in opposite directions. In a cumulative
+reconstruction, a particle contributes its mass to the field to the right of
+its position, so moving two particles apart moves their contributions apart
+only if the two masses have the same sign. If the matched masses have opposite
+signs, the same reflection makes their contributions to the field move
+\emph{together}, and the covariance that antithetic sampling is meant to make
+negative becomes positive instead. Section~\ref{sec:motivation} makes this
+precise: at a fixed pre-stage state, reflection minimizes the covariance of the two
+contributions when the masses agree in sign and maximizes it when they do not,
+and in each case the extremum is attained over all couplings of the two
+increments of one matched pair. This suggests a simple modification. We keep the matching by
+spatial rank and let the mass signs choose the orientation of the increment,
+reflecting when the signs agree and synchronizing when they differ.
 
-The coupling principles have established antecedents.
-N{\"u}sken and Pavliotis~\citep{nusken2018} formulate variance reduction through couplings with preserved
-marginals. Their Proposition 54 and Corollaries 57--58 include
-reflection/synchronization switches based on products of response-related
-quantities. Section 5.2 describes repeated sorting and pairwise matching within
-a collection of sampler copies. Their asymptotic variance analysis motivates
-such constructions, but does not provide a finite-time variance comparison for
-the signed interacting solver studied here. The choice of spatial rank and
-mass sign is our specific realization of these ideas for a cumulative field
-estimator. It requires no auxiliary equation, although computable switching
-criteria also occur in the cited special cases.
+There is another way to use the mass signs: keep reflecting every matched pair,
+but restrict the matching so
+that particles are only ever paired with particles of the same sign. This
+within-sign rule never creates an unfavorable pair. It also gives up the
+spatial matching, since the $r$th positive particle of one simulation need not
+lie near the $r$th positive particle of the other. Which construction is better is not
+decidable by inspection, and the comparison between the two is the central
+empirical question of this paper. Reflected pairing enters as the common
+baseline against which both are measured.
 
-Within the gradient-particle literature, L{\'e}cot~\citep{lecot_rims2001} combines signed
-cumulative reconstruction, spatial ordering, and quasi-random diffusion inputs
-for a Burgers construction. A related treatment appears in
-L{\'e}cot and Ogawa~\citep{lecot2002}. This is the closest representation-specific precedent for
-structuring the random inputs. Our randomized quasi-Monte Carlo comparison
-adapts that diffusion strategy to the transport update used here. It is not a
-reproduction of the complete published algorithm.
+The construction builds on established coupling ideas. Nüsken and
+Pavliotis~\citep{nusken2018} develop a general
+framework for coupling copies of a sampler while preserving marginals, and show
+that the efficient coupling switches between reflected and synchronous noise
+according to the sign of a product; their Proposition~56, Eq.~(141), makes the switch
+depend on $\varphi'(x)\varphi'(y)$, where $\varphi$ solves a Poisson equation
+associated with the observable, and their Corollary~60, Eq.~(144), gives a
+Poisson-free special case in which the switch depends on $x\cdot y$ alone. Their
+Section~5.2, Eqs.~(159)--(160), sorts the copies at every step, by $|\nabla\varphi|$, and couples
+adjacent members of the sorted list. Their analysis concerns the asymptotic
+variance of an ergodic, non-interacting sampler, and does not supply a
+finite-time comparison for the interacting solver considered here, but the
+switching principle and the repeated sorted matching are theirs. What is
+specific to the present setting is the choice of keys: the sort key is the
+particle position, which the solver computes anyway for the reconstruction, and
+the switch key is the gradient mass the particle already carries.
 
-Recent QMC particle constructions also couple noise within an interacting
-ensemble. Ben Rached et al.~\citep{benrached2024} prove weak convergence for additive-noise
-McKean--Vlasov dynamics and develop an antithetic multilevel QMC estimator.
-Their construction and regularity assumptions differ from our signed
-rank-dependent solver. Together with array-RQMC work for a Fokker--Planck
-particle model \citep{netterdon2026}, this places the diffusion adaptation below
-within a broader literature. Its result cannot rank QMC methods as a family.
+Within the gradient-particle literature, Lécot~\citep{lecot_rims2001} combines
+signed cumulative reconstruction, re-sorting of the particles at every step,
+and quasi-random inputs to the diffusion stage for a Burgers problem; a related
+treatment appears in Lécot and Ogawa~\citep{lecot2002}. This is the closest
+precedent for structuring the random inputs of this class of solver, and our
+quasi-Monte Carlo comparison adapts his rank-and-increment map rather than
+reproducing his complete algorithm. Antithetic ideas have also been applied to
+mean-field particle systems by Bencheikh and
+Jourdain~\citep{bencheikhjourdain2019}, who couple a $2N$-particle system with
+two $N$-particle systems in order to cancel a particle-number bias. That
+construction compares systems of different sizes, whereas we average two
+systems of the same size, each carrying the same bias. Recent quasi-Monte Carlo
+constructions for McKean--Vlasov dynamics \citep{benrached2024} and array-RQMC
+for a Fokker--Planck particle model \citep{netterdon2026} couple randomness
+within an interacting ensemble under assumptions different from ours.
 
-Bencheikh and Jourdain~\citep{bencheikhjourdain2019} study bias and antithetic sampling for mean-field
-particle approximations. Their equation (3.1) couples a $2N$-particle system
-with two $N$-particle systems to form a particle-number correction, an object
-different from our same-size replica average. Related convergence and bias
-analyses \citep{bossytalay1997,bossy2004,bossyjourdain2002,jourdain2000,bencheikh2020}
-concern particular underlying particle schemes and assumptions. Preservation
-of our baseline's law does not extend those theorems to a different
-reconstruction or transport convention.
+The paper is organized as follows. Section~\ref{sec:background} recalls the
+signed gradient-particle discretization, fixes the update whose law we shall
+preserve, and defines the estimators and the error functional.
+Section~\ref{sec:coupling} develops the coupling: the pairwise calculation that
+dictates the switching rule, the admissible class in which all three pairings
+sit, the preservation of each simulation's law and its consequence for the
+bias, an exact expression for the variance reduction obtained at one diffusion
+stage, and the configurations in which the construction provably does nothing.
+Section~\ref{sec:numerics} reports the numerical comparisons: against the two
+alternative pairings, against conditional expectation and control variates
+applied to the same solver, across initial profiles, observation times and
+fluxes, at prescribed accuracy targets with plans frozen before evaluation, and
+for nonlinear functionals and the regime in which discretization bias dominates.
+Section~\ref{sec:conclusions} concludes. The proofs, the test problems and
+reference solutions, the supporting estimators, the statistical methodology and
+the evidence provenance are collected in the appendices.
 
-Variance reduction can also act through a control variate, conditional
-expectation, or a modified particle representation
-\citep{glasserman2004,baker2005,homolle2007,almohssen2010}.
-We compare the coupling with two known-mean controls and conditional evaluation
-of the last diffusion stage. These comparisons concern the selected estimators
-and their implementations, rather than the best attainable performance of each
-variance-reduction family.
+Throughout, the computations are one-dimensional and scalar, the particle
+masses are fixed at initialization, and transport uses the reconstructed
+velocity rather than a sampled velocity label. We compare estimators within
+this solver and do not compare the solver with deterministic alternatives.
 
-The contribution has three components. First, we specify a sign-aware
-spatial-rank coupling for signed cumulative field estimation and establish
-preservation of each replica's complete discrete law. This retains the
-baseline expectation and allows its discretization bias to be studied
-separately from the covariance introduced by pairing.
+% =====================================================================
+\section{Signed Gradient Particles for Viscous Conservation Laws}
+\label{sec:background}
 
-Second, we derive an exact final-stage variance identity and identify an
-unconditional equality case when all masses have one sign. The identity is
-local to the conditioned diffusion stage. A counterexample shows why an
-unrestricted coordinatewise-monotonicity argument cannot supply the missing
-nonlinear terminal comparison.
+This section fixes the discretization whose law the coupling of
+Section~\ref{sec:coupling} will preserve. Nothing in it is new; we state it in
+full because the coupling rule, the law-preservation argument, and the variance
+identity all refer to specific details of the update.
 
-Third, we quantify the additional computational benefit over within-sign
-pairing, alongside reflected sampling, controls, and a randomized
-quasi-Monte Carlo adaptation. Fixed-profile experiments, two distinct held-out
-target comparisons, and nonlinear observables establish the empirical scope.
-
-The intended use is ensemble field estimation after a signed-particle solver
-has been selected. We do not compare its efficiency with deterministic PDE
-solvers. The computations are one-dimensional and scalar, and use
-the mean-transport update defined below. In particular it does not establish
-an advantage for sampled two-speed transport.
-
-Section~\ref{sec:method} defines the update and estimators.
-Section~\ref{sec:theory} gives their exact properties.
-Section~\ref{sec:numerics} presents the comparisons and applicability tests,
-followed by the discussion and conclusions. Appendices supply the proofs,
-reference and initialization details, supporting estimator constructions,
-and statistical methodology.
-
-\section{The solver, the estimators and the coupling}
-\label{sec:method}
-
-\subsection{Problem class and signed particle representation}
+\subsection{From the Field to its Gradient}
+\label{sec:representation}
 
 We consider the scalar viscous conservation law
 \begin{equation}
- \partial_t u+\partial_x f(u)=\nu\partial_{xx}u,\qquad
- u(x,0)=u_0(x),\quad x\in\R,\quad 0<t\le T.
+ \partial_t u+\partial_x f(u)=\nu\,\partial_{xx}u,\qquad
+ u(x,0)=u_0(x),\quad x\in\R,\quad 0<t\le T,
  \label{eq:pde}
 \end{equation}
-We take $f\in C^1(\R)$ and $\nu>0$, with initial data $u_0$ of
-bounded variation whose derivative is integrable and whose limits
-$u_\pm=\lim_{x\to\pm\infty}u_0(x)$ exist. The experiments use
-$f(u)=u^2/2$ (viscous Burgers), $f(u)=u^3/3$, and $f\equiv 0$ (heat), the last
-as a control in which the coupling acts without transport.
+with $f\in C^1(\R)$ and $\nu>0$. The initial datum $u_0$ has bounded variation
+and integrable derivative, and the limits
+$u_\pm=\lim_{x\to\pm\infty}u_0(x)$ exist. Our experiments use
+$f(u)=u^2/2$ (viscous Burgers), $f(u)=u^3/3$, and $f\equiv0$; the last is the
+heat equation and serves as a control in which the coupling acts in the absence
+of transport.
 
-For a smooth solution, differentiating \eqref{eq:pde} gives
-\[
- \partial_t w+\partial_x\bigl(f'(u)w\bigr)=\nu\partial_{xx}w,
- \qquad w=\partial_x u.
-\]
-Thus the gradient is transported with velocity $f'(u)$ and diffused with
-coefficient $\nu$. The signed-gradient representation used in random-walk
-methods approximates $w$ by weighted point masses and recovers $u$ by
-integration (see \citep{ghoniem1985,roberts1989,lecot_rims2001}). We write
+Let $w=\partial_x u$. Differentiating \eqref{eq:pde} in $x$ for a smooth
+solution and using $\partial_x f(u)=f'(u)\,\partial_x u=f'(u)w$ gives
 \begin{equation}
- \begin{aligned}
-  w^N(\cdot,t)&=\sum_{i=1}^N m_i\,\delta_{X_i(t)},\\
-  U^N(x,t)&=u_-+\!\!\sum_{i:\,X_i(t)\le x}\!\! m_i .
- \end{aligned}
-  \label{eq:representation}
+ \partial_t w+\partial_x\bigl(f'(u)\,w\bigr)=\nu\,\partial_{xx}w,
+ \qquad w(x,0)=u_0'(x).
+ \label{eq:gradient-pde}
 \end{equation}
-Here $\delta_{X_i}$ is the Dirac measure at particle position $X_i$, and
-$m_i$ is its signed mass. We keep the masses fixed and evolve the positions.
-For smooth profiles with equal far-field values, the positive and negative
-parts of $u_0'$ have equal integral. The main two-pulse experiments place
-$N/2$ particles at midpoint quantiles of each part and assign magnitude
-\[
+Equation~\eqref{eq:gradient-pde} is a conservation law for $w$ with velocity
+field $f'(u)$ and diffusivity $\nu$: the gradient is advected at the local
+characteristic speed and spread by diffusion. It is therefore natural to
+approximate $w$ by point masses that are transported and diffused, which is the
+idea underlying gradient random-walk methods
+\citep{ghoniem1985,roberts1989,shermanmascagni1994}.
+
+Accordingly we represent $w$ by $N$ signed particles with positions $X_i$ and
+fixed masses $m_i$, and recover $u$ by integrating $w$ from the left,
+\begin{equation}
+ w^N(\cdot,t)=\sum_{i=1}^N m_i\,\delta_{X_i(t)},
+ \qquad
+ U^N(x,t)=u_-+\!\!\sum_{i:\,X_i(t)\le x}\!\! m_i ,
+ \label{eq:representation}
+\end{equation}
+where $\delta_{X_i}$ is the Dirac measure at $X_i$. The second expression in
+\eqref{eq:representation} is the cumulative sum that gives the method its
+character: every particle to the left of $x$ contributes its mass to the field
+at $x$, so the reconstruction is a signed step function whose jumps sit at the
+particle positions. It is the discrete analog of $u=u_-+\int_{-\infty}^{x}w$,
+and the same construction, with $\pm1$ masses and a left reconstruction,
+appears in Lécot~\citep[Eqs. (35)--(37)]{lecot_rims2001}.
+
+Two consequences of \eqref{eq:representation} are used repeatedly. First,
+letting $x\to+\infty$ gives
+\begin{equation}
+ \sum_{i=1}^N m_i \;=\; u_+-u_- ,
+ \label{eq:total-mass}
+\end{equation}
+so the total signed mass is fixed by the far-field data, exactly as in
+Lécot~\citep[Eq. (36)]{lecot_rims2001}. For every profile with equal far-field
+values this total vanishes. Second, the response of $U^N(x,\cdot)$ to a
+displacement of particle $i$ has the sign of $m_i$: moving a positive-mass
+particle to the right removes mass from the field to its left, while moving a
+negative-mass particle to the right adds field there. This elementary
+observation is what makes the sign of a mass, and not only the position of a
+particle, relevant to the design of a coupling.
+
+We initialize deterministically, so that both simulations of a pair start from
+an identical state. For the main experiments we place $N/2$ particles at
+midpoint quantiles of the positive part of $u_0'$ and $N/2$ at those of the
+negative part and assign magnitude
+\begin{equation}
  |m_i|=\frac{\mathrm{TV}(u_0)}{N},\qquad
- \mathrm{TV}(u_0)=\int_\R |u_0'(x)|\,\mathrm dx.
-\]
-Here $\mathrm{TV}(u_0)$ is the total variation of the initial field. Equal
-counts and equal magnitudes enforce $\sum_i m_i=0$ for this construction.
-The profile/time study instead normalizes each sign class using its sampled
-integral, and the one-sign control has nonzero total mass. These numerical
-initializations are specified in Appendix~\ref{app:setup}. Zero total mass
-is required for the whole-line product identity in Lemma~\ref{lem:wholeline},
-but not for preservation of a replica's law.
+ \mathrm{TV}(u_0)=\int_\R |u_0'(x)|\,\mathrm dx .
+ \label{eq:mass}
+\end{equation}
+Equal counts and equal magnitudes then give $\sum_i m_i=0$ exactly. The
+profile/time study of Section~\ref{sec:profiles} instead normalizes each sign
+class by its own sampled integral, and the one-sign control of
+Section~\ref{sec:structure} has all masses of one sign; both constructions are
+specified in Appendix~\ref{app:setup}. We flag in Section~\ref{sec:identity}
+the one place where a vanishing total mass is used.
 
-\subsection{One step of a single replica}
+\subsection{One Step of a Simulation}
+\label{sec:onestep}
 
-The diffusion stage uses the Gaussian random-walk increment of variance
-$2\nu h$ \citep{ghoniem1985}. We fix a time step $h>0$ and set
-\[
- K=T/h\in\mathbb N,\qquad \sigma=\sqrt{2\nu h}.
-\]
-A replica (i.e., one simulation of the particle system) keeps
-a state $(X,m,v)$ of positions, masses and carried velocities. Its storage
-order is the most recent pre-diffusion rank order. After diffusion the positions
-need not be sorted. Algorithm~\ref{alg:single} specifies the update used in all comparisons.
-We first transport with the carried velocity and sort the particles. We then
-evaluate the new velocity from the cumulative mass at each rank, including
-that particle's own mass, and apply diffusion. This is our baseline convention.
-It is not a reproduction of the shock and rarefaction transport rules in
-L{\'e}cot~\citep{lecot_rims2001}.
+Fix a time step $h>0$, let $K=T/h\in\mathbb N$, and set
+\begin{equation}
+ \sigma=\sqrt{2\nu h},
+ \label{eq:sigma}
+\end{equation}
+the standard deviation of the Brownian displacement accumulated over one step
+by the diffusion in \eqref{eq:gradient-pde} \citep{ghoniem1985}. A simulation
+carries the state $(X,m,v)$ of positions, masses, and the velocities to be used
+by the next transport. One step is the operator splitting of
+\eqref{eq:gradient-pde} into transport and diffusion, given as
+Algorithm~\ref{alg:single}.
 
 \begin{algorithm}[htbp]
-\caption{One step of a single replica (mean-transport gradient random walk)}
+\caption{One step of a single simulation.}
 \label{alg:single}
 \SetAlgoLined
-\KwIn{state $(X,m,v)$ with associated entries, step $h$, viscosity $\nu$, flux derivative $f'$}
-$X_i \leftarrow X_i + v_i\,h$ \qquad \tcp*[h]{transport with the carried velocity}\;
-$\pi\leftarrow$ a stable sort of $X$; \quad $(X,m)\leftarrow(X_\pi,m_\pi)$\;
-$v_i \leftarrow f'\!\bigl(u_- + \sum_{j\le i} m_j\bigr)$
-  \tcp*{new carried velocity, inclusive cumulative sum}
-draw $Z\sim\mathcal N(0,I_N)$ independent of the past;
-  \quad $X_i \leftarrow X_i + \sigma Z_i$\;
+\KwIn{state $(X,m,v)$, step $h$, viscosity $\nu$, flux derivative $f'$}
+transport: $X_i \leftarrow X_i + v_i\,h$ for $i=1,\dots,N$\;
+sort: $\pi\leftarrow$ a stable sort of $X$, \quad $(X,m)\leftarrow(X_\pi,m_\pi)$\;
+velocity: $v_i \leftarrow f'\!\bigl(u_- + \sum_{j\le i} m_j\bigr)$\;
+diffusion: draw $Z\sim\mathcal N(0,I_N)$ independent of the past, \quad
+  $X_i \leftarrow X_i + \sigma Z_i$\;
 \end{algorithm}
 
-Three features of Algorithm~\ref{alg:single} matter later. The velocity is
-computed after the sort and before the diffusion, and is used by
-the next transport, so it is part of the state and must stay associated with its particle until
-used. At the next sort, we discard and recompute that velocity. Any other
-reordering must permute the velocity together with the position and mass.
-Particles at the same position retain their previous relative order. We do not sort again between diffusion and the next transport.
+The velocity step deserves comment, since it is where \eqref{eq:representation}
+re-enters. After the sort, the cumulative sum $u_-+\sum_{j\le i}m_j$ is exactly
+$U^N$ evaluated at the position of particle $i$, inclusive of that particle's
+own mass; the velocity assigned to particle $i$ is therefore $f'$ of the
+reconstructed field at that particle. Because the reconstruction is a step
+function, an inclusive and an exclusive convention differ by one mass, and we
+record that we use the inclusive one at every rank and in every coupling. This
+is a mean-transport update: the velocity is read off the reconstruction rather
+than sampled from a two-speed equilibrium, and we make no claim here about the
+relative merits of the two choices.
 
-The velocity is evaluated from the rank-inclusive cumulative sum. At tied
-positions this convention uses the stable particle order. It differs from the value
-of a field reconstruction that includes all co-located masses at once. The
-same convention is used in every coupling. This mean-transport baseline uses the reconstructed velocity directly,
-without sampling a velocity label.
+Three further details are used later. The velocity computed at step~3 is not
+consumed until the transport of the following step, so it is part of the state
+and must travel with its particle under any reordering. The sort is stable, so
+coincident particles keep their previous relative order. Finally, the positions
+are not re-sorted between the diffusion of one step and the transport of the
+next; the sort at step~2 does that work.
 
-\subsection{Two replicas, a matching, and a multiplier}
+\subsection{Estimators and Error}
+\label{sec:estimators}
 
-Reflection and synchronization are established ways to couple Gaussian
-increments \citep{hammersley1956,nusken2018}. Reflection gives the partners
-opposite increments, whereas synchronization gives them the same increment.
-The sign-dependent switches in N{\"u}sken and Pavliotis~\citep[Proposition 54 and Corollaries 57--58]{nusken2018}
-motivate this choice. Here we specify the matching and switching rule for
-signed cumulative reconstruction.
+Write $U^{(A)},U^{(B)}$ for the fields reconstructed from two simulations at
+time $T$. Averaging $B$ independent simulations gives the unpaired estimator
+\begin{equation}
+ \hat u^{\mathrm{sing}}_B(x)=\frac1B\sum_{b=1}^{B}U^{(b)}(x).
+ \label{eq:est-single}
+\end{equation}
+When the simulations are run in coupled pairs we average within a pair first,
+\begin{equation}
+ \bar U^{(b)}(x)=\tfrac12\bigl(U^{(A,b)}(x)+U^{(B,b)}(x)\bigr),
+ \label{eq:est-pair}
+\end{equation}
+and then over $B$ independent realizations of the pair,
+\begin{equation}
+ \hat u_B(x)=\frac1B\sum_{b=1}^{B}\bar U^{(b)}(x).
+ \label{eq:est-ens}
+\end{equation}
+Thus $B$ counts simulations in \eqref{eq:est-single} and pairs in
+\eqref{eq:est-ens}, and a paired estimate at a given $B$ costs $2B$ solver
+trajectories. We report trajectory counts explicitly wherever the two
+conventions meet.
 
-Both replicas start from the same deterministic initial state. They are advanced
-in lockstep. At stage $k$ let
+Accuracy is measured by the expected integrated squared error on a window
+$\Omega=[-5,5]$, discretized at $L=400$ equispaced points $x_\ell$ with spacing
+$\Delta x$,
+\begin{equation}
+ \mathcal E(B)=\E\bigl\|\hat u_B-u_{\mathrm{ref}}\bigr\|_\Omega^2,
+ \qquad
+ \|g\|_\Omega^2=\Delta x\sum_{\ell=1}^{L}g(x_\ell)^2 ,
+ \label{eq:error}
+\end{equation}
+with $u_{\mathrm{ref}}$ an independently computed spectral or Cole--Hopf
+solution (Appendix~\ref{app:setup}). Since the $B$ realizations are independent
+and identically distributed, \eqref{eq:error} splits as
+\begin{equation}
+ \mathcal E(B)=b^2+\frac{V}{B},
+ \qquad
+ b^2=\bigl\|\E\bar U-u_{\mathrm{ref}}\bigr\|_\Omega^2,
+ \qquad
+ V=\Delta x\sum_{\ell=1}^{L}\Var\bigl(\bar U(x_\ell)\bigr).
+ \label{eq:decomposition}
+\end{equation}
+The squared bias $b^2$ collects the finite-particle and time-stepping errors of
+the underlying discretization, together with any error in the reference; the
+integrated variance $V$ is the only term that responds to averaging more
+realizations at fixed $N$ and $h$. A coupling can act on $V$ alone. This is not
+a limitation peculiar to the present construction, but it does fix what any
+comparison between couplings can be about, and Section~\ref{sec:biasregime}
+returns to the regime in which $b^2$ dominates.
+
+Computational work is measured as elapsed execution time $W=BC$, with $C$ the
+measured cost of one realization; each experiment states its timing protocol,
+and the cost of selecting a plan from preliminary runs is always reported
+separately from the cost of executing it.
+
+\begin{remark}[whole line versus window]
+\label{rem:window}
+The norm in \eqref{eq:error} is a quadrature on the bounded window $\Omega$ and
+is used for every numerical comparison. The identity of
+Section~\ref{sec:identity} instead integrates over all of $\R$. We keep the two
+apart and never substitute one for the other.
+\end{remark}
+
+% =====================================================================
+\section{Sign-Aware Coupling of Two Simulations}
+\label{sec:coupling}
+
+\subsection{What the Mass Signs Do to an Antithetic Pair}
+\label{sec:motivation}
+
+Before specifying the coupling we isolate the calculation that dictates it.
+Consider one diffusion stage and condition on the state of both simulations
+immediately before it. Let a particle of simulation $A$ sit at $a$ with mass
+$\alpha$, and let the particle matched to it in simulation $B$ sit at $b$ with
+mass $\beta$. After the stage their positions are
+\[
+ X_A=a+\sigma Z_A,\qquad X_B=b+\sigma Z_B,
+\]
+with $Z_A,Z_B\sim\mathcal N(0,1)$; the coupling is the choice of their joint
+law. Abbreviate the two indicators by
+\[
+ \chi_A=\ind\{X_A\le x\},\qquad \chi_B=\ind\{X_B\le x\}.
+\]
+By \eqref{eq:representation} the pair contributes
+$\tfrac12(\alpha\chi_A+\beta\chi_B)$ to the pair mean at the point $x$.
+We construct the increment pairs independently across matched ranks. Under
+this restriction, contributions of distinct matched pairs are uncorrelated,
+and the conditional variance of the pair mean decomposes over pairs. For the
+pair above, the contribution is
+\begin{equation}
+ \tfrac14\Bigl[\alpha^2\Var\chi_A+\beta^2\Var\chi_B
+  +2\,\alpha\beta\,\mathrm{Cov}(\chi_A,\chi_B)\Bigr].
+ \label{eq:pairvar}
+\end{equation}
+The first two terms depend only on the marginal laws of $X_A$ and $X_B$, which
+every admissible coupling leaves alone. The coupling acts through the third
+term, and through it alone.
+
+Write
+\[
+ p=\Phi\!\Bigl(\frac{x-a}{\sigma}\Bigr),
+ \qquad
+ q=\Phi\!\Bigl(\frac{x-b}{\sigma}\Bigr)
+\]
+for the two marginal probabilities, $\Phi$ being the standard normal
+distribution function. The covariance in \eqref{eq:pairvar} is
+$\mathrm{Cov}(\chi_A,\chi_B)=\Pr\{X_A\le x,\,X_B\le x\}-pq$, and the joint
+probability is constrained by
+the classical Fréchet--Hoeffding bounds
+\citep[Theorem~2.2.3 and Section~2.5]{nelsen2006},
+\begin{equation}
+ \max(p+q-1,\,0)\;\le\;\Pr\{X_A\le x,\ X_B\le x\}\;\le\;\min(p,q),
+ \label{eq:frechet}
+\end{equation}
+which hold for every coupling of the two marginals. Both bounds are attained
+here, and by the two coupling choices that are actually available. Taking
+$Z_B=-Z_A$ makes $X_B$ a strictly decreasing function of $X_A$, so the pair is
+countermonotone and the left bound in \eqref{eq:frechet} is an equality;
+taking $Z_B=Z_A$ makes them comonotone and the right bound is an equality.
+Writing
+\begin{equation}
+ c_-(x)=\max(p+q-1,0)-pq\;\le\;0,
+ \qquad
+ c_+(x)=\min(p,q)-pq\;\ge\;0,
+ \label{eq:cpm}
+\end{equation}
+reflection therefore realizes $c_-$ and synchronization realizes $c_+$, and no
+other coupling of the two increments can leave the covariance outside
+$[c_-(x),c_+(x)]$.
+
+Restoring the mass product explains which endpoint we need. To minimize the
+pair's contribution to conditional variance, we make
+$\alpha\beta\,\mathrm{Cov}$ as negative as possible. Reflection does this when
+$\alpha\beta>0$, and synchronization does it when $\alpha\beta<0$. We record
+this consequence of the classical bounds for the present reconstruction.
+
+\begin{proposition}[pairwise extremality of the switching rule]
+\label{prop:pairwise}
+Fix a diffusion stage, a matching, and the state of both simulations before the
+stage. For a matched pair with positions $a,b$ and nonzero masses $\alpha,\beta$,
+consider all joint laws of $(Z_A,Z_B)$ with standard normal marginals. The
+contribution \eqref{eq:pairvar} of that pair to $\Var\bigl(\bar U(x)\bigr)$ is
+minimized, simultaneously for every $x\in\R$, by
+\[
+ Z_B=\varepsilon\,Z_A,\qquad \varepsilon=-\sgn(\alpha)\sgn(\beta),
+\]
+and the minimum equals
+$\tfrac14[\alpha^2 p(1-p)+\beta^2 q(1-q)+2\alpha\beta\,c_{\mp}(x)]$ with
+$c_-$ taken when $\alpha\beta>0$ and $c_+$ when $\alpha\beta<0$. Reflecting a
+pair with $\alpha\beta<0$ attains the pointwise \emph{maximum} instead.
+\end{proposition}
+
+\begin{proof}
+The first two terms of \eqref{eq:pairvar} are functions of the marginals alone.
+By \eqref{eq:frechet} the covariance lies in $[c_-(x),c_+(x)]$ for every
+coupling, and the two stated choices attain the endpoints because
+countermonotone and comonotone pairs realize the Fréchet--Hoeffding bounds.
+Multiplying by $2\alpha\beta$ reverses the ordering when $\alpha\beta<0$, which
+gives the claim and its last sentence.
+\end{proof}
+
+Proposition~\ref{prop:pairwise} explains how to choose the multiplier for a
+fixed matched pair. It does
+not settle the choice of matching, since a different matching changes which
+pairs exist, and the bounds \eqref{eq:frechet} are then taken at different
+$(a,b)$. Nor does it extend along the horizon: the state entering a later stage
+depends on the coupling used at earlier stages, so a stage-by-stage optimum is
+not a terminal optimum. This division is the organizing principle of the paper.
+The multiplier is fixed by Proposition~\ref{prop:pairwise}; the choice between
+matching by spatial rank and matching within sign classes is not settled by it,
+and is decided numerically in Section~\ref{sec:numerics}.
+
+\subsection{The Coupling and Two Alternatives}
+\label{sec:rules}
+
+Both simulations start from the same deterministic initial state and are
+advanced in lockstep. At stage $k$ let
 \[
   S_k=\bigl(X^A,m^A,v^A,X^B,m^B,v^B\bigr)
 \]
-be the joint state after the sort and the velocity update of
-Algorithm~\ref{alg:single} and before the diffusion. The information available at that stage is denoted by $\Fil_k$ and includes
-the complete joint history and all previous random draws. A rule measurable
-with respect to $\Fil_k$ therefore uses only information available before the
-fresh diffusion draw.
+denote the joint state after the sort and velocity update of
+Algorithm~\ref{alg:single} and before the diffusion, and let $\Fil_k$ denote
+the information generated by the complete joint history up to that point,
+including all earlier random draws. A rule measurable with respect to $\Fil_k$
+uses only what is known before the next draw is made.
 
 \begin{definition}[admissible coupling]
 \label{def:coupling}
-An \emph{admissible coupling} is a rule that, at each stage $k$, selects a
-bijection $\pi_k:\{1,\dots,N\}\to\{1,\dots,N\}$ and multipliers
+An \emph{admissible coupling} selects, at each stage $k$, a bijection
+$\pi_k:\{1,\dots,N\}\to\{1,\dots,N\}$ and multipliers
 $\varepsilon_k\in\{-1,+1\}^N$, both $\Fil_k$-measurable, draws
-$Z^{(k)}\sim\mathcal N(0,I_N)$ independent of $\Fil_k$ and of all earlier draws,
-and sets
+$Z^{(k)}\sim\mathcal N(0,I_N)$ independent of $\Fil_k$ and of all earlier
+draws, and sets
 \begin{equation}
   X^A_i \leftarrow X^A_i+\sigma Z^{(k)}_i,
   \qquad
@@ -322,28 +540,37 @@ and sets
 \end{equation}
 \end{definition}
 
-Three admissible couplings are compared throughout. All three use the same
-$Z^{(k)}$ for replica $A$. They differ only in $(\pi_k,\varepsilon_k)$.
+Three admissible couplings are compared throughout. All give simulation $A$ the
+same increments and differ only in $(\pi_k,\varepsilon_k)$.
 
 \begin{description}
 \item[\refl{} (reflected pairing).] $\pi_k=\mathrm{id}$ and
-  $\varepsilon_{k,j}=-1$. Matched by spatial rank, antithetic increments. This
-  is the natural default.
-\item[\swi{} (sign-switched pairing), the construction studied here.]
-  $\pi_k=\mathrm{id}$ and
+  $\varepsilon_{k,j}=-1$: match at equal spatial rank and reflect every pair.
+  This is the direct transcription of antithetic sampling and serves as the
+  common baseline.
+\item[\swi{} (sign-switched pairing).] $\pi_k=\mathrm{id}$ and
   \begin{equation}
     \varepsilon_{k,j}=-\,\sgn\!\bigl(m^A_j\bigr)\,\sgn\!\bigl(m^B_j\bigr),
     \label{eq:switch}
   \end{equation}
-  so a matched pair with like masses is reflected and a matched pair with
-  unlike masses is synchronised.
-\item[\wit{} (within-sign pairing).] $\pi_k$ maps the $r$-th particle of sign
-  $s$ in $B$ to the $r$-th particle of sign $s$ in $A$, for $s\in\{+,-\}$, and
-  $\varepsilon_{k,j}=-1$. No matched pair ever has unlike masses.
+  the rule of Proposition~\ref{prop:pairwise}: match at equal spatial rank,
+  reflect a pair whose masses agree in sign, synchronize a pair whose masses
+  differ.
+\item[\wit{} (within-sign pairing).] $\pi_k$ sends the $r$th particle of sign
+  $s$ in $B$ to the $r$th particle of sign $s$ in $A$, for $s\in\{+,-\}$, and
+  $\varepsilon_{k,j}=-1$: restrict the matching so that no pair has unlike
+  masses, then reflect every pair.
 \end{description}
 
+By Proposition~\ref{prop:pairwise}, \refl{} and \swi{} agree on every pair with
+like masses and disagree on every pair with unlike masses, where \refl{} makes
+precisely the worst available choice. \wit{} avoids unlike pairs altogether, at
+the price of matching particles that may be far apart; Figure~\ref{fig:construction}
+shows both matchings on one state. Algorithm~\ref{alg:pair} gives the coupled
+advance.
+
 \begin{algorithm}[htbp]
-\caption{Coupled advance of two replicas}
+\caption{Coupled advance of two simulations.}
 \label{alg:pair}
 \SetAlgoLined
 \KwIn{common initial state $(X^0,m^0)$ sorted by position, $u_-$, steps $K$,
@@ -353,40 +580,25 @@ $(X^A,m^A)\leftarrow(X^0,m^0)$; \quad $(X^B,m^B)\leftarrow(X^0,m^0)$;
   \quad $\sigma\leftarrow\sqrt{2\nu h}$\;
 $v^A_i\leftarrow f'\!\bigl(u_-+\sum_{j\le i}m^A_j\bigr)$; \quad $v^B\leftarrow v^A$\;
 \For{$k=0,\dots,K-1$}{
-  \ForEach{replica $Q\in\{A,B\}$}{
-    $X^Q_i\leftarrow X^Q_i+v^Q_ih$ \tcp*{transport}
-    stable-sort $(X^Q,m^Q)$ by $X^Q$\;
-    $v^Q_i\leftarrow f'\!\bigl(u_-+\sum_{j\le i}m^Q_j\bigr)$
-      \tcp*{velocity for the next transport}
+  \ForEach{simulation $Q\in\{A,B\}$}{
+    $X^Q_i\leftarrow X^Q_i+v^Q_ih$; \quad stable-sort $(X^Q,m^Q)$ by $X^Q$; \quad
+    $v^Q_i\leftarrow f'\!\bigl(u_-+\sum_{j\le i}m^Q_j\bigr)$\;
   }
   \uIf{policy $=\refl$}{$\pi\leftarrow\mathrm{id}$; \quad $\varepsilon_j\leftarrow-1$\;}
   \uElseIf{policy $=\swi$}{$\pi\leftarrow\mathrm{id}$; \quad
     $\varepsilon_j\leftarrow-\sgn(m^A_j)\sgn(m^B_j)$\;}
   \Else(\tcp*[h]{$\wit$}){\ForEach{$s\in\{+1,-1\}$}{
       $I_s\leftarrow\{i:\sgn(m^A_i)=s\}$, $J_s\leftarrow\{j:\sgn(m^B_j)=s\}$,
-        both in increasing order\;
-      assert $|I_s|=|J_s|$; $\pi(J_s[r])\leftarrow I_s[r]$ for $r=1,\dots,|I_s|$;
-        \quad $\varepsilon\leftarrow-1$ on those $j$\;
+        both increasing; \quad assert $|I_s|=|J_s|$\;
+      $\pi(J_s[r])\leftarrow I_s[r]$ for $r=1,\dots,|I_s|$; \quad
+        $\varepsilon\leftarrow-1$ on those $j$\;
       }}
-  draw $Z\sim\mathcal N(0,I_N)$ \tcp*{fresh, independent of the joint history}
+  draw $Z\sim\mathcal N(0,I_N)$ independent of the joint history\;
   $X^A_i\leftarrow X^A_i+\sigma Z_i$; \quad
   $X^B_j\leftarrow X^B_j+\sigma\varepsilon_jZ_{\pi(j)}$\;
 }
-\KwOut{$(X^A,m^A)$, $(X^B,m^B)$; fields by \eqref{eq:representation} and the
-       pair mean by \eqref{eq:est-pair}}
+\KwOut{$(X^A,m^A)$, $(X^B,m^B)$, and the pair mean \eqref{eq:est-pair}}
 \end{algorithm}
-
-Algorithm~\ref{alg:pair} is implemented by the shared coupling stepper in the
-accompanying repository. Its Burgers trajectories are checked against the
-conditional-mean baseline using prescribed draws. Drawing the fresh vector
-before or after evaluating the state-dependent rule gives the same algorithm
-provided the rule does not inspect that vector.
-
-Figure~\ref{fig:construction} shows the two matchings on one paired state.
-Within-sign matching restricts each particle to a partner of the same sign,
-which can increase the separation. Spatial-rank matching pairs the $i$th
-particle of one replica with the $i$th of the other and uses the mass signs
-to choose the increment orientation.
 
 \begin{figure}[htbp]
 \centering
@@ -397,170 +609,112 @@ The left panel pairs particles of equal spatial rank and synchronizes the
 increments of unlike-sign pairs. The right panel restricts partners to the
 same sign and reflects every pair. The state is identical in both panels,
 so the difference in separation comes only from the matching rule.
-Both rules preserve each replica's law (Proposition~\ref{prop:law}).}
-
+Both rules preserve each simulation's law (Proposition~\ref{prop:law}).}
 \label{fig:construction}
 \end{figure}
 
+Four conditions in Definition~\ref{def:coupling} are needed for the law
+preservation of Section~\ref{sec:law}, and each can be violated by an
+implementation. The vector $Z^{(k)}$ must be freshly drawn and independent of
+the whole joint history; reusing one coordinate for two particles of the same
+simulation preserves each particle's marginal but changes the joint transition.
+The map $\pi_k$ must be a bijection, so that no coordinate of $Z^{(k)}$ is
+consumed twice. The multipliers must have unit modulus, since any other value
+rescales the increment. Zero masses must be excluded or given a convention,
+because $\sgn(0)=0$ in \eqref{eq:switch} would suppress a particle's diffusion
+altogether; our initialization gives $|m_i|=\mathrm{TV}(u_0)/N>0$ and the
+implementation rejects a zero mass. Finally, \wit{} additionally requires equal
+sign-class counts in the two simulations, which the common deterministic
+initialization and the fixed masses guarantee.
 
-The Gaussian vector must be independent of the complete joint history, and
-the matching must be a bijection. Reusing one coordinate for two particles of
-the same replica changes their joint transition law. The multipliers must
-equal $+1$ or $-1$ to preserve the increment variance. We exclude zero masses,
-since inserting $\sgn(0)=0$ into \eqref{eq:switch} would suppress diffusion
-for that particle. An implementation retaining zero masses would need an
-explicit convention, such as setting the multiplier to $-1$.
+\subsection{Each Simulation Keeps its Law}
+\label{sec:law}
 
-Within-sign matching also requires equal counts in each sign class across the
-replicas. Our deterministic common initialization and fixed masses ensure
-this property. These conditions, together with retaining the association
-between each particle and its carried velocity, specify the full transition
-whose law is preserved below.
+The construction changes how the two simulations are related while preserving
+the law of each one. We can therefore retain results about a single simulation
+and its expectation; the variance of the coupled average is the quantity that
+requires a new comparison.
 
-\subsection{Estimators, error functional and work}
-\label{sec:estimators}
-
-Write $U^{(A)},U^{(B)}$ for the two reconstructed fields at time $T$.
-The unpaired estimator averages $B$ independent simulations,
-\begin{equation}
- \hat u^{\mathrm{sing}}_B(x)=\frac1B\sum_{b=1}^{B}U^{(b)}(x).
- \label{eq:est-single}
-\end{equation}
-For coupled simulations we first average the two fields in each pair,
-\begin{equation}
- \bar U^{(b)}(x)=\tfrac12\bigl(U^{(A,b)}(x)+U^{(B,b)}(x)\bigr),
- \label{eq:est-pair}
-\end{equation}
-and then average $B$ independent realizations of the pair,
-\begin{equation}
- \hat u_B(x)=\frac1B\sum_{b=1}^{B}\bar U^{(b)}(x).
- \label{eq:est-ens}
-\end{equation}
-Thus $B$ counts single simulations in \eqref{eq:est-single} and pairs in
-\eqref{eq:est-ens}. A paired estimate requires $2B$ trajectories.
-
-We reconstruct the fields at $L=400$ equispaced points $x_\ell$ in
-$\Omega=[-5,5]$, with spacing $\Delta x$. The discrete approximation of
-integrated squared error is
-\begin{equation}
- \mathcal E(B)=\E\bigl\|\hat u_B-u_{\mathrm{ref}}\bigr\|_\Omega^2,
- \qquad
- \|g\|_\Omega^2=\Delta x\sum_{\ell=1}^{L}g(x_\ell)^2.
- \label{eq:error}
-\end{equation}
-Here $u_{\mathrm{ref}}$ is an independently computed spectral or Cole--Hopf
-solution, specified in Appendix~\ref{app:setup}. Independence across
-replicates gives the bias--variance decomposition
-\begin{equation}
- \mathcal E(B)=b^2+\frac{V}{B},
- \label{eq:decomposition}
-\end{equation}
-where the squared bias and integrated variance are
-\[
- \begin{aligned}
- b^2&=\bigl\|\E\bar U-u_{\mathrm{ref}}\bigr\|_\Omega^2,\\
- V&=\Delta x\sum_{\ell=1}^{L}\Var\bigl(\bar U(x_\ell)\bigr).
- \end{aligned}
-\]
-The bias includes finite-particle and time-stepping errors, together with any
-error in the reference. Only the variance term decreases when more independent
-pairs are averaged at fixed particle count and time step.
-
-We measure computational work by elapsed execution time,
-\[
- W=BC,
-\]
-where $C$ is the measured cost of one replicate. Each experiment states its
-timing protocol. The cost of selecting a plan from preliminary simulations
-is reported separately from execution of that plan.
-
-The discrete norm in \eqref{eq:error} is used for the numerical comparisons.
-The theoretical identity in Section~\ref{sec:theory} instead integrates over
-the whole real line. For nonlinear observables, applying a functional to the
-pair mean and averaging its values on the two fields give different
-estimators. Their expectations and total errors are compared in
-Section~\ref{sec:qD}.
-
-% =====================================================================
-\section{Properties of the coupled estimator}
-\label{sec:theory}
-
-Law preservation applies to the full discrete trajectory. The variance identity
-below instead conditions on a single paired state immediately before diffusion.
-This distinction is necessary because earlier coupling choices change the state
-on which later stages act.
-
-\subsection{Each replica keeps its law}
-
-\begin{proposition}[marginal law preservation]
+\begin{proposition}[law preservation]
 \label{prop:law}
-Let two replicas be advanced by Algorithm~\ref{alg:single} from the same initial
-state under any admissible coupling (Definition~\ref{def:coupling}). Then the
-law of the complete state trajectory
-$\bigl(X^A_k,m^A_k,v^A_k\bigr)_{k=0}^{K}$ of replica $A$, and likewise of
-replica $B$, is exactly that of an uncoupled single replica. Only the joint law
-of the two changes.
+Let two simulations be advanced by Algorithm~\ref{alg:single} from the same
+initial state under any admissible coupling. Then the law of the complete
+state trajectory $\bigl(X^A_k,m^A_k,v^A_k\bigr)_{k=0}^{K}$ of simulation $A$,
+and likewise that of simulation $B$, is exactly the law of an uncoupled single
+simulation. Only the joint law of the two is changed.
 \end{proposition}
 
-This argument uses invariance of the Gaussian distribution, as do the adapted
-orthogonal transformations in N{\"u}sken and Pavliotis~\citep[Appendix A]{nusken2018}. In our proof
-(Appendix~\ref{app:proofs}), a predictable permutation
-of an i.i.d.\ Gaussian vector is i.i.d.\ Gaussian, and predictable $\pm1$
-multipliers preserve $\mathcal N(0,\sigma^2)$ coordinatewise, so each replica's
-one-step transition kernel is unchanged given the past.
+The proof, in Appendix~\ref{app:proofs}, is an induction over stages: a
+predictable permutation of an i.i.d.\ Gaussian vector is i.i.d.\ Gaussian, and
+predictable $\pm1$ multipliers preserve $\mathcal N(0,\sigma^2)$ coordinatewise,
+so each simulation's one-step transition kernel is unchanged given the past.
+The same invariance of the Gaussian law under adapted orthogonal maps is used
+by Nüsken and Pavliotis~\citep[Lemma~74, Appendix A]{nusken2018}.
 
-\begin{remark}[dependence on the baseline update]
+\begin{remark}[what the proposition does and does not require]
 \label{rem:hyp}
-The proposition requires the conditional Gaussian transition and replica-local
-deterministic update specified above. In particular it does
-not need the particle signs to be constant in time, nor the output
-functional to be linear in the particle measure. The present solver keeps signs fixed. A scheme in
-which masses were updated would still preserve each replica's law provided the
-updates are functions of that replica's own state and the multipliers remain
-predictable and of unit modulus.
+The argument uses the conditional Gaussian transition and the fact that all
+remaining operations of Algorithm~\ref{alg:single} are deterministic functions
+of a single simulation's own state. It does not require the particle signs to
+be constant in time, nor the output functional to be linear in the particle
+measure. The present solver does keep signs fixed, but a scheme that updated
+masses would still preserve each simulation's law provided the updates are
+functions of that simulation's own state and the multipliers remain predictable
+and of unit modulus.
 \end{remark}
 
 \begin{corollary}[shared bias]
 \label{cor:bias}
-Under any admissible coupling, $\E\bar U=\E U^{\mathrm{sing}}$ pointwise,
-provided the displayed expectations exist. Thus the squared bias in
-\eqref{eq:decomposition} is identical for \refl{}, \swi{}, and \wit{} under the
-same baseline initialization and update.
+Under any admissible coupling, $\E\bar U=\E U^{\mathrm{sing}}$ pointwise
+whenever these expectations exist. Hence the squared bias $b^2$ in
+\eqref{eq:decomposition} takes the same value for \refl{}, \swi{} and \wit{},
+and equals that of the uncoupled solver.
 \end{corollary}
 
-The conclusion follows by linearity of expectation over the two replicas.
-More generally it holds for the average of any integrable per-replica
-functional. It does not hold automatically for a nonlinear function of the pair
-mean. Preservation of the baseline law retains its own valid expectation and
-bias results, but it neither establishes continuum convergence nor imports
-error rates proved for other particle methods.
+The corollary follows from Proposition~\ref{prop:law} and linearity of the
+expectation across the two simulations, and it holds for the average of any
+integrable per-simulation functional. It does not hold for a nonlinear function
+of the pair mean, a distinction that becomes quantitative in
+Section~\ref{sec:observables}. Corollary~\ref{cor:bias} also fixes the terms of
+every comparison below: since all three pairings share $b^2$, they can be
+compared through $V$ alone, and the planning rule of Section~\ref{sec:work} may
+use one estimate of $b^2$ for all of them. What the corollary does not do is
+license any statement about the continuum: preserving a discrete law preserves
+whatever error that discrete law already has.
 
-\subsection{An exact identity for the final diffusion stage}
+\subsection{An Exact Identity for One Diffusion Stage}
+\label{sec:identity}
 
-We express the integrated covariance of cumulative fields in terms of
-particle separations. The following product identity supplies that step.
-Its zero-mass assumption ensures that the fields vanish outside a bounded
-interval, so their product is integrable over the real line.
+Proposition~\ref{prop:pairwise} compares couplings pointwise in $x$. Integrating
+that comparison over the line turns it into a single number, and the result is
+an exact expression for the variance that the switching rule removes at one
+stage. The following elementary identity supplies the integration.
 
-\begin{lemma}[whole-line product identity]
+\begin{lemma}[kernel identity]
 \label{lem:wholeline}
-Let $D_A(x)=\sum_i m^A_i\ind\{X^A_i\le x\}$ and
-$D_B(x)=\sum_j m^B_j\ind\{X^B_j\le x\}$ with
-$\sum_i m^A_i=\sum_j m^B_j=0$. Then $D_A,D_B$ are compactly supported and
+Fix $c\in\R$ and set $h_a(x)=\ind\{x\ge a\}-\ind\{x\ge c\}$, a function
+supported on the interval between $a$ and $c$. For all $a,b\in\R$,
 \begin{equation}
-  \int_{\R}D_A(x)\,D_B(x)\,\mathrm dx
-  \;=\;-\tfrac12\sum_{i,j}m^A_i\,m^B_j\,\bigl|X^A_i-X^B_j\bigr| .
-  \label{eq:wholeline}
+  \int_{\R}h_a(x)\,h_b(x)\,\mathrm dx
+  \;=\;\tfrac12\bigl(|a-c|+|b-c|-|a-b|\bigr).
+  \label{eq:kernel}
 \end{equation}
 \end{lemma}
 
+The verification is a case check on the order of $a$, $b$ and $c$ and is given
+in Appendix~\ref{app:proofs}. Writing the deviation of a reconstructed field
+from its far-field values in terms of these kernels lets the covariance of two
+reconstructions be expressed through the distances between their particles.
+
 \begin{proposition}[final-stage identity]
 \label{prop:finalstage}
-Let $g_s(d)=\E|d+sZ|$ with $Z\sim\mathcal N(0,1)$, and condition on the paired
-state immediately before the last diffusion stage, with $a_i,b_i$ the positions
-of the rank-$i$ particles of $A$ and $B$, $d_i=a_i-b_i$, and masses
-$m^A_i,m^B_i$ satisfying the hypothesis of Lemma~\ref{lem:wholeline}. Write
-$V_{\!\bullet}=\int_{\R}\Var\bigl(\bar U(x)\mid \text{state}\bigr)\mathrm dx$
+Let $g_s(d)=\E\,|d+sZ|$ with $Z\sim\mathcal N(0,1)$. Condition on the paired
+state immediately before the last diffusion stage, let $a_i$ and $b_i$ be the
+positions of the particles matched at rank $i$, let $d_i=a_i-b_i$, and let
+$m^A_i,m^B_i$ be their masses. Write
+\[
+ V_{\bullet}=\int_{\R}\Var\bigl(\bar U(x)\mid\Fil_{K-1}\bigr)\,\mathrm dx
+\]
 for the conditional whole-line integrated variance of the pair mean under
 coupling $\bullet$. Then
 \begin{equation}
@@ -572,128 +726,153 @@ coupling $\bullet$. Then
 \end{equation}
 \end{proposition}
 
-Only matched pairs of unlike mass contribute. Each term is proportional to
-the product of the mass magnitudes and to the excess of $g_{2\sigma}(d_i)$ over
-$|d_i|$, which is largest when the matched separation is small relative to
-$\sigma$ and decays as $|d_i|/\sigma$ grows. Non-negativity is Jensen's
-inequality. The proof (Appendix~\ref{app:proofs}) uses
-Lemma~\ref{lem:wholeline} twice and the observation that all off-diagonal terms
-$i\ne j$ are unaffected by the coupling, because the two increments involved are
-then independent under the two rank-matched rules being compared.
+Three features of \eqref{eq:finalstage} are worth reading off. Only pairs of
+unlike mass contribute, as Proposition~\ref{prop:pairwise} requires, since the
+two couplings agree elsewhere. Each contributing pair enters in proportion to
+the product of its mass magnitudes. And its contribution is governed by
+$g_{2\sigma}(d)-|d|\ge0$, an increment that is largest when the matched
+separation $|d|$ is small compared with the diffusion scale $\sigma$ and decays
+as $|d|/\sigma$ grows; the non-negativity is Jensen's inequality. Rank matching
+keeps $|d|$ small, which is one reason to prefer it, though not a proof that it
+wins overall.
 
+\begin{remark}[hypotheses and scope]
+\label{rem:finalstage-scope}
+The identity requires no condition on the total mass \eqref{eq:total-mass}: the
+constant by which a reconstruction differs from its kernel representation is
+deterministic and cancels in the covariance, as the proof makes explicit. When
+$\sum_i m_i=0$ the reference point $c$ in \eqref{eq:kernel} also drops out and
+one recovers the familiar product identity
+$\int_\R D_AD_B=-\tfrac12\sum_{i,j}m^A_im^B_j|X^A_i-X^B_j|$ for the
+centered reconstructions $D_\bullet$. Equation~\eqref{eq:finalstage} is a
+statement about one stage, conditional on the state entering it; it does not
+assert that switching helps whenever signs disagree at an earlier stage,
+because the distribution of later states is itself coupling-dependent. It is a
+whole-line statement, and is never substituted for the windowed norm of
+Remark~\ref{rem:window}.
+\end{remark}
 
-Equation~\eqref{eq:finalstage} does not say that switching helps whenever the
-matched signs disagree at an earlier stage. The state distributions at later
-stages are themselves coupling-dependent. The numerical check of the identity is reported in Appendix~\ref{app:finalcheck}. Averaging the right-hand side over reflected histories estimates the reduction
-obtained by switching only their last stage. The conditional mean is unchanged,
-so the law of total variance gives this comparison exactly. Dividing that
-estimated reduction by the separately measured full-history reduction gives
-$3.75\%$, $3.71\%$, and $1.95\%$ in three archived Gaussian/two-pulse cells.
-These are descriptive ratios of estimates, not a guaranteed fraction of the
-full-history gain. The identity therefore explains a local improvement but
-leaves most of the measured terminal comparison to numerical investigation.
+Two independent numerical checks of \eqref{eq:finalstage} are reported in
+Appendix~\ref{app:proofs}: a direct paired Monte Carlo over the final stage at
+six pre-final states of the two-pulse problem, and a quadrature of the joint
+indicator probabilities at a configuration with unequal mass magnitudes.
+Applied to the archived $64$-seed runs, the identity accounts for
+$3.75\%$, $3.71\%$ and $1.95\%$ of the total measured reduction
+$V_{\refl}-V_{\swi}$ at three configurations, against measured single-stage
+shares of $4.23\%$, $5.23\%$ and $2.91\%$. The exact result therefore explains
+a mechanism and a few percent of the effect; the remainder accumulates over the
+history and is measured, not proved.
 
-\subsection{When the two couplings are identical}
+\subsection{When the Two Couplings Coincide}
+\label{sec:equality}
 
 \begin{lemma}[conditional identity]
 \label{lem:conditional}
-Start both couplings from the same initial state and drive them with the same
-sequence of draws $Z^{(k)}$. Then their complete states coincide at every stage
-through the pre-diffusion state of the first stage at which a matched pair
-has unlike masses. Their diffusion updates at that stage can differ. In particular, if no such stage occurs before $K$, the two runs are identical.
+Start \refl{} and \swi{} from the same state and drive them with the same
+sequence of draws. Their complete states coincide at every stage up to and
+including the first stage at which some matched pair has unlike masses. If no
+such stage occurs before $K$, the two runs are identical.
 \end{lemma}
 
-While $\sgn(m^A_i)\sgn(m^B_i)=+1$ for all $i$, the
-multiplier \eqref{eq:switch} equals $-1$, which is the reflected multiplier. Induction over the stages gives the claim.
+The proof is immediate from \eqref{eq:switch}: while every matched pair has
+like masses, $\varepsilon_{k,j}=-1$, which is \refl{}.
 
 \begin{corollary}[one-sign case]
 \label{cor:onesign}
-If every gradient mass has the same sign, the hypothesis of
+If all gradient masses share one sign, the hypothesis of
 Lemma~\ref{lem:conditional} holds for every history, and \swi{} and \refl{}
 are the same algorithm.
 \end{corollary}
 
-For monotone initial data, all gradient masses have the same sign.
-Corollary~\ref{cor:onesign} therefore shows that switching makes no change
-to reflected pairing in this case.
-Reflected pairing itself can still reduce variance relative to independent runs. We
-checked equality of positions, masses, and carried velocities for
-$200$ seeds under both heat and Burgers dynamics, with maximum absolute
-difference exactly $0$ in every seed.
+Corollary~\ref{cor:onesign} is a genuine limitation rather than a curiosity:
+for monotone initial data the construction does exactly nothing, and no
+experiment can show otherwise. We verified it on the complete state, positions,
+masses and carried velocities, for $200$ seeds under both heat and Burgers
+dynamics, with maximum absolute difference exactly zero in every seed.
 
-For initially separated signs, the situation is different.
-Finite separation of the positive and negative blocks does not ensure equality
-of the two couplings. Gaussian increments can reverse their order. For two
-particles initially separated by $d>0$, a reflected pair of simulations has
-exactly one order reversal with probability
-\[
- \Pr\bigl(|Z_1-Z_2|>d/\sigma\bigr)>0.
-\]
-The resulting mismatch of signs at equal ranks can make subsequent switched
-and reflected updates differ. In the separated configuration at $N=2048$,
-the complete states diverged in $58/200=0.290$ $[0.228,0.358]$ of fresh seeds
-under heat dynamics and $59/200=0.295$ $[0.233,0.363]$ under Burgers.
-The brackets are exact binomial intervals. Among the runs that diverged,
-the median first divergence occurred at step $187$ of $200$.
+It is tempting to expect the same conclusion when the positive and negative
+regions merely start far apart, since the rank order then groups particles by
+sign. That expectation is false, and the reason is elementary: Gaussian support
+is unbounded, so for two particles separated by $d$ the probability that
+exactly one of the two simulations reverses their order is
+$\Pr\{|Z_1-Z_2|>d/\sigma\}>0$ at every finite $d$. Once an order reverses, a
+matched pair of unlike mass appears and the two couplings separate. On the
+spatially separated configuration of Section~\ref{sec:structure} at $N=2048$
+with $200$ fresh seeds, the two couplings diverge in $58/200=0.290$
+$[0.228,0.358]$ of seeds under heat dynamics and $59/200=0.295$ $[0.233,0.363]$
+under Burgers, with median first divergence at step $187$ of $200$.
 
-\subsection{No unrestricted monotonicity}
+\subsection{Two Routes That Are Closed}
+\label{sec:closed}
+
+The pairwise result of Section~\ref{sec:motivation} is exact but local, and the
+identity of Section~\ref{sec:identity} is exact but confined to one stage. It
+is natural to ask what blocks an unconditional terminal statement. Two obvious
+routes are closed, and saying so is more useful than leaving them open.
 
 \begin{remark}[coordinatewise monotonicity fails]
 \label{rem:mono}
-Coordinatewise monotonicity of a response is a standard sufficient condition
-for antithetic variance reduction \citep{glasserman2004}. The corresponding
-orientation of the terminal field in each particle's initial position fails
-for Algorithm~\ref{alg:single}. With masses $(1/2,-1/2)$, $h=0.005$ and
-$\nu=10^{-10}$, moving the positive particle right from $-0.00275$ to
-$-0.00225$, while keeping the negative particle at zero, increases the expected
-field at $x=0.00125$ after two steps. Appendix~\ref{app:counterexample} gives
-the exact zero-noise trace and a Gaussian-tail bound establishing the strict
-inequality for positive viscosity.
+Antithetic sampling is guaranteed to help when the response is monotone in each
+input, so one might hope to establish that the terminal continuation value is
+monotone in each particle position, with an orientation set by the mass sign.
+It is not. In a two-particle, transport-dominated configuration
+($m=\pm\tfrac12$, $h=0.005$, $\nu=10^{-10}$, hence $\sigma=10^{-6}$ against a
+transport displacement of $10^{-2}$), the conditional expectation
+$\E[U(x,T)\mid\text{state}]$ at a probe point \emph{increases} by $0.5$ when a
+positive-mass particle is displaced to the right, the opposite of the required
+orientation. The configuration was traced against the solver over $512$ seeds,
+every seed reproducing the deterministic outcome, and the probability of an
+exceptional draw is bounded analytically by $\exp(-5003)$.
+Appendix~\ref{app:counterexample} gives the trace.
 \end{remark}
 
-This counterexample excludes the unrestricted monotonicity argument for the
-specified discrete update. It does not compare the terminal variances of
-\swi{} and \refl{}, and does not exclude a result under additional restrictions on particle
-spacing, time step, or viscosity.
-Its transport-to-diffusion ratio $|m|h/\sigma=2500$ lies far outside the main
-experiments.
+The counterexample rules out the unrestricted argument. It does not show that
+\swi{} is ever worse than \refl{}, and the configuration is far outside the
+diffusion-dominated regime: its ratio of mass-dependent transport to diffusion
+scale is $R=|m|h/\sigma=2500$. Whether a terminal comparison can be proved under
+a small-$R$ assumption remains open.
 
-\subsection{A geometric fact about rank matching}
-\label{sec:geometry}
-
-To compare the geometry of the two matchings, we measure the mean distance
-between matched particles at the same paired state. The following standard
-property of sorted matching fixes the direction of that comparison.
-
-\begin{remark}[sorted matching is the optimal matching for absolute distance]
+\begin{remark}[sorted matching is optimal for absolute distance]
 \label{rem:sorted}
-For two equally sized finite sets of reals $\{a_i\}$ and $\{b_j\}$ listed in
-increasing order, the identity bijection minimises
-\[
- \sum_i|a_i-b_{\pi(i)}|
-\]
-over all bijections $\pi$. This is the monotone rearrangement, which is
-optimal for convex displacement costs \citep{villani2003}. Rank matching is that bijection, and within-sign
-matching is a bijection constrained to respect the sign classes. Hence
-\begin{equation*}
+The second route would compare the two matchings geometrically. For two equally
+sized finite sets of reals listed in increasing order, the identity bijection
+minimizes $\sum_i|a_i-b_{\pi(i)}|$ over all bijections $\pi$; this is the
+monotone rearrangement, which is the optimal transport map on the line for any
+convex cost \citep{villani2003}. Rank matching \emph{is} that bijection, and
+within-sign matching is a bijection constrained to respect the sign classes, so
+\begin{equation}
   \sum_i\bigl|a_i-b_i\bigr|\;\le\;\sum_i\bigl|a_i-b_{\pi_{\wit}(i)}\bigr|
-\end{equation*}
-with probability one, and the ratio of mean matched separations reported in
-Table~\ref{tab:separation} is bounded above by $1$ by construction.
+  \label{eq:sortedopt}
+\end{equation}
+with probability one.
 \end{remark}
 
-The separation ratio measures how much the sign constraint increases the
-mean distance between partners. Proposition~\ref{prop:finalstage} relates
-distance to the conditional variance reduction for rank matching. It does
-not compare rank matching with within-sign matching, whose covariance also
-depends on the different partners. We therefore use separation to describe
-the geometry, rather than to infer the cause of a terminal variance difference.
+Inequality \eqref{eq:sortedopt} tells us that rank matching always produces the
+closer partners, and by Proposition~\ref{prop:finalstage} close partners are
+what the final-stage gain rewards. It does not tell us that rank matching wins,
+because the two rules differ in which pairs exist and therefore in which mass
+products multiply those distances. In particular, any measured ratio of
+matched separations is bounded above by $1$ by construction, so such a ratio
+reports the size of the geometric penalty imposed by the sign-class constraint
+and cannot by itself identify the cause of a variance difference. We report it
+in Section~\ref{sec:profiles} on that understanding.
 
 % =====================================================================
-\section{Numerical study}
+\section{Numerical Results}
 \label{sec:numerics}
 
-\subsection{Test configuration and statistical intervals}
+Section~\ref{sec:coupling} fixes the multiplier and leaves the matching open.
+The experiments below therefore lead with the comparison between \swi{} and
+\wit{}, the two sign-aware rules, and use \refl{} as the common baseline
+against which both are measured. Six tests are reported: the benchmark
+comparison of the three pairings; a comparison with two standard
+variance-reduction techniques applied to the same solver; a variation of the
+initial profile, the observation time and the flux; execution time at
+prescribed accuracy with plans frozen before evaluation; nonlinear functionals
+and the bias-dominated regime; and a set of signed-structure controls that
+locate the configurations in which the construction does nothing.
+
+\subsection{Test Configuration and Statistical Conventions}
 \label{sec:setup}
 
 Unless stated otherwise the test problem is the asymmetric signed two-pulse
@@ -702,48 +881,48 @@ initial condition
   u_0(x)=0.8\,e^{-(x+0.7)^2/(2\cdot 0.5^2)}-0.5\,e^{-(x-0.4)^2/(2\cdot 0.3^2)},
   \label{eq:twopulse}
 \end{equation}
-with $f(u)=u^2/2$, $\nu=0.1$, $T=1$ and $h=0.005$ ($K=200$ steps), evaluated on
-$\Omega=[-5,5]$ at $L=400$ points. It has three sign regions in the numerically resolved $u_0'$, so both
-sign classes are populated and the classes interleave once. Reference solutions
-are Fourier pseudospectral on $[-16,16]$ with $M=2048$ modes, $\tfrac23$
-dealiasing and an integrating-factor RK4 step of $10^{-4}$. For Burgers this
-agrees with a stabilised whole-line Cole--Hopf evaluation to $5.6\times10^{-14}$
-in the maximum norm, and for the cubic flux it self-converges to
-$1.6\times10^{-13}$ (Appendix~\ref{app:setup}).
+with $f(u)=u^2/2$, $\nu=0.1$, $T=1$ and $h=0.005$, hence $K=200$ steps,
+reconstructed on $\Omega=[-5,5]$ at $L=400$ points. Its derivative has three
+resolved sign regions, so both sign classes are populated and the classes
+interleave once; unlike-sign matched pairs therefore occur, which is the
+situation the coupling addresses. Reference solutions are Fourier
+pseudospectral on $[-16,16]$ with $M=2048$ modes, $\tfrac23$ dealiasing and an
+integrating-factor RK4 step of $10^{-4}$. For Burgers this agrees with a
+stabilized whole-line Cole--Hopf evaluation to $5.6\times10^{-14}$ in maximum
+norm, and for the cubic flux it self-converges to $1.6\times10^{-13}$; both are
+negligible beside the field errors reported below, which are of order
+$10^{-6}$. Appendix~\ref{app:setup} gives the initializations and reference
+calculations.
 
-All reported experiments use recorded deterministic seed keys. Independent
-replicates use distinct streams. The archive specifies the complete key tuple
-for each experiment, including whether the comparison arms share a stream.
-Bootstrap resampling uses complete realizations rather than individual
-reconstruction points \citep{efron1981}. Comparisons with shared streams
-resample the corresponding realizations together, preserving their dependence. The main
-field, control and nonlinear-MSE tables use $6000$ percentile-bootstrap
-resamples. The profile/time and structure tables retain their archived $3000$
-and $2000$ resamples, respectively. Scalar station variance ratios use
-$F(n-1,n-1)$ intervals for independent arms. Held-out errors use $t$ intervals
-on $32$ independent block errors, with Bonferroni correction across the arms of
-each experiment. Divergence frequencies use exact binomial intervals.
-The intervals are approximate except where an exact model-based construction
-is specified. Appendix~\ref{app:uncertainty} gives an empirical scalar
-calibration and its limits. It does not establish coverage for every field or MSE interval.
+Every experiment uses recorded deterministic seed keys, and independent
+replicates use distinct streams. Whether two comparison arms share a stream is
+recorded with each experiment, because it determines the resampling scheme:
+bootstrap intervals resample complete realizations \citep{efron1981}, and arms
+that share a stream are resampled together so that their dependence is
+preserved. The main field, control and nonlinear-error tables use $6000$
+percentile-bootstrap resamples; the profile/time and structure tables retain
+their archived $3000$ and $2000$. Variance ratios of scalar station observables
+use $F(n-1,n-1)$ intervals for independent arms. Held-out errors use $t$
+intervals on $32$ independent block errors, with a Bonferroni correction across
+the arms of each experiment. Divergence frequencies use exact binomial
+intervals. Appendix~\ref{app:uncertainty} reports a coverage calibration of the
+two scalar interval procedures and states its limits.
 
-Throughout, a ratio below $1$ favours the numerator
-and an interval containing $1$ means the comparison is unresolved at this
-sample size. Such an interval does not establish absence of an effect.
+Throughout, a ratio below $1$ favors the numerator, and an interval containing
+$1$ means the comparison is unresolved at the sample size used. Such an
+interval records the absence of evidence, not evidence of absence.
 
-\subsection{Comparison with alternative estimators}
-\label{sec:qA}
+\subsection{Test 1: the Three Pairings on the Two-Pulse Problem}
+\label{sec:test1}
 
-Within-sign pairing already avoids matching opposite masses with reflected
-increments. We use it as the main comparator to determine whether retaining
-spatial-rank matching gives a further reduction in variance. Reflected pairing
-provides the common baseline.
-
-Table~\ref{tab:headline} reports the integrated variance and mean squared
-error of the pair mean. Within-sign pairing reduces the variance to $0.172$
-of the reflected value. Sign-switched rank pairing reduces it to $0.127$,
-or $0.739$ of the within-sign value. The interval for this additional
-reduction excludes $1$.
+The first test compares the three pairings at $N=8192$ over $48$ replicates.
+Table~\ref{tab:headline} reports the integrated variance and integrated mean
+squared error of the pair mean. Restricting the matching to sign classes is
+already most of what is available: \wit{} reduces the integrated variance to
+$0.172$ of the reflected value. Retaining the spatial matching and switching
+the multiplier reduces it further, to $0.127$ of reflected pairing and $0.739$
+of the within-sign value, and the interval for that further reduction excludes
+$1$.
 
 \begin{table}[htbp]
 \centering
@@ -764,12 +943,21 @@ sign-switched $/$ within-sign & 0.7389 $[0.6817,\,0.8006]$ & 0.8193 $[0.7542,\,0
 \end{tabular}
 \end{table}
 
-Figure~\ref{fig:fields} illustrates cancellation of the two replica errors in
-one paired realization. Its variance panel, computed over all $48$ replicates,
-shows that the improvement varies substantially with location. These are
-spatial diagnostics of this field comparison, not independent confirmations or
-pointwise performance guarantees. Section~\ref{sec:qD} gives separate station
-comparisons with uncertainty.
+Figure~\ref{fig:fields} shows how the reduction arises and where it sits. The
+upper panels display, for one replicate, the pointwise error of each simulation
+and of their mean. Under \refl{} the two errors are only partly opposed and
+their mean retains a visible signature near the steep core of the profile;
+under \swi{} they are close to mirror images and the mean is much flatter. The
+lower panel gives the ratio of pointwise variances: the reduction against
+\refl{} is concentrated where the reference gradient is large and is weak on
+the flat flanks, while the reduction against \wit{} is smaller and more evenly
+spread. The integrated ratio is not representative of a single location; its
+value of $0.117$ at this configuration should be read against a median
+pointwise ratio of $0.495$, the difference being that the integral is dominated
+by the high-variance region, whose quintile carries $65\%$ of the total
+variance and has median pointwise ratio $0.095$. Section~\ref{sec:observables}
+quantifies what a reader whose quantity of interest lives elsewhere should
+expect.
 
 \begin{figure}[htbp]
 \centering
@@ -784,31 +972,34 @@ $|\partial_x u_{\mathrm{ref}}|$, scaled to the panel.}
 \label{fig:fields}
 \end{figure}
 
- A pair costs $1.93$ times a single trajectory at $N=8192$
-($0.1950$\,s against $0.1009$\,s, serial, from experiment A). In a separate
-interleaved timing batch, among the three pairings, at
-$N=8192$ one replicate costs $0.1941$\,s (reflected), $0.1995$\,s
-(sign-switched) and $0.2117$\,s (within-sign). The switch costs $1.028$ times
-reflected pairing and $0.943$ times within-sign pairing, and at $N=2048$ the
-corresponding figures are $1.040$ and $0.908$. Combining the measured cost with
-Table~\ref{tab:headline} gives a variance$\,\times\,$cost ratio of $0.697$
-against within-sign pairing. The timings describe the implementations on one
-machine. Within-sign pairing partitions the particles by sign and gathers
-their partners, but we have not profiled those operations separately and do
-not attribute its higher elapsed time to a particular operation.
+Cost must be counted before the reduction can be interpreted. A pair costs
+$1.93$ times a single trajectory at $N=8192$, $0.1950$\,s against $0.1009$\,s in
+serial execution. Among the three pairings, one replicate costs $0.1941$\,s for
+\refl{}, $0.1995$\,s for \swi{} and $0.2117$\,s for \wit{}, so the switch costs
+$1.028$ times reflected pairing and $0.943$ times within-sign pairing; at
+$N=2048$ the corresponding figures are $1.040$ and $0.908$. Combining the
+measured cost with Table~\ref{tab:headline} gives a variance-times-cost ratio
+of $0.697$ against within-sign pairing. These are implementation measurements
+on one serial machine. In these experiments the sign classes always have equal
+counts in both simulations, so the handling of unequal counts cannot be what
+makes \wit{} slower here; partitioning and gathering are the plausible causes,
+but we did not profile them, and we therefore claim no intrinsic cost advantage
+over every within-sign implementation. Parallel execution, in which the two
+simulations must exchange matched masses at each stage, is not addressed.
 
-\subsubsection{Conditional expectation and control variates}
-We also apply two standard variance-reduction techniques to the same solver,
-conditional expectation and control variates \citep[Chapter 4]{glasserman2004}.
-Table~\ref{tab:controls} compares them with the three pairings. All arms share
-seed streams, and the reported intervals retain that pairing.
+\subsection{Test 2: Conditional Expectation and Control Variates}
+\label{sec:test2}
 
-Conditional expectation integrates the final Gaussian diffusion analytically.
-The heat control retains each particle's accumulated Brownian displacement;
-the frozen-velocity control also retains its initial transport velocity.
-Both controls have known Gaussian cumulative means. Their scalar coefficients
-are fitted on a disjoint training sample and held fixed during evaluation.
-Appendix~\ref{app:comparators} gives the estimators and their training rule.
+A reader with a variance problem need not change the coupling at all. The
+second test therefore applies two standard techniques to the same solver
+\citep[Chapter 4]{glasserman2004}: conditional expectation, which integrates the
+final Gaussian diffusion analytically instead of sampling it, and control
+variates with known Gaussian means, one built from each particle's accumulated
+Brownian displacement and one that also retains its initial transport velocity.
+Coefficients are fitted on a disjoint training sample and then held fixed.
+Appendix~\ref{app:comparators} gives the estimators and the training rule. All
+arms share seed streams, and the intervals in Table~\ref{tab:controls} retain
+that pairing.
 
 \begin{table}[htbp]
 \centering
@@ -816,7 +1007,7 @@ Appendix~\ref{app:comparators} gives the estimators and their training rule.
 reflected pairing, with paired whole-replicate bootstrap intervals, at
 $N=1600$, $h=0.005$, $64$ seeds. ``v$\times$c'' multiplies the variance ratio by
 the measured per-replicate cost ratio. One-off coefficient training, where
-required, is listed separately and is not amortised in v$\times$c. $c^{*}$
+required, is listed separately and is not amortized in v$\times$c. $c^{*}$
 denotes a coefficient fitted on a disjoint batch and frozen.}
 \label{tab:controls}
 \small
@@ -846,52 +1037,47 @@ sign-switched & 0.1739 $[0.151,0.201]$ & 0.184 & -- & 0.7688 $[0.741,0.797]$\\
 \end{tabularx}
 \end{table}
 
-In Table~\ref{tab:controls}, the frozen-velocity control on reflected
-pairing gives relative variance $0.672$ but
-variance$\,\times\,$cost $0.923$ on Burgers, before its $0.47$\,s of coefficient
-training. At this configuration the switched coupling has lower variance
-and lower variance times cost. Adding the fitted frozen-velocity control to the switched coupling changes
-its relative variance from $0.1649$ to $0.1642$ on Burgers. On the cubic
-flux, adding the heat control changes it from $0.1739$ to $0.1684$, a
-resolved ratio of $0.968$. This is a statement about
-these two controls at these configurations and not a claim that no control can
-help.
+Three readings of Table~\ref{tab:controls} matter. First, the best control
+applied to reflected pairing reaches relative variance $0.672$ on Burgers but
+variance-times-cost $0.923$, before $0.47$\,s of coefficient training; at this
+configuration changing the coupling is worth more than adding a good control to
+the unfavorable coupling. Second, once the coupling is switched, these
+controls add little: the fitted frozen-velocity control moves the relative
+variance from $0.1649$ to $0.1642$ on Burgers, and on the cubic flux the heat
+control moves it from $0.1739$ to $0.1684$, a resolved ratio of $0.968$. This
+is a statement about these two controls at these configurations, not a claim
+that no control can help. Third, conditional expectation is complementary
+rather than competing: applied on top of the switched coupling it reduces
+relative variance from $0.1649$ to $0.0804$ and gives the smallest
+variance-times-cost in the table, $0.151$. Its benefit depends on how many
+conditional evaluations the output requires; raising that number from $201$ to
+$1601$ moves the variance-cost ratio of adding the conditional stage from
+$0.614$ to $1.485$. We therefore report the coupling and the conditional stage
+separately, so that neither inflates the other.
 
-Conditional averaging can be combined with the switched coupling. On Burgers
-it reduces relative variance from $0.1649$ to $0.0804$ and gives the smallest
-variance times cost in the table ($0.151$). Its computational benefit depends
-on the number of conditional CDF evaluations. When that number increases
-from $201$ to $1601$, the measured variance--cost ratio for adding the
-conditional stage changes from $0.614$ to $1.485$. Thus lower variance can
-come with greater work. We report the coupling and conditional evaluation
-separately to distinguish their contributions.
-
-A randomized quasi-Monte Carlo adaptation of
-the diffusion construction of L{\'e}cot~\citep{lecot_rims2001} applied to our transport solver is included in
-the held-out experiment in \S\ref{sec:heldoutA}. It attained the target with
+A fourth alternative, a randomized quasi-Monte Carlo adaptation of the
+diffusion construction of Lécot~\citep{lecot_rims2001}, is an arm of
+Test~4 in Section~\ref{sec:work}, where it attains the common target with
 $46$ trajectories against four.
 
-\subsection{Dependence on profile, time, and flux}
-\label{sec:qB}
+\subsection{Test 3: Initial Profile, Observation Time, and Flux}
+\label{sec:profiles}
 
-We next vary the initial profile, observation time, and flux to test the scope
-of the fixed-setting comparison.
-
- Three fixed initial profiles have different sign structures. In addition to
-the two-pulse profile \eqref{eq:twopulse}, we use
+A single configuration establishes little about a method. The third test varies
+three things that should matter: the sign structure of the initial profile, the
+observation time, and the flux. Besides the two-pulse profile
+\eqref{eq:twopulse} we use
 \begin{equation}
  \begin{aligned}
  u_{0,\mathrm{bump}}(x)&=0.8\exp\!\left(-\frac{(x+0.2)^2}{2\cdot0.45^2}\right),\\
- u_{0,\mathrm{osc}}(x)&=0.45\sin(3x)\exp\!\left(-\frac{x^2}{2\cdot1.1^2}\right).
+ u_{0,\mathrm{osc}}(x)&=0.45\sin(3x)\exp\!\left(-\frac{x^2}{2\cdot1.1^2}\right),
  \end{aligned}
  \label{eq:profiles}
 \end{equation}
-The bump, two-pulse, and oscillatory profiles have $2$, $3$, and $13$
-resolved sign regions, respectively. Each is observed at $T=0.25$, $1.0$,
-and $2.0$, with $N=2048$ and $48$ replicates. Table~\ref{tab:ladder} and the
-left panel of Figure~\ref{fig:profiles} give the result. The numerical
-threshold defining these region counts is specified in
-Appendix~\ref{app:setup}.
+whose derivatives have $2$ and $13$ resolved sign regions against the
+two-pulse profile's $3$; the numerical threshold defining the count is given in
+Appendix~\ref{app:setup}. Each profile is observed at $T=0.25$, $1.0$ and
+$2.0$, with $N=2048$ and $48$ replicates.
 
 \begin{table}[htbp]
 \centering
@@ -911,19 +1097,21 @@ oscillatory  & 13 & 0.932 $[0.876,0.990]$ & 0.667 $[0.613,0.725]$ & 0.595 $[0.54
 \end{tabular}
 \end{table}
 
-The intervals in eight of the nine configurations in Table~\ref{tab:ladder}
-lie below $1$. The exception is the single bump at $T=0.25$, whose interval
+Eight of the nine configurations in Table~\ref{tab:ladder} have intervals below
+$1$. The exception is the single bump at the earliest time, whose interval
 $[0.886,1.039]$ leaves the comparison unresolved. All three profiles show a
-larger reduction at $T=1$ and $T=2$ than at $T=0.25$. The ratios need not
-decrease at every observation time. Between $T=1$ and $T=2$, they increase
-from $0.790$ to $0.810$ for the single bump and from $0.785$ to $0.793$ for
-the two-pulse profile. The oscillatory profile has the largest reduction at
-the two later times.
+larger reduction at $T=1$ and $T=2$ than at $T=0.25$, and the oscillatory
+profile shows the largest reduction at the two later times. The reduction does
+not grow monotonically with time: between $T=1$ and $T=2$ the ratio rises from
+$0.790$ to $0.810$ for the single bump and from $0.785$ to $0.793$ for the
+two-pulse profile.
 
-The profiles also differ in amplitude, shape, and gradient magnitude.
-Their ordering therefore does not isolate sign-region count as the cause.
-We examine the matching geometry separately by applying both matching rules
-to the same paired state.
+It is tempting to read the ordering of Table~\ref{tab:ladder} as an effect of
+sign-region count, since that is the quantity we set out to vary. The three
+profiles also differ in amplitude, shape and gradient magnitude, so the
+ordering does not isolate that cause. We therefore examine the matching
+geometry separately, by applying both matching rules to the same paired state
+so that the history is held fixed.
 
 \begin{table}[htbp]
 \centering
@@ -957,71 +1145,80 @@ matching to respect sign classes, not the variance mechanism.}
 \label{fig:profiles}
 \end{figure}
 
-Table~\ref{tab:separation} and the right panel of Figure~\ref{fig:profiles}
-show how the within-sign constraint increases matched distances. The
-separation ratio is at most $1$ by Remark~\ref{rem:sorted}, and its smallest
-values occur for the oscillatory profile at the later times. The two
-diagnostics do not order all profiles in the same way. At $T=2$, separation
-ratios order them as oscillatory, single bump, and two-pulse, whereas variance
-ratios order them as oscillatory, two-pulse, and single bump. Thus the
-geometric comparison supports retaining nearby partners but does not
-establish the cause of the full-history variance reduction.
+Table~\ref{tab:separation} measures how much extra distance the within-sign
+constraint imposes. Its entries are at most $1$ by
+Remark~\ref{rem:sorted}, and they are smallest for the oscillatory profile at
+the later times, which is where the variance reduction is largest. The two
+diagnostics do not, however, rank all three profiles alike: at $T=2$ the
+separation ratios order them oscillatory, single bump, two-pulse, whereas the
+variance ratios order them oscillatory, two-pulse, single bump. The geometric
+comparison therefore supports the interpretation that nearby partners are worth
+retaining, and is consistent with Proposition~\ref{prop:finalstage}, but it
+does not establish that separation causes the full-history reduction.
 
- Replacing $f(u)=u^2/2$ by $f(u)=u^3/3$ changes the character
-of the transport. Its characteristic velocity is
+Finally we change the flux. Replacing $f(u)=u^2/2$ by $f(u)=u^3/3$ gives
 \[
  f'(u)=u^2\ge0,
 \]
-so advection is rightward or stationary, and the velocity depends quadratically
-on the field. With everything else held fixed at $N=1600$, $h=0.005$ and the
-same $64$ seeds, the sign-switched--to--within-sign variance ratio is
-$0.7916$ $[0.762,0.825]$ for Burgers and $0.7688$ $[0.741,0.797]$ for the cubic
-flux (Table~\ref{tab:controls}). The advantage does not require bidirectional
-transport. The comparison tests these two fluxes at the stated configuration.
+so advection is rightward or stationary rather than bidirectional, and the
+characteristic speed depends quadratically on the field. With $N=1600$,
+$h=0.005$ and the same $64$ seeds, the ratio of \swi{} to \wit{} integrated
+variance is $0.7916$ $[0.762,0.825]$ for Burgers and $0.7688$ $[0.741,0.797]$
+for the cubic flux (Table~\ref{tab:controls}). The reduction does not require
+transport in both directions. Two fluxes are two fluxes, and we do not
+extrapolate to general $f$.
 
-\subsection{Work at selected accuracy targets}
-\label{sec:qC}
+\subsection{Test 4: Execution Time at a Prescribed Accuracy}
+\label{sec:work}
 
-To measure execution time at a specified accuracy, we selected plans using
-preliminary simulations and evaluated them on independent random streams.
-For each arm, the preliminary sample supplied estimates of squared bias,
-integrated variance, and cost per replicate. Upper interval endpoints
-$b^2_{\mathrm{hi}}$ and $V_{\mathrm{hi}}$ determined the smallest positive
-integer $B$ satisfying
-\[
- b^2_{\mathrm{hi}}+\frac{V_{\mathrm{hi}}}{B}
- \le\frac{\mathrm{tol}}{\kappa},\qquad \kappa=1.3.
-\]
-The factor $\kappa$ provides planning headroom. Once chosen, each plan was
-held fixed and evaluated in $32$ independent blocks, where a block is one
-execution of the complete $B$-replicate estimator. At a fixed particle count
-and time step, paired and single arms use the same pilot estimate of squared
-bias, taken from the switched arm. The randomized quasi-Monte Carlo arm uses
-its own estimate because its interacting law differs.
+Variance ratios at fixed settings are not work. The fourth test measures
+execution time at a specified expected error, with the estimator plan fixed
+before the evaluation data are seen. For each arm a preliminary run supplied
+estimates of the squared bias, the integrated variance, and the cost per
+replicate; the replicate count was then set to the smallest positive integer
+$B$ with
+\begin{equation}
+ b^2_{\mathrm{hi}}+\frac{V_{\mathrm{hi}}}{B}\;\le\;\frac{\mathrm{tol}}{\kappa},
+ \qquad \kappa=1.3,
+ \label{eq:plan}
+\end{equation}
+using upper interval endpoints and the headroom factor $\kappa$; and the frozen
+plan was executed in $32$ independent blocks on an unused seed stream, a block
+being one complete $B$-replicate estimate. By Corollary~\ref{cor:bias} the
+three pairings and the unpaired ensemble share a bias, so one pilot estimate of
+$b^2$, taken from the switched arm, serves all of them; the quasi-Monte Carlo
+arm does not preserve the baseline law and uses its own. No estimate is
+truncated at zero: the squared bias is estimated as
+$\|\hat{\bar U}-u_{\mathrm{ref}}\|^2_\Omega-V/B_{\mathrm{pilot}}$, which is
+unbiased and may take small negative values, and it is the upper endpoint
+$b^2_{\mathrm{hi}}$ that enters \eqref{eq:plan}.
 
-The two experiments use different targets, particle counts, and comparators.
-Experiment A includes an unpaired ensemble and a quasi-Monte Carlo adaptation.
-Experiment B compares the three pairings, including within-sign matching.
+The two experiments differ in target, particle count and comparators, and we
+report them separately rather than pooling them. Experiment~A was designed
+before within-sign pairing entered the study and does not contain it; it
+compares the switched coupling with an unpaired ensemble, with reflected
+pairing, and with the quasi-Monte Carlo adaptation. Experiment~B compares the
+three pairings.
 
-\subsubsection{Experiment A with unpaired and quasi-Monte Carlo estimators}
+\subsubsection{Experiment A: Unpaired and Quasi-Monte Carlo Comparators}
 \label{sec:heldoutA}
 
-Experiment A uses $N=8192$ and targets expected integrated squared error
-$7\times10^{-6}$. The pilot and evaluation seed keys are $1601$ and $1702$. The target was chosen from the pilot,
-so it is a pilot-informed target with an independent evaluation batch.
+Experiment~A uses $N=8192$ and targets an expected integrated squared error of
+$7\times10^{-6}$, with pilot key $1601$ and evaluation key $1702$. The target
+was chosen from the pilot and is therefore pilot-informed rather than
+independent of the data.
 
-The quasi-Monte Carlo arm is an adaptation of the rank-based diffusion
-of L{\'e}cot~\citep{lecot_rims2001} to our transport solver, not a reproduction of his method.
-At each step, the first coordinate of a two-dimensional scrambled net
-assigns the zero-based particle rank, and the second supplies its Gaussian increment,
-\[
- r=\lfloor Np_1\rfloor,\qquad \Delta X=\sigma\Phi^{-1}(p_2).
-\]
-Successive steps consume successive blocks from one randomized sequence.
-Appendix~\ref{app:rqmc} specifies the scrambling, endpoint treatment, and
-implementation checks. This adaptation does not preserve the baseline's
-interacting discrete law, so its total error includes a separately estimated
-bias.
+The quasi-Monte Carlo arm adapts Lécot's rank-and-increment map
+\citep[Eq. (45)]{lecot_rims2001} to our transport update. One scrambled Sobol'
+sequence is generated per replicate, and successive time steps consume
+successive blocks of $N$ points; the first coordinate assigns a rank by
+$\lfloor Np_1\rfloor$ and the second supplies the increment
+$\sigma\Phi^{-1}(p_2)$. This is an adaptation and not a reproduction of the
+published method, which uses a different transport rule and a Faure sequence;
+its interacting law differs from the baseline, so its bias is estimated
+separately and its total error is what the comparison uses.
+Appendix~\ref{app:comparators} records the engine settings, the scrambling, and
+the endpoint handling.
 
 \begin{table}[htbp]
 \centering
@@ -1045,14 +1242,13 @@ sign-switched pairing & 2 & 4 & $5.100\times10^{-6}$ & $5.611\times10^{-6}$ & 0.
 \end{tabular}
 \end{table}
 
-\subsubsection{Experiment B with within-sign pairing}
+\subsubsection{Experiment B: Within-Sign Pairing}
 \label{sec:heldoutB}
 
-Experiment B uses $N=2048$ and target $2.5\times10^{-5}$, with pilot key
-$2310$ and evaluation key $2320$. The evaluation uses $32$ blocks, and the
-separately reported tuning cost is $4.05$\,s. This experiment uses the
-standard two-pulse configuration rather than the oscillatory profile that
-favours the construction.
+Experiment~B uses $N=2048$ and targets $2.5\times10^{-5}$, with pilot key
+$2310$, evaluation key $2320$, and a tuning cost of $4.05$\,s reported
+separately from execution. It uses the standard two-pulse configuration rather
+than the oscillatory profile, which would favor the switched coupling.
 
 \begin{table}[htbp]
 \centering
@@ -1073,27 +1269,6 @@ sign-switched pairing & 2 & 4 & $1.976\times10^{-5}$ & $2.203\times10^{-5}$ & 0.
 \end{tabular}
 \end{table}
 
-All three upper bounds in Table~\ref{tab:heldoutB} lie below the target.
-The measured work ratio is $0.599$ against within-sign pairing and $0.116$
-against reflected pairing. These are comparisons of the selected plans at
-the same target, rather than at equal attained error. Reflected pairing has
-the smallest estimated error, while the switched arm is closest to the target.
-
-Integer allocation matters at these small replicate counts. The switched
-plan uses two pairs and the within-sign plan uses three. Combining this
-count ratio with the separately measured cost ratio gives
-\[
- \frac{2}{3}\times0.908=0.605,
-\]
-close to the measured work ratio $0.599$. The result shows that the selected
-switched plan attains the target with one fewer pair. It does not establish
-the minimum work attainable by either method.
-
-Both experiments are reported in Figure~\ref{fig:heldout}. For experiment B,
-the original evaluation collected errors with sequential arm timing. Reported
-work comes from a separate interleaved timing of the same frozen plans. Reported
-errors remain those of the original held-out batch.
-
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{fig4_heldout.pdf}
@@ -1104,53 +1279,57 @@ arms and are not to be pooled. The top panel reports experiment A
 \label{fig:heldout}
 \end{figure}
 
-\subsection{Observable dependence and the bias-dominated regime}
-\label{sec:qD}
+All arms of both experiments attain their target, pointwise and simultaneously.
+In Experiment~B the measured work ratio is $0.599$ against within-sign pairing
+and $0.116$ against reflected pairing. Three qualifications belong with those
+numbers. The arms do not land at equal attained error, reflected pairing
+overshooting the target by the largest margin, so this is attainment by a
+selected plan and not an equal-error comparison. At $B=2$ against $B=3$ the
+integer granularity carries much of the ratio: $\tfrac23$ times the measured
+cost ratio $0.908$ is $0.605$, close to the observed $0.599$, so the experiment
+mainly establishes that the switched arm needs one fewer replicate here. And
+the plans were selected from a pilot rather than optimized. What the experiment
+does establish is that the variance reduction survives translation into
+execution time on an unused seed stream, which a fixed-setting variance ratio
+cannot show.
 
-\subsubsection{Variation across reconstruction points}
+\subsection{Test 5: Observables and the Bias-Dominated Regime}
+\label{sec:observables}
+
+\subsubsection{Dependence on Position}
 
 At $N=8192$ with $48$ replicates on a separate seed key, the variance ratio of
-sign-switched to reflected pairing at four reconstruction points is
-\[
- \begin{array}{ccl}
- x & \text{variance ratio and interval} & \text{location}\\
- -2.0 & 0.636\ [0.357,1.135] & \text{left flank}\\
- -0.7 & 0.143\ [0.080,0.255] & \text{left pulse}\\
- +0.1 & 0.093\ [0.052,0.166] & \text{central gradient region}\\
- +1.5 & 0.735\ [0.412,1.311] & \text{right flank}.
- \end{array}
-\]
-These are $F(47,47)$ intervals. The two flank comparisons are unresolved. The integrated reduction therefore does not describe the benefit at every
-reconstruction point.
+\swi{} to \refl{} at four reconstruction points is $0.636$ $[0.357,1.135]$ at
+the left flank $x=-2.0$, $0.143$ $[0.080,0.255]$ at the left pulse $x=-0.7$,
+$0.093$ $[0.052,0.166]$ at the steepest core $x=+0.1$, and $0.735$
+$[0.412,1.311]$ at the right flank $x=+1.5$, with $F(47,47)$ intervals. The two
+flank comparisons are unresolved. The reduction is a property of the region
+where the field varies, which is also where the particles are.
 
-\subsubsection{Nonlinear functionals of the reconstructed field}
+\subsubsection{Nonlinear Functionals}
 
-Let $Q$ be a nonlinear functional of the field. We distinguish
-\[
- Q(\bar U)\qquad\text{and}\qquad
- \tfrac12\bigl(Q(U^{(A)})+Q(U^{(B)})\bigr).
-\]
-The first applies $Q$ after averaging the fields, whereas the second averages
-the two values of $Q$. Their expectations can differ. By Proposition~\ref{prop:law} the second has exactly the
-expectation of $Q$ applied to a single uncoupled run, so its bias is the
-single-run bias under every admissible coupling. The first estimator has no
-such guarantee. We
-therefore report the empirical mean squared error against the reference,
+For a nonlinear functional $Q$ the two natural estimators are not the same
+object. Applying $Q$ to the pair mean gives $Q(\bar U)$, whereas averaging the
+functional over the two simulations gives
+$\tfrac12\bigl(Q(U^{(A)})+Q(U^{(B)})\bigr)$. By Proposition~\ref{prop:law} the
+second has exactly the expectation of $Q$ evaluated on a single uncoupled
+simulation, so its bias is the single-simulation bias whatever the coupling;
+the first enjoys no such guarantee, because Corollary~\ref{cor:bias} does not
+survive a nonlinear map. A variance ratio is therefore not an accuracy ratio,
+and we report the empirical mean squared error against the reference,
 \begin{equation}
   \widehat{\mathrm{MSE}}
   =\frac1n\sum_{r=1}^{n}\bigl(Q_r-Q_{\mathrm{ref}}\bigr)^2
-  =\widehat{\mathrm{bias}}^2+\frac{n-1}{n}\,s^2 ,
+  =\widehat{\mathrm{bias}}^{\,2}+\frac{n-1}{n}\,s^2 ,
   \label{eq:empmse}
 \end{equation}
-where $\widehat{\mathrm{bias}}=n^{-1}\sum_r Q_r-Q_{\mathrm{ref}}$ and
-$s^2$ is the sample variance with divisor $n-1$. This differs from the plug-in $\widehat{\mathrm{bias}}^2+s^2$, which exceeds
-\eqref{eq:empmse} by $s^2/n$ (here $0.7\%$--$2.0\%$). Table~\ref{tab:nonlinear}
-uses \eqref{eq:empmse} throughout. We evaluate two functionals. The maximum
-gradient uses central differences at the reconstruction points and depends
-on their spacing. The level location is the first downward crossing of
-$u=0.25$ to the right of the global maximum, found by linear interpolation.
-We record a realization without such a crossing as censored. None occurred
-in the reported configurations.
+rather than the plug-in $\widehat{\mathrm{bias}}^{\,2}+s^2$, which exceeds
+\eqref{eq:empmse} by $s^2/n$, here $0.7\%$ to $2.0\%$. Both functionals are
+rule-dependent and we state the rules: $\max|\partial_x u|$ uses central
+differences of the reconstruction on the output grid, and the level crossing is
+the first downward crossing of $u=0.25$ to the right of the global maximum, by
+linear interpolation, with replicates lacking such a crossing recorded as
+censored. None occurred in any cell.
 
 \begin{table}[htbp]
 \centering
@@ -1175,41 +1354,47 @@ level $x(u=0.25)$    & $Q$ of the mean      & 0.129 $[0.070,0.247]$ & 0.855 $[0.
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:nonlinear} shows that the benefit depends on both the
-functional and the order of averaging. For the level crossing the switched coupling reduces total error by
+Table~\ref{tab:nonlinear} contains the clearest applicability boundary in the
+paper. For the level crossing the switched coupling reduces total error by
 roughly an order of magnitude against reflected pairing under either estimator.
-For the peak gradient, using the mean of $Q$ gives ratios $0.832$
-$[0.603,1.139]$ against reflected pairing and $1.058$ $[0.803,1.394]$
-against within-sign pairing. Both comparisons are unresolved. The plug-in squared-bias share is $87\%$ for that estimator. It is itself estimated, and Corollary~\ref{cor:bias} establishes sharing of the
-population bias across the couplings, not exact equality of finite-sample estimates. A variance reduction can only reduce the sampling component of this error. The corresponding variance ratios are $0.410$ ($Q$ of the mean)
-and $0.686$ (mean of $Q$) against reflected pairing, giving factors of $2.4$ and $1.5$.
+For the peak gradient it does not: with the mean-of-$Q$ estimator the ratio
+against reflected pairing is $0.832$ $[0.603,1.139]$ and against within-sign
+pairing $1.058$ $[0.803,1.394]$, both unresolved, because $87\%$ of that
+estimator's error is squared bias, which Corollary~\ref{cor:bias} makes common
+to all three couplings. A variance reduction cannot improve an error that is
+mostly bias. The corresponding variance ratios against reflected pairing are
+$0.410$ for $Q$ of the mean and $0.686$ for the mean of $Q$, factors of $2.4$
+and $1.5$ rather than an order of magnitude.
 
-\subsubsection{The bias-dominated regime}
+\subsubsection{The Bias-Dominated Regime}
+\label{sec:biasregime}
 
-The same arithmetic applies to the field itself. Since the couplings share
-$b^2$, \eqref{eq:decomposition} gives
+The same arithmetic governs the field itself. Since the couplings share $b^2$
+by Corollary~\ref{cor:bias}, \eqref{eq:decomposition} gives
 \begin{equation}
   \frac{\mathcal E_{\swi}(B)}{\mathcal E_{\refl}(B)}
   =\frac{b^2+V_{\swi}/B}{b^2+V_{\refl}/B}\;\longrightarrow\;1
   \qquad\text{as } B\to\infty ,
   \label{eq:crossover}
 \end{equation}
-when $b^2>0$. If $b^2=0$, the ratio instead remains $V_{\swi}/V_{\refl}$.
-Thus the crossover concerns nonzero baseline bias at fixed $N$ and $h$. The
-crossover occurs at
-\[
- B^{\star}=V/b^2,
-\]
-where the sampling and squared-bias contributions are equal. At three archived cells of the two-pulse
-problem $B^{\star}$ for the switched arm is $10.3$ ($N=6400$, $h=0.0025$),
-$4.5$ ($N=6400$, $h=0.005$) and $35.3$ ($N=1600$, $h=0.0025$).
-Figure~\ref{fig:bias} uses equal continuous work instead of equal pair counts:
+so at fixed $N$ and $h$ any coupling advantage is a small-$B$ phenomenon. The
+scale on which it fades is $B^{\star}=V/b^2$, at which the sampling and
+squared-bias contributions are equal; for the switched arm this is $10.3$ at
+$N=6400,\,h=0.0025$, $4.5$ at $N=6400,\,h=0.005$, and $35.3$ at
+$N=1600,\,h=0.0025$.
+
+Comparing at equal $B$ is not the same as comparing at equal expense, since the
+two arms have different per-replicate costs $C_{\swi}$ and $C_{\refl}$. Setting
+$B_\bullet=W/C_\bullet$ for a common work budget $W$ gives the quantity plotted
+in Figure~\ref{fig:bias},
 \begin{equation}
- \frac{b^2+V_{\swi}C_{\swi}/W}{b^2+V_{\refl}C_{\refl}/W}.
+ \frac{b^2+V_{\swi}C_{\swi}/W}{b^2+V_{\refl}C_{\refl}/W},
  \label{eq:equalwork}
 \end{equation}
-This is a plug-in model, excluding integer allocation and timing uncertainty.
-The crossover marks equal sampling and bias contributions in the switched arm. It is not a cutoff for improvement.
+whose limit as $W\to\infty$ is again $1$. The crossover scale becomes
+$W=C_{\swi}V_{\swi}/b^2$, marked by the circles in the figure. It is a
+crossover and not a cutoff: there the ratio is still $0.18$ to $0.26$, and it
+approaches $1$ only some two decades of work later.
 
 \begin{figure}[htbp]
 \centering
@@ -1223,17 +1408,21 @@ the effects of $N$ and $h$.}
 \label{fig:bias}
 \end{figure}
 
-Figure~\ref{fig:bias} shows the gradual loss of benefit as the common bias
-becomes a larger fraction of the total error. Coupling reduces the sampling
-component. Reducing the remaining baseline bias requires changing the
-particle representation or time discretization.
+The practical reading is the one a user can act on. Coupling buys accuracy
+while sampling error still contributes materially to the requested quantity,
+which is the regime in which one is paying for solver trajectories. Once
+discretization error dominates, the remedy is to refine $N$ or $h$, and no
+coupling will substitute for that.
 
-\subsection{Signed-structure controls}
+\subsection{Test 6: Where the Construction Does Nothing}
 \label{sec:structure}
 
-Table~\ref{tab:structure} compares four prescribed arrangements of signed
-masses under heat and Burgers evolution. Heat removes nonlinear transport,
-allowing us to examine the coupling under diffusion alone.
+The last test maps the effect against the signed structure of the initial data
+at $N=2048$, using four configurations: alternating signs on a short interval,
+two blocks of opposite sign driven together, two blocks held far apart, and a
+single sign. Their definitions are in Appendix~\ref{app:setup}. Each is run
+under both heat and Burgers dynamics, the heat case isolating the coupling from
+transport.
 
 \begin{table}[htbp]
 \centering
@@ -1263,70 +1452,81 @@ one sign                        & heat    & 0.987 $[0.902,1.078]$ & exactly 1 by
 \end{tabular}
 \end{table}
 
- The interleaved configuration uses alternating masses $\pm1/N$ on a fixed support, giving a reconstructed
-field whose amplitude is $1/N$. It is $2.5\times10^{-3}$ at $N=400$
-and $1.2\times10^{-4}$ at $N=8192$, while the total absolute mass stays at $1$.
-Increasing $N$ therefore changes the represented field, as well as the particle count, and its ratios must not be read as convergence under refinement. The
-merging and separated configurations hold the amplitude at $0.5$ and are
-refinements of one fixed profile.
+The rows of Table~\ref{tab:structure} are informative in different ways and
+should not be read alike. The interleaved configuration is a cancellation test
+rather than a refinement study: its alternating masses $\pm1/N$ on a fixed
+support give a reconstruction whose amplitude falls like $1/N$, from
+$2.5\times10^{-3}$ at $N=400$ to $1.2\times10^{-4}$ at $N=8192$, while the
+total absolute mass stays at $1$. Increasing $N$ there changes the represented
+field and not merely its resolution, so its ratios cannot be read as
+convergence under refinement. The merging and separated configurations hold the
+amplitude at $0.5$ and are refinements of one fixed profile.
 
- The unresolved rows are consistent with the
-divergence analysis in Section~\ref{sec:theory}. The two couplings agree on about
-$71\%$ of seeds and, when they do diverge, do so at a median step of $187$ out
-of $200$, leaving little history over which a difference can accumulate. This is
-a statement about this configuration at this $N$, $h$, $\nu$ and horizon.
+The unresolved rows for separated blocks are consistent with the divergence
+analysis of Section~\ref{sec:equality}: the two couplings agree on about $71\%$
+of seeds, and when they do diverge they do so at a median step of $187$ out of
+$200$, leaving little history over which a difference can accumulate. The
+one-sign rows are a consistency check rather than evidence, since
+Corollary~\ref{cor:onesign} makes the two couplings the same algorithm there;
+the two arms of that table were run on different seed streams, so the reported
+ratios are ratios of independent estimates of one quantity and their departure
+from $1$ is sampling noise. The exact statement for that configuration is the
+matched-seed comparison of complete states reported in
+Section~\ref{sec:equality}.
 
- The two couplings are the same algorithm
-(Corollary~\ref{cor:onesign}). The row checks the sampling variability of the estimated variance ratio. A separate comparison using
-matched seeds gives zero differences in positions, masses, and carried
-velocities over $200$ seeds for each equation.
+% =====================================================================
+\section{Conclusions}
+\label{sec:conclusions}
 
-% Exploratory predictor retained in the research archive, not in this manuscript.
+Averaging repeated simulations is a simple way to reduce sampling error for
+a signed gradient-particle solver. The mass signs help us choose how to couple
+those simulations. At a fixed pre-stage state, reflection maximizes an
+opposite-sign pair's contribution to conditional variance, while synchronous
+increments minimize it; for a same-sign pair, reflection minimizes it. These
+pairwise statements hold simultaneously at every reconstruction point. The
+resulting switch leaves each simulation's discrete law intact, so the averaged
+field retains the expectation and bias of the underlying solver. The coupling
+changes its sampling variance, and the reduction at a single diffusion stage
+has a closed form in terms of mass products and matched separations.
 
-\section{Discussion and conclusions}
-\label{sec:discussion}
+The choice of matching requires a separate comparison. Restricting pairs to
+sign classes allows reflection to be used throughout, and the pairwise
+argument alone cannot distinguish that construction from the spatially matched
+switch. In the principal Burgers experiment, within-sign matching captures
+most of the reduction relative to reflected rank pairing. The switched rule
+reduces the integrated variance further, to $0.739$ $[0.682,0.801]$ of the
+within-sign value at $0.94$ times its measured cost; its variance relative to
+reflected pairing is $0.127$ $[0.107,0.151]$. The profile and time comparisons
+support an advantage over within-sign pairing for three profiles at the two
+later observation times, and the flux comparison shows that the benefit also
+occurs with cubic transport. In held-out experiment~B, the switched rule reaches
+the prescribed expected-error target with four trajectories, compared with six
+for within-sign pairing and thirty-six for reflected pairing. Experiment~A
+provides a separate comparison with an unpaired ensemble and the RQMC
+adaptation at a different target and particle count.
 
-Spatial-rank matching with a sign-dependent increment rule reduces the
-sampling error of signed cumulative field estimates while preserving each
-replica's discrete law. The switching principle and adaptive matching have
-precedents in coupled sampling \citep{nusken2018}, and spatial sorting with
-structured diffusion inputs is established for gradient particles
-\citep{lecot_rims2001}. Our contribution specifies their use for paired
-transient field estimation, derives its final-stage variance identity, and
-measures the additional benefit over within-sign pairing.
+The boundaries help identify where the construction is useful. When all
+gradient masses share one sign, switching gives exactly the same paths as
+reflected pairing, although pairing itself can still help relative to
+independent runs. No advantage over reflection is resolved in the tested
+separated-sign configuration, on the flat flanks of a profile, or for the
+bias-dominated peak-gradient functional. The total-error benefit also fades
+as discretization bias dominates, on a scale set by $B^\star=V/b^2$.
+Conditional expectation at the final diffusion stage offers a complementary
+reduction: in the tested configurations it improves the switched estimator's
+variance-times-cost further.
 
-Within-sign pairing accounts for most of the reduction over reflected rank
-pairing. Retaining spatial matching gives a further reduction in the principal
-two-pulse experiment, with integrated variance $0.739$ times the within-sign
-value and integrated mean squared error $0.819$ times as large. In a separate
-comparison at a specified expected-error target, the selected switched plan
-uses four trajectories against six for within-sign pairing and takes
-approximately $0.60$ of its execution time. These plans attain different
-errors below the target, so the result describes their measured work rather
-than an optimized equal-error comparison.
-
-The exact identity relates the conditional gain to mass magnitudes, signs,
-and particle separations at the final diffusion stage. Earlier coupling
-choices change the distribution of later states, and the full-history
-comparison remains numerical. Applying both matching rules at a common state
-shows the additional separation imposed by the within-sign constraint.
-That geometric property does not establish the cause of the terminal variance
-reduction, since covariance also depends on which particles are paired.
-
-The profile, time, and cubic-flux comparisons describe a benefit beyond one
-initial condition. The one-sign identity and unresolved comparisons also
-identify limits. Coupling is most useful when sampling contributes materially
-to the requested field error. It cannot remove the common baseline bias,
-and nonlinear functionals require their own total-error comparisons.
-The method is therefore an option for ensemble estimation after a signed
-gradient-particle solver has been selected.
-
-The computations use scalar equations in one dimension, constant particle
-masses, and mean transport. Sufficient conditions for a terminal variance
-comparison under nonlinear evolution remain open. Extending the matching
-construction to systems or several dimensions, and evaluating its cost in
-parallel implementations, would require separate analysis and experiments.
-
+Three questions seem worth pursuing. Whether a terminal variance comparison
+holds under explicit resolution assumptions is open; Remark~\ref{rem:mono}
+rules out the unrestricted coordinatewise argument, while conditions such as
+$|m|h/\sigma\ll1$ remain to be investigated. Whether the construction extends to solvers
+that sample a velocity label, where the coupling would have to act on the label
+draw as well as on the diffusion, is a design question rather than a corollary,
+and the relaxation gradient-particle schemes of Bertaglia, Pareschi and
+Caflisch~\citep{bertaglia2024} are the natural setting in which to ask it.
+Finally, the cost of the construction in a parallel implementation, where the
+two simulations must exchange matched masses at every stage, requires its own
+measurement.
 \section*{Data and code availability}
 
 The manuscript source, figure-generation scripts, numerical evidence, and
@@ -1378,85 +1578,119 @@ carried velocity in the state makes the deterministic update well defined.
 
 \subsection{Lemma~\ref{lem:wholeline}}
 
-Fix $c\in\R$ and define the compactly supported difference of indicators
-\[
- h_a(x)=\ind\{x\ge a\}-\ind\{x\ge c\}.
-\]
-Integrating their product over the overlapping intervals gives
-\[
- \int_\R h_a(x)h_b(x)\,\mathrm dx
- =\tfrac12\bigl(|a-c|+|b-c|-|a-b|\bigr).
-\]
-Since each collection has zero total mass, subtracting the common indicator
-at $c$ leaves either field unchanged. Thus
-\[
- D_A=\sum_i m_i^A h_{X_i^A},\qquad
- D_B=\sum_j m_j^B h_{X_j^B}.
-\]
-Expanding the product and applying the preceding identity gives
-\[
- \int_\R D_AD_B\,\mathrm dx
- =\frac12\sum_{i,j}m_i^A m_j^B
-   \bigl(|X_i^A-c|+|X_j^B-c|-|X_i^A-X_j^B|\bigr).
-\]
-The first group vanishes because $\sum_jm_j^B=0$, and the second vanishes
-because $\sum_im_i^A=0$. The remaining term is \eqref{eq:wholeline}. \qed
+Both $h_a$ and $h_b$ vanish outside the intervals with endpoints $a,c$ and
+$b,c$ respectively, so the product is integrable. If $a$ and $b$ lie on the
+same side of $c$, say $c\le a\le b$, then $h_a=h_b=-1$ on $[c,a)$, $h_b=-1$ and
+$h_a=0$ on $[a,b)$, and both vanish elsewhere, so
+$\int h_ah_b=|a-c|$, which equals $\tfrac12(|a-c|+|b-c|-|a-b|)$ because
+$|b-c|=|a-c|+|b-a|$. The case $c\ge a\ge b$ is identical. If $a$ and $b$ lie on
+opposite sides of $c$ the supports meet only at $c$ and the integral vanishes,
+while $|a-b|=|a-c|+|b-c|$ makes the right-hand side vanish as well. \qed
 
 \subsection{Proposition~\ref{prop:finalstage}}
 
-Condition on the pre-final state. Write $D_\bullet$ as in
-Lemma~\ref{lem:wholeline} for the terminal configurations, so that
-$\bar U=u_-+\tfrac12(D_A+D_B)$ and
+Condition on the pre-final state and fix any reference point $c\in\R$. With
+$h_a$ as in Lemma~\ref{lem:wholeline}, the terminal reconstruction of
+simulation $A$ satisfies
 \[
-  V_\bullet=\int\Var\bar U
-  =\tfrac14\Bigl(\int\Var D_A+\int\Var D_B+2\int\mathrm{Cov}(D_A,D_B)\Bigr).
+ U^{(A)}(x)=u_-+\sum_i m^A_i\,h_{X^A_i}(x)
+  +\Bigl(\sum_i m^A_i\Bigr)\ind\{x\ge c\},
 \]
-By Proposition~\ref{prop:law} the first two integrals do not depend on the
-coupling. For the covariance, apply Lemma~\ref{lem:wholeline} to the two fields
-with their coupled noise. Apply it again with independent noise between
-replicas to obtain the product of their means. Independent Gaussian
-displacements have difference variance $2\sigma^2$, so subtraction gives
+and likewise for $B$. The last term is deterministic, so it does not affect any
+variance or covariance; no condition on the total mass \eqref{eq:total-mass} is
+therefore needed. Setting $G_A=\sum_i m^A_i h_{X^A_i}$ and
+$G_B=\sum_j m^B_j h_{X^B_j}$, we may write
+$\bar U(x)=D(x)+\tfrac12(G_A(x)+G_B(x))$, where $D(x)$ is deterministic under
+this conditioning. Consequently,
 \[
-  \int\mathrm{Cov}(D_A,D_B)
+  V_\bullet=\int_\R\Var\bar U
+  =\tfrac14\Bigl(\int\Var G_A+\int\Var G_B+2\int\mathrm{Cov}(G_A,G_B)\Bigr).
+\]
+By Proposition~\ref{prop:law} the first two integrals are the same for every
+admissible coupling, so only the covariance has to be evaluated.
+
+Expanding and applying \eqref{eq:kernel} to the coupled pair gives
+\[
+ \int_\R\E\bigl[G_AG_B\bigr]
+ =\tfrac12\sum_{i,j}m^A_im^B_j
+   \Bigl(\E\bigl|X^A_i-c\bigr|+\E\bigl|X^B_j-c\bigr|
+         -\E\bigl|X^A_i-X^B_j\bigr|\Bigr).
+\]
+For $\int\E G_A\,\E G_B$, introduce an independent copy $X'^B_j$ of $X^B_j$;
+since $\E G_B=\E G_{B'}$ pointwise, the same expansion applies with
+$X^B_j$ replaced by $X'^B_j$, and the first two groups of terms are unchanged
+because they involve only the marginals. Subtracting,
+\[
+  \int_\R\mathrm{Cov}(G_A,G_B)
   =-\tfrac12\sum_{i,j}m^A_im^B_j
-     \Bigl[\E\bigl|X^A_i-X^B_j\bigr|-g_{\sigma\sqrt2}(a_i-b_j)\Bigr].
+     \Bigl[\E\bigl|X^A_i-X^B_j\bigr|-\E\bigl|X^A_i-X'^B_j\bigr|\Bigr],
 \]
-For $i\ne j$ the increments $Z_i$ and $\varepsilon_jZ_j$ are independent with
-variance $\sigma^2$ each under \refl{} and \swi{}, so
-$X^A_i-X^B_j=(a_i-b_j)+\sigma\sqrt2\,\mathcal N(0,1)$ in law and the bracket
-vanishes. Only the diagonal survives. There, under \refl{},
-$X^A_i-X^B_i=d_i+2\sigma Z_i$ and the first term is $g_{2\sigma}(d_i)$. Under
-\swi{} it is $g_{2\sigma}(d_i)$ when $m^A_im^B_i>0$ and, when
-$m^A_im^B_i<0$, the two increments cancel exactly and the first term is
-$|d_i|$. Subtracting,
+and $X^A_i-X'^B_j=(a_i-b_j)+\sigma\sqrt2\,\mathcal N(0,1)$ in law, so the
+second expectation equals $g_{\sigma\sqrt2}(a_i-b_j)$.
+
+For $i\ne j$ the increments applied to $X^A_i$ and $X^B_j$ are independent
+under \refl{} and \swi{}, so
+$X^A_i-X^B_j=(a_i-b_j)+\sigma\sqrt2\,\mathcal N(0,1)$ in law as well and the
+bracket vanishes; only the diagonal survives. There, under \refl{},
+$X^A_i-X^B_i=d_i+2\sigma Z_i$ and the first expectation is $g_{2\sigma}(d_i)$.
+Under \swi{} the same holds when $m^A_im^B_i>0$, whereas when
+$m^A_im^B_i<0$ the two increments cancel exactly and the first expectation is
+$|d_i|$. Subtracting the two couplings,
 \[
  \begin{aligned}
   \int\mathrm{Cov}_{\refl}-\int\mathrm{Cov}_{\swi}
   &=-\tfrac12\!\!\sum_{m^A_im^B_i<0}\!\! m^A_im^B_i
       \bigl[g_{2\sigma}(d_i)-|d_i|\bigr]\\
   &=\tfrac12\!\!\sum_{m^A_im^B_i<0}\!\!\bigl|m^A_im^B_i\bigr|
-      \bigl[g_{2\sigma}(d_i)-|d_i|\bigr].
+      \bigl[g_{2\sigma}(d_i)-|d_i|\bigr],
  \end{aligned}
 \]
-and multiplying the covariance difference by $1/2$ gives \eqref{eq:finalstage}.
-Finally, Jensen's inequality gives
+and multiplying by the factor $\tfrac12$ from the decomposition of $V_\bullet$
+gives \eqref{eq:finalstage}. Non-negativity follows from Jensen's inequality,
 \[
- g_s(d)=\E|d+sZ|\ge|\E(d+sZ)|=|d|,
+ g_s(d)=\E|d+sZ|\ \ge\ \bigl|\E(d+sZ)\bigr|=|d|. \qquad\qed
 \]
-which establishes non-negativity. \qed
 
+\begin{remark}[recovering the product form]
+When $\sum_i m^A_i=\sum_j m^B_j=0$ the terms involving the reference point $c$
+cancel identically in the expansion of $\int\E[G_AG_B]$, and one obtains the
+product identity
+$\int_\R D_AD_B=-\tfrac12\sum_{i,j}m^A_im^B_j\bigl|X^A_i-X^B_j\bigr|$
+quoted in Remark~\ref{rem:finalstage-scope}, with
+$D_\bullet$ the reconstruction measured from its left far-field value.
+\end{remark}
 
-\subsection{Numerical check of the final-stage identity}
+\subsection{Numerical Checks of the Final-Stage Identity}
 \label{app:finalcheck}
 
-We checked the identity against a
-direct paired Monte Carlo over the final stage at six pre-final states drawn
-from the two-pulse problem. All six agreed within a nominal $95\%$ interval
-built from $12\,000$ draws in $40$ batches, and refining the quadrature window
-by a factor of $2.7$ moved the estimate by $0.02\%$.
+The identity was checked by two routes that do not share the algebra of the
+proof. The first is a direct paired Monte Carlo over the final stage at six
+pre-final states drawn from the two-pulse problem, in which the conditional
+integrated variance of the pair mean is estimated by quadrature on a fine grid
+using the same draws for both couplings. All six states agreed with
+\eqref{eq:finalstage} within a nominal $95\%$ interval built from $12\,000$
+draws in $40$ batches, and refining the quadrature window by a factor of $2.7$
+moved the estimate by $0.02\%$. The second evaluates the joint indicator
+probabilities directly: for a matched pair at $a,b$ with
+$p=\Phi((x-a)/\sigma)$ and $q=\Phi((x-b)/\sigma)$, reflection gives
+$\Pr\{X_A\le x,X_B\le x\}=\max(p+q-1,0)$ and synchronization gives
+$\min(p,q)$, so that
+\[
+ V_{\refl}-V_{\swi}
+ =\tfrac12\int_\R\sum_{i:\,m^A_im^B_i<0} m^A_im^B_i
+   \bigl[\max(p_i+q_i-1,0)-\min(p_i,q_i)\bigr]\,\mathrm dx
+\]
+because like-sign pairs use reflection under both rules and contribute zero
+to the difference. Adaptive quadrature of this expression at a
+configuration with four particles of unequal mass magnitudes agrees with
+\eqref{eq:finalstage} to ten decimal places. The two expressions for the joint
+probabilities are the Fréchet--Hoeffding bounds of \eqref{eq:frechet}. This
+numerical check verifies their use in the integrated formula at that
+configuration; the argument in Section~\ref{sec:motivation} establishes the
+pairwise result for all admissible bivariate couplings.
 
 % =====================================================================
-\section{A two-particle monotonicity counterexample}
+\section{A Two-Particle Monotonicity Counterexample}
 \label{app:counterexample}
 Take $u_-=0$, $m=(1/2,-1/2)$, $h=0.005$, $\nu=10^{-10}$, and two steps.
 The initial positions are $(p,0)$, with $p_L=-0.00275$ or
@@ -1486,10 +1720,10 @@ The initial movement of a positive mass to the right thus increases the
 expected terminal field. This proves the claim in Remark~\ref{rem:mono}
 without inferring an expectation from a finite set of simulation seeds.
 
-\section{Test problems, initialisation and reference solutions}
+\section{Test Problems, Initialization and Reference Solutions}
 \label{app:setup}
 
-\paragraph{Initialisation.}
+\paragraph{Initialization.}
 For smooth profiles with equal far-field values, let
 \[
  w_+(x)=\max(u_0'(x),0),\qquad
@@ -1570,13 +1804,13 @@ These reference calculations assess field error. They are not timed
 competitors and do not enter the fit of a control coefficient.
 
 % =====================================================================
-\section{Additional estimator constructions}
+\section{Additional Estimator Constructions}
 \label{app:comparators}
 
 This appendix specifies the supporting estimators used in
-Sections~\ref{sec:qA} and~\ref{sec:heldoutA}.
+Sections~\ref{sec:test2} and~\ref{sec:heldoutA}.
 
-\subsection{Conditional evaluation and known-mean controls}
+\subsection{Conditional Evaluation and Known-Mean Controls}
 
 For conditional evaluation of the last diffusion stage, let $(a_i,m_i)$ be
 one replica's pre-final configuration and let $\Phi$ denote the standard
@@ -1630,7 +1864,7 @@ The common factor $\Delta x$ cancels between numerator and denominator.
 We hold the fitted coefficient fixed during evaluation and report its
 training cost separately.
 
-\subsection{Randomized quasi-Monte Carlo implementation}
+\subsection{Randomized Quasi-Monte Carlo Implementation}
 \label{app:rqmc}
 
 One \texttt{scipy.stats.qmc.Sobol} engine with $d=2$ and $30$ bits is created per
@@ -1645,7 +1879,7 @@ preserves the interacting discrete law. Its total error is measured
 independently, including its own bias. The rank-bijection assertion is checked outside the timed path.
 
 
-\section{Uncertainty methodology and its calibration}
+\section{Uncertainty Methodology and its Calibration}
 \label{app:uncertainty}
 
 \paragraph{Sample quantities and bootstrap intervals.}
@@ -1691,14 +1925,14 @@ replicates, which we do not assert, so we calibrated both.
 
 Per-replicate values of four observables were taken from the archived $N=8192$
 fields, separately for the reflected and sign-switched arms, and each
-sample was centred and scaled by its own standard deviation to give two
+sample was centered and scaled by its own standard deviation to give two
 empirical shapes. A synthetic numerator arm resamples the sign-switched shape,
 scaled to impose a known variance ratio $r$. The denominator arm resamples the
 reflected shape. Nominal-$95\%$ intervals are then formed by each procedure and
 coverage counted over $M=1500$ synthetic datasets, with $n=48$ per arm and $400$
 bootstrap resamples per interval. Table~\ref{tab:calibration} reports the
 two-shape design together with the common-shape design of an earlier
-calibration, which used one standardised sample for both arms and therefore
+calibration, which used one standardized sample for both arms and therefore
 does not retain the observed difference between the two distributions.
 
 \begin{table}[htbp]
@@ -1707,7 +1941,7 @@ does not retain the observed difference between the two distributions.
 synthetic datasets per cell, binomial standard error $\le0.007$. ``Two-shape''
 resamples the sign-switched and reflected empirical shapes separately.
 ``common-shape'' reproduces the earlier design in which both arms came from one
-standardised sample.}
+standardized sample.}
 \label{tab:calibration}
 \small
 \small
@@ -1738,7 +1972,7 @@ problems, and a non-significant normality test records failure to reject, not
 normality.
 
 % =====================================================================
-\section{Evidence provenance}
+\section{Evidence Provenance}
 \label{app:provenance}
 
 Table~\ref{tab:provenance} maps every table and figure to the archived output
@@ -1771,7 +2005,7 @@ Table~\ref{tab:headline}, Fig.~\ref{fig:fields}
   & principal field comparison
   & independent replay of \path{round22_corrections};
     \path{replayed_fields.npz}, \path{replay_audit.json}\\
-cost figures, \S\ref{sec:qA}
+cost figures, \S\ref{sec:test1}
   & what the coupling costs
   & \path{round22_corrections/costs.json};
     \path{round17_compare/compare.json} (pair versus single)\\
@@ -1795,7 +2029,7 @@ Table~\ref{tab:heldoutB}, Fig.~\ref{fig:heldout} (bottom)
   & \path{round23_mechanism/worktarget.json};
     interleaved timings from
     \path{round24_separation/timing_check.json}\\
-station ratios, \S\ref{sec:qD}
+station ratios, \S\ref{sec:observables}
   & where the benefit sits
   & \path{round18_observable/observable.json},
     \path{.../f_intervals.json}\\

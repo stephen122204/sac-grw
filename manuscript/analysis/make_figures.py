@@ -166,7 +166,7 @@ def fig_construction():
             color="#c1272d",
             lw=1.0,
             ls=(0, (2.4, 1.4)),
-            label="synchronised: $Z_B=+Z_A$",
+            label="synchronized: $Z_B=+Z_A$",
         ),
     ]
     fig.legend(

@@ -13,3 +13,9 @@ build/
 *.fls
 *.fdb_latexmk
 *.synctex.gz
+
+# Keep research notes and upload copies local.
+*.[mM][dD]
+!/README.md
+/OVERLEAF/
+/PAPER-2-Overleaf.zip
