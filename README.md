@@ -18,6 +18,8 @@ a conditioned final diffusion stage; full-history comparisons are numerical.
 Use Python 3.12 and a virtual environment:
 
 ```bash
+git clone https://github.com/stephen122204/sac-grw.git
+cd sac-grw
 python3.12 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements-coupling.txt -r requirements-test.txt
