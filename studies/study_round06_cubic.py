@@ -2,7 +2,7 @@
 
 CONTROL. Flux is the ONLY thing that changes. Both fluxes use the same
 inclusive schedule v_i = f'(u_right,i) (derivation in
-studies/round06_general_flux_derivation.md), the same profile, the same T, the
+studies/round06_general_flux_derivation.txt), the same profile, the same T, the
 same h, the same N, the same seeds and the same four couplings. With
 flux='burgers' the general-flux advancer here is asserted bit-identical to the
 production-verified `advance_pair`, so the cubic arm differs from the archived
@@ -191,7 +191,7 @@ def main():
         hashes=dict(this_driver=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()[:16],
                     spectral=sha('studies/round06_spectral_reference.py'),
                     coupler=sha('studies/study_sign_coupling.py'),
-                    derivation=sha('studies/round06_general_flux_derivation.md'))), indent=1))
+                    derivation=sha('studies/round06_general_flux_derivation.txt'))), indent=1))
     print(f'warnings recorded: {len(caught)}')
     for c in caught[:6]:
         print(f'  {c}')
