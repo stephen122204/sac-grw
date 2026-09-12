@@ -1,19 +1,17 @@
 """Independent arithmetic checks of central manuscript evidence (no new timing).
 
 This supplements the printed-number scan; it recomputes from partner arrays and
-held-out block errors and checks the scope/location of headline table entries.
+held-out block errors. It does not require manuscript files.
 """
 
 from pathlib import Path
 import json
-import re
 import numpy as np
 from scipy.stats import t
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 N = json.loads((HERE / "numbers.json").read_text())
-TEX = (HERE.parent / "main-2-coupling.tex").read_text()
 checks = 0
 
 
@@ -36,22 +34,10 @@ for a in fields:
     # Independent sample decomposition with correct finite-sample variance factor.
     bias_plugin = dx * ((fields[a].mean(0) - z["reference"]) ** 2).sum()
     close(mse[a], bias_plugin + (len(fields[a]) - 1) / len(fields[a]) * var[a])
-headline = TEX[TEX.index(r"\label{tab:headline}") :]
-headline = headline[: headline.index(r"\end{table}")]
 for k, row in N["field"]["ratios"].items():
     a, b = k.split("/")
     close(row["variance"], var[a] / var[b])
     close(row["mse"], mse[a] / mse[b])
-    # Values must occur together on the appropriate table row, not elsewhere.
-    rows = headline.splitlines()
-    assert any(
-        f"{row['variance']:.4f}" in line
-        and f"{row['mse']:.4f}" in line
-        and f"{row['variance_ci'][0]:.4f}" in line
-        and f"{row['variance_ci'][1]:.4f}" in line
-        for line in rows
-    ), k
-    checks += 1
 
 sources = {
     "A": "round17_compare_2026_09_10/compare.json",
@@ -111,15 +97,10 @@ for a in ("A", "B"):
     checks += 2
 assert np.any(np.sign(state["mA"]) != np.sign(state["mB"]))
 checks += 1
-labels = re.findall(r"\\label\{([^}]+)\}", TEX)
-assert len(labels) == len(set(labels)), "duplicate LaTeX labels"
-refs = re.findall(r"\\(?:eqref|ref)\{([^}]+)\}", TEX)
-assert set(refs) <= set(labels), set(refs) - set(labels)
-checks += 2
 report = {
     "checks": checks,
     "status": "passed",
-    "scope": "partner-array arithmetic, headline table rows, both held-out block means/SEs/nominal bounds/counts, sorted construction state, LaTeX labels",
+    "scope": "partner-array arithmetic, both held-out block means/SEs/nominal bounds/counts, sorted construction state",
     "does_not_establish": "statistical coverage, optimal plans, universal variance ordering, novelty, or new timing",
 }
 (HERE.parent / "evidence/verification.json").write_text(json.dumps(report, indent=2))

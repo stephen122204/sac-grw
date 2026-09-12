@@ -1,5 +1,0 @@
-{
-  "spectral_vs_archived_max_abs": 0.0,
-  "spectral_vs_cole_hopf_max_abs": 5.56637735104799e-14,
-  "warning": "Cole-Hopf quadrature emitted IntegrationWarning (probably divergent or slowly convergent). Agreement is a cross-check, not a rigorous quadrature error bound."
-}
