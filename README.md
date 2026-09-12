@@ -80,3 +80,10 @@ Earlier sampled-velocity studies remain available for provenance.
 are not additional evidence for the current method.
 
 Citation details are in [CITATION.cff](CITATION.cff). No DOI has been assigned.
+
+## Acknowledgments
+
+**Principal Investigator:** [Professor Prabir Daripa](https://artsci.tamu.edu/mathematics/contact/profiles/prabir-daripa.html) — Texas A&M University, Department of Mathematics.
+
+Other projects from the Daripa Research Group are available on the
+[group's GitHub page](https://github.com/Daripa-Research-Group).
