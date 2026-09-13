@@ -1,2 +1,2 @@
-# Install after requirements-lock.txt (archived environment) or requirements.txt.
+# Install after requirements-coupling.txt.
 pytest>=7,<10

@@ -39,11 +39,13 @@ To rebuild and check the numbers without generating figures:
 python reproduce.py verify-paper
 ```
 
-These commands analyze archived experiments; they do not repeat the simulations
-or measure new timings. Each summary records its source archive. Experiment
-drivers are retained in `studies/`; their original settings and output paths are
-in the scripts. Use a separate clone for full reruns because those drivers can
-overwrite the archived outputs. Timings depend on the machine.
+These commands analyze the archived experiments under `output/`; they do not
+repeat the simulations or measure new timings. Each summary in `numbers.json`
+records the archive it was read from, and Appendix F of the paper maps every
+table and figure to its archive. The drivers that produced the archives are in
+`studies/`, with their settings and output paths in the scripts. Use a separate
+clone for full reruns because the drivers overwrite the archived outputs.
+Timings depend on the machine.
 
 ## Run other parameters
 
@@ -70,14 +72,15 @@ step. For other initial particles or flux derivatives, use `advance_pair` in
 
 - `coupled_gradient_particles.py`: coupled mean-transport stepper.
 - `relaxation_gbmc.py`: particle initialization, reconstruction, and base solver.
-- `reproduction/`: current-paper analysis scripts and supporting particle arrays.
-- `studies/` and `output/`: experiment drivers and archived results.
+- `config.py`: simulation configuration used by the drivers.
+- `reproduction/analysis/`: scripts that rebuild the paper's numbers and figures,
+  with `numbers.json` and the Figure 1 state.
+- `reproduction/evidence/`: replayed particle fields behind Table 1 and Figure 2.
+- `output/`: the archived experiments the paper reports, one directory per study.
+- `studies/`: the drivers that produced those archives and the modules they import.
 - `tests/`: solver and coupling checks.
 
-Earlier sampled-velocity studies remain available for provenance.
-`python reproduce.py verify` checks their 164 stored values; it is separate from
-`verify-paper`, which checks the current coupling paper. Historical diagnostics
-are not additional evidence for the current method.
+The repository contains only the code and data used by the paper.
 
 Citation details are in [CITATION.cff](CITATION.cff). No DOI has been assigned.
 
