@@ -31,3 +31,6 @@ build/
 /output/**/*.png
 /output/**/*.svg
 /output/**/*.tex
+
+# Local copies of exploratory studies and archives removed from the public repository.
+/local-archive/

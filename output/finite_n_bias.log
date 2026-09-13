@@ -1,9 +1,0 @@
-N=800    done, ||ubar-ref||=2.0207e-03
-N=1600   done, ||ubar-ref||=2.1002e-03
-N=3200   done, ||ubar-ref||=6.8788e-04
-N=6400   done, ||ubar-ref||=5.8340e-04
-
-          pair  ||ubar_N - ubar_2N||                     95% CI  resolved?
-   800->1600               1.7049e-03 [1.650e-03,4.393e-03]  floor=1.65e-03     no
-  1600->3200               1.9713e-03 [1.289e-03,4.008e-03]  floor=1.33e-03     no
-  3200->6400               9.9338e-04 [1.016e-03,2.075e-03]  floor=8.25e-04    yes
