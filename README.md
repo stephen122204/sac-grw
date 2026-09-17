@@ -18,8 +18,7 @@ git clone https://github.com/stephen122204/sac-grw.git
 cd sac-grw
 python3.12 -m venv .venv
 source .venv/bin/activate
-python -m pip install -r requirements-coupling.txt -r requirements-test.txt
-python -m pytest -q
+python -m pip install -r requirements-coupling.txt
 ```
 
 ## Reproduce the paper
@@ -29,22 +28,18 @@ python reproduce.py paper
 ```
 
 This rebuilds the reported numerical summaries in
-`reproduction/analysis/numbers.json`, checks them against archived particle fields
-and held-out errors, and creates the five figures in `reproduction/figures/`.
+`reproduction/analysis/numbers.json` and creates the five figures in
+`reproduction/figures/`.
 No manuscript files or TeX installation are needed.
-
-To rebuild and check the numbers without generating figures:
-
-```bash
-python reproduce.py verify-paper
-```
 
 These commands analyze the archived experiments under `output/`; they do not
 repeat the simulations or measure new timings. Each summary in `numbers.json`
-records the archive it was read from, and Appendix F of the paper maps every
-table and figure to its archive. The drivers that produced the archives are in
-`studies/`, with their settings and output paths in the scripts. Use a separate
-clone for full reruns because the drivers overwrite the archived outputs.
+records the archive it was read from. The evidence map below connects the
+paper's results with those archives. The historical experiment scripts in
+`studies/` document the calculations, but some require intermediate inputs
+that are not included in this release. They are not a supported clean-clone
+rerun workflow. Use the reproduction commands above for the published data
+and `run_coupling.py` for new simulations.
 Timings depend on the machine.
 
 ## Run other parameters
@@ -78,11 +73,45 @@ step. For other initial particles or flux derivatives, use `advance_pair` in
 - `reproduction/evidence/`: replayed particle fields behind Table 1 and Figure 2.
 - `output/`: the archived experiments the paper reports, one directory per study.
 - `studies/`: the drivers that produced those archives and the modules they import.
-- `tests/`: solver and coupling checks.
 
-The repository contains only the code and data used by the paper.
+The supported reproduction commands select the data used by the paper.
+The nonlinear results are recomputed from `reproduction/evidence/replayed_fields.npz`.
 
 Citation details are in [CITATION.cff](CITATION.cff). No DOI has been assigned.
+
+## Evidence map
+
+Paths below are relative to the repository root. `reproduction/analysis/numbers.json`
+records the computed values and their source paths. Historical directory names
+identify stored experiments; they do not specify additional algorithm stages.
+
+| Result | Source data or calculation |
+| --- | --- |
+| Principal field comparison and spatial variance figure | `reproduction/evidence/replayed_fields.npz`; statistics in `reproduction/analysis/build_numbers.py` |
+| Costs per pair | `output/round22_corrections_2026_09_10/costs.json`; pair versus single in `output/round17_compare_2026_09_10/compare.json` |
+| Conditional final stage, controls, and flux comparison | `output/round09_costs_control_2026_09_10/fields.npz` and `rows.csv` |
+| Profiles and observation times | `output/round23_mechanism_2026_09_10/mechanism.json` |
+| Matched-pair distances | `output/round24_separation_2026_09_10/separation.json`, `matched_state` rows; `own_history` rows describe a different comparison |
+| Work at a target, Experiment A | `output/round17_compare_2026_09_10/compare.json` |
+| Work at a target, Experiment B | `output/round23_mechanism_2026_09_10/worktarget.json`; interleaved timing summary in `output/round24_separation_2026_09_10/timing_check.json` |
+| Pointwise variance ratios | `output/round18_observable_2026_09_10/observable.json` and `f_intervals.json` |
+| Nonlinear-observable mean squared errors | `reproduction/evidence/replayed_fields.npz`; empirical MSE recomputed by `reproduction/analysis/build_numbers.py` |
+| Bias crossover | `output/round07_joint_cell_2026_09_09/joint_cell.json` |
+| Sign configurations | `output/round21_applicability_2026_09_10/applicability.json` |
+| Final-stage identity checks | `output/round25_finalstage_2026_09_10/finalstage.json`; averages in `output/round06_finalstep_2026_09_09/finalstep.json` |
+| One-sign identity and separated-state divergence | `output/round25_divergence_2026_09_10/divergence.json`; earlier checks in `output/round22_corrections_2026_09_10/corrections.json` |
+| Single-replica agreement with the original update | `output/round14_audit_2026_09_10/audit.json` |
+| Coordinatewise-monotonicity counterexample | `output/round07_counterexample_2026_09_09/counterexample.json`; this does not establish a reversed terminal-variance ordering |
+| Interval calibration | `output/round25_calibration_2026_09_10/calibration.json`; the earlier common-shape calibration remains in `output/round22_corrections_2026_09_10/calibration.json` but is not the reported two-shape calculation |
+| Construction illustration | `reproduction/analysis/fig1_state.npz` and `reproduction/analysis/make_figures.py` |
+
+Experiment A records Python 3.11.4, NumPy 1.26.4, SciPy 1.17.1, and
+macOS 26.6.2 on ARM64. Its reported execution times are medians over
+32 complete estimates per method. The pinned requirements describe the
+reproduction environment, which differs from the original experiment environment.
+The later interleaved timing archive stores aggregate times without individual
+repetitions or a full hardware record; no timing confidence interval is available
+from that file. Timing summaries should not be interpreted as portable benchmarks.
 
 ## Acknowledgments
 
