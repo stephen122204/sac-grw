@@ -80,7 +80,7 @@ def main():
         return [float(np.percentile(r, 2.5)), float(np.percentile(r, 97.5))]
 
     out["field"] = {
-        "source": "round22-independent-review/replayed_fields.npz (independent replay of "
+        "source": "reproduction/evidence/replayed_fields.npz (independent replay of "
         "output/round22_corrections_2026_09_10 at N=8192, h=0.005, nu=0.1, T=1, 48 pairs)",
         "N": 8192,
         "h": 0.005,
