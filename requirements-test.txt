@@ -1,2 +1,0 @@
-# Install after requirements-coupling.txt.
-pytest>=7,<10
