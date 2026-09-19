@@ -32,10 +32,10 @@ This rebuilds the reported numerical summaries in
 `reproduction/figures/`.
 No manuscript files or TeX installation are needed.
 
-These commands analyze the archived experiments under `output/`; they do not
+These commands analyze the archived experiments under `output/`. They do not
 repeat the simulations or measure new timings. Each summary in `numbers.json`
 records the archive it was read from. The evidence map below connects the
-paper's results with those archives. The historical experiment scripts in
+paper's results with those archives. The experiment scripts in
 `studies/` document the calculations, but some require intermediate inputs
 that are not included in this release. They are not a supported clean-clone
 rerun workflow. Use the reproduction commands above for the published data
@@ -56,8 +56,8 @@ Outputs are the individual paired fields, their mean and standard errors in
 is not a rerun of a paper benchmark. It does not estimate discretization bias
 or certify an accuracy target.
 
-`FULL` switches by mass sign; `RAW` reflects by spatial rank; `WITHIN` reflects
-within each sign class; `FINAL` switches only at the last stage. The `heat`,
+`FULL` switches by mass sign, `RAW` reflects by spatial rank, `WITHIN` reflects
+within each sign class, and `FINAL` switches only at the last stage. The `heat`,
 `burgers`, and `cubic` fluxes and the `gaussian` and `shock` initial profiles are
 supported. Use an even particle count and a final time divisible by the time
 step. For other initial particles or flux derivatives, use `advance_pair` in
@@ -66,43 +66,42 @@ step. For other initial particles or flux derivatives, use `advance_pair` in
 ## Code and data
 
 - `coupled_gradient_particles.py`: coupled mean-transport stepper.
-- `relaxation_gbmc.py`: particle initialization, reconstruction, and base solver.
-- `config.py`: simulation configuration used by the drivers.
+- `gradient_particles.py`: single-simulation update, particle initialization, and field reconstruction.
 - `reproduction/analysis/`: scripts that rebuild the paper's numbers and figures,
   with `numbers.json` and the Figure 1 state.
-- `reproduction/evidence/`: replayed particle fields behind Table 1 and Figure 2.
+- `reproduction/evidence/`: recomputed particle fields behind Table 1 and Figure 2.
 - `output/`: the archived experiments the paper reports, one directory per study.
 - `studies/`: the drivers that produced those archives and the modules they import.
 
 The supported reproduction commands select the data used by the paper.
-The nonlinear results are recomputed from `reproduction/evidence/replayed_fields.npz`.
+The nonlinear results are recomputed from `reproduction/evidence/principal_fields.npz`.
 
 Citation details are in [CITATION.cff](CITATION.cff). No DOI has been assigned.
 
 ## Evidence map
 
 Paths below are relative to the repository root. `reproduction/analysis/numbers.json`
-records the computed values and their source paths. Historical directory names
-identify stored experiments; they do not specify additional algorithm stages.
+records the computed values and their source paths. Each directory under
+`output/` is named for the study it holds.
 
 | Result | Source data or calculation |
 | --- | --- |
-| Principal field comparison and spatial variance figure | `reproduction/evidence/replayed_fields.npz`; statistics in `reproduction/analysis/build_numbers.py` |
-| Costs per pair | `output/round22_corrections_2026_09_10/costs.json`; pair versus single in `output/round17_compare_2026_09_10/compare.json` |
-| Conditional final stage, controls, and flux comparison | `output/round09_costs_control_2026_09_10/fields.npz` and `rows.csv` |
-| Profiles and observation times | `output/round23_mechanism_2026_09_10/mechanism.json` |
-| Matched-pair distances | `output/round24_separation_2026_09_10/separation.json`, `matched_state` rows; `own_history` rows describe a different comparison |
-| Work at a target, Experiment A | `output/round17_compare_2026_09_10/compare.json` |
-| Work at a target, Experiment B | `output/round23_mechanism_2026_09_10/worktarget.json`; interleaved timing summary in `output/round24_separation_2026_09_10/timing_check.json` |
-| Pointwise variance ratios | `output/round18_observable_2026_09_10/observable.json` and `f_intervals.json` |
-| Nonlinear-observable mean squared errors | `reproduction/evidence/replayed_fields.npz`; empirical MSE recomputed by `reproduction/analysis/build_numbers.py` |
-| Bias crossover | `output/round07_joint_cell_2026_09_09/joint_cell.json` |
-| Sign configurations | `output/round21_applicability_2026_09_10/applicability.json` |
-| Final-stage identity checks | `output/round25_finalstage_2026_09_10/finalstage.json`; averages in `output/round06_finalstep_2026_09_09/finalstep.json` |
-| One-sign identity and separated-state divergence | `output/round25_divergence_2026_09_10/divergence.json`; earlier checks in `output/round22_corrections_2026_09_10/corrections.json` |
-| Single-replica agreement with the original update | `output/round14_audit_2026_09_10/audit.json` |
-| Coordinatewise-monotonicity counterexample | `output/round07_counterexample_2026_09_09/counterexample.json`; this does not establish a reversed terminal-variance ordering |
-| Interval calibration | `output/round25_calibration_2026_09_10/calibration.json`; the earlier common-shape calibration remains in `output/round22_corrections_2026_09_10/calibration.json` but is not the reported two-shape calculation |
+| Principal field comparison and spatial variance figure | `reproduction/evidence/principal_fields.npz`, with statistics in `reproduction/analysis/build_numbers.py` |
+| Costs per pair | `output/principal_burgers_runs/costs.json`, and pair versus single in `output/heldout_work_experiment_a/compare.json` |
+| Conditional final stage, controls, and flux comparison | `output/controls_and_costs/fields.npz` and `rows.csv` |
+| Profiles and observation times | `output/profile_time_flux_sweep/mechanism.json` |
+| Matched-pair distances | `output/matched_pair_separation/separation.json`, the `matched_state` rows. The `own_history` rows describe a different comparison |
+| Work at a target, Experiment A | `output/heldout_work_experiment_a/compare.json` |
+| Work at a target, Experiment B | `output/heldout_work_experiment_b/worktarget.json`, with the interleaved timing summary in `output/heldout_work_experiment_b/timing_check.json` |
+| Pointwise variance ratios | `output/pointwise_observables/observable.json` and `f_intervals.json` |
+| Nonlinear-observable mean squared errors | `reproduction/evidence/principal_fields.npz`, with the empirical MSE recomputed by `reproduction/analysis/build_numbers.py` |
+| Bias crossover | `output/bias_crossover_cell/joint_cell.json` |
+| Sign configurations | `output/sign_structure_map/applicability.json` |
+| Final-stage identity checks | `output/final_stage_identity_checks/finalstage.json`, with averages in `output/final_stage_switch/finalstep.json` |
+| One-sign identity and separated-state divergence | `output/coupling_divergence_seeds/divergence.json`, with earlier checks in `output/principal_burgers_runs/corrections.json` |
+| Single-replica agreement with the original update | `output/single_replica_law_check/audit.json` |
+| Coordinatewise-monotonicity counterexample | `output/monotonicity_counterexample/counterexample.json`. This does not establish a reversed terminal-variance ordering |
+| Interval calibration | `output/interval_calibration/calibration.json`. The earlier common-shape calibration remains in `output/principal_burgers_runs/calibration.json` but is not the reported two-shape calculation |
 | Construction illustration | `reproduction/analysis/fig1_state.npz` and `reproduction/analysis/make_figures.py` |
 
 Experiment A records Python 3.11.4, NumPy 1.26.4, SciPy 1.17.1, and
@@ -110,7 +109,7 @@ macOS 26.6.2 on ARM64. Its reported execution times are medians over
 32 complete estimates per method. The pinned requirements describe the
 reproduction environment, which differs from the original experiment environment.
 The later interleaved timing archive stores aggregate times without individual
-repetitions or a full hardware record; no timing confidence interval is available
+repetitions or a full hardware record, so no timing confidence interval is available
 from that file. Timing summaries should not be interpreted as portable benchmarks.
 
 ## Acknowledgments

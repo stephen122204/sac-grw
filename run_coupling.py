@@ -13,7 +13,7 @@ import time
 import numpy as np
 
 from coupled_gradient_particles import advance_pair
-from relaxation_gbmc import reconstruct_cumulative_field
+from gradient_particles import reconstruct_cumulative_field
 
 
 def run(args):

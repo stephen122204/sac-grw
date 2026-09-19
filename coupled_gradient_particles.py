@@ -1,12 +1,4 @@
-"""Sign-aware pairing for the specified mean-transport gradient-particle update.
-
-The callback receives the sorted state BEFORE diffusion, including the velocity
-carried into the NEXT transport. Terminal arrays are not necessarily sorted.
-RAW: rank reflection. FULL: rank matching with mass-sign switch.
-WITHIN: rank within each sign class, reflection. FINAL: switch only last stage.
-Both replicas start with identical nonzero masses, retained throughout.
-This preserves each baseline replica law; it makes no terminal variance promise.
-"""
+"""Coupled advance of two simulations of Algorithm 1 under the admissible couplings of Section 3.2: RAW reflects at equal rank, FULL switches by the mass-sign product, WITHIN reflects within each sign class, FINAL switches only at the last stage. Multipliers and matching are fixed before each draw, so each replica keeps the single-simulation law (Section 3.3)."""
 
 import numpy as np
 
