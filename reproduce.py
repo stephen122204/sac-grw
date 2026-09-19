@@ -1,11 +1,8 @@
-"""Reproduce the numerical summaries and figures of the SAC-GRW paper.
+"""Reproduce the numerical summaries and figures of the paper.
 
-`paper` rebuilds reproduction/analysis/numbers.json from the archived
-experiments under output/ and draws the five manuscript figures into
-reproduction/figures/.
-
-Neither target reruns a simulation or measures a timing. The experiment
-drivers that produced the archives are kept in studies/.
+`paper` rebuilds reproduction/analysis/numbers.json from the archived experiments
+under output/ and draws the five figures into reproduction/figures/. Nothing is
+simulated or timed again, and the drivers that produced the archives are in studies/.
 """
 import argparse
 import os

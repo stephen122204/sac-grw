@@ -1,1 +1,1 @@
-"""Paper 2 numerical-study drivers."""
+"""Drivers that produced the archived runs under output/."""

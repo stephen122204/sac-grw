@@ -5,7 +5,7 @@
   "bootstrap": "6000 whole-replicate percentile resamples, seed 20260910"
  },
  "field": {
-  "source": "reproduction/evidence/replayed_fields.npz (independent replay of output/round22_corrections_2026_09_10 at N=8192, h=0.005, nu=0.1, T=1, 48 pairs)",
+  "source": "reproduction/evidence/principal_fields.npz (independent replay of output/principal_burgers_runs at N=8192, h=0.005, nu=0.1, T=1, 48 pairs)",
   "N": 8192,
   "h": 0.005,
   "nu": 0.1,
@@ -61,7 +61,7 @@
   }
  },
  "nonlinear": {
-  "source": "same replay archive; observable definitions in the driver docstring",
+  "source": "same archive as the field comparison, with observable definitions in the driver docstring",
   "rows": [
    {
     "observable": "max|grad u|",
@@ -148,9 +148,9 @@
     "reference": 0.085746757486546,
     "mean": 0.0844891874665008,
     "bias": -0.0012575700200452011,
-    "variance": 2.441464125291681e-05,
-    "empirical_mse": 2.548748524879753e-05,
-    "bias_share": 0.06204936814592566,
+    "variance": 2.4414641252916805e-05,
+    "empirical_mse": 2.5487485248797526e-05,
+    "bias_share": 0.06204936814592567,
     "n": 48,
     "censored": 0
    },
@@ -161,9 +161,9 @@
     "reference": 0.085746757486546,
     "mean": 0.08458195165035827,
     "bias": -0.001164805836187735,
-    "variance": 2.643539307767646e-05,
-    "empirical_mse": 2.7241428357908544e-05,
-    "bias_share": 0.04980548810404502,
+    "variance": 2.643539307767645e-05,
+    "empirical_mse": 2.7241428357908533e-05,
+    "bias_share": 0.04980548810404504,
     "n": 48,
     "censored": 0
    },
@@ -174,9 +174,9 @@
     "reference": 0.085746757486546,
     "mean": 0.08541064663553533,
     "bias": -0.00033611085101067917,
-    "variance": 3.824845004387247e-06,
-    "empirical_mse": 3.858131237629635e-06,
-    "bias_share": 0.029281146028751984,
+    "variance": 3.824845004387248e-06,
+    "empirical_mse": 3.858131237629636e-06,
+    "bias_share": 0.029281146028751977,
     "n": 48,
     "censored": 0
    },
@@ -198,11 +198,11 @@
     "estimator": "Q_of_mean",
     "arm": "FULL",
     "reference": 0.085746757486546,
-    "mean": 0.0849639714938059,
-    "bias": -0.0007827859927401065,
+    "mean": 0.08496397149380587,
+    "bias": -0.0007827859927401343,
     "variance": 2.741379334793552e-06,
-    "empirical_mse": 3.2970211757488006e-06,
-    "bias_share": 0.18585076581770785,
+    "empirical_mse": 3.297021175748844e-06,
+    "bias_share": 0.18585076581771856,
     "n": 48,
     "censored": 0
    },
@@ -213,7 +213,7 @@
     "reference": 0.085746757486546,
     "mean": 0.08488658069753123,
     "bias": -0.0008601767890147743,
-    "variance": 1.7419347155346976e-06,
+    "variance": 1.7419347155346978e-06,
     "empirical_mse": 2.445548517320826e-06,
     "bias_share": 0.302551392098471,
     "n": 48,
@@ -299,10 +299,10 @@
     "comparison": "FULL/RAW",
     "empirical_mse_ratio": 0.1293584338966662,
     "ci": [
-     0.0698861888381784,
-     0.24734250644015382
+     0.06988618883817842,
+     0.24734250644015401
     ],
-    "variance_ratio": 0.11228423577454942,
+    "variance_ratio": 0.11228423577454946,
     "new_here": "bootstrap interval computed here"
    },
    {
@@ -312,65 +312,65 @@
     "empirical_mse_ratio": 0.8545642884285246,
     "ci": [
      0.49739614168013846,
-     1.4191616254158947
+     1.419161625415896
     ],
-    "variance_ratio": 0.7167295228039522,
+    "variance_ratio": 0.7167295228039521,
     "new_here": "bootstrap interval computed here"
    },
    {
     "observable": "level x(u=0.25)",
     "estimator": "Q_of_mean",
     "comparison": "WITHIN/RAW",
-    "empirical_mse_ratio": 0.1513735545099199,
+    "empirical_mse_ratio": 0.15137355450991993,
     "ci": [
-     0.09207274403925078,
-     0.26602461593529275
+     0.09207274403925084,
+     0.26602461593529286
     ],
-    "variance_ratio": 0.15666193759575694,
+    "variance_ratio": 0.15666193759575703,
     "new_here": "bootstrap interval computed here"
    },
    {
     "observable": "level x(u=0.25)",
     "estimator": "mean_of_Q",
     "comparison": "FULL/RAW",
-    "empirical_mse_ratio": 0.08977313836816019,
+    "empirical_mse_ratio": 0.08977313836816024,
     "ci": [
-     0.05274967972537812,
-     0.15750112280465756
+     0.0527496797253782,
+     0.15750112280465758
     ],
-    "variance_ratio": 0.06589403495595024,
+    "variance_ratio": 0.06589403495595027,
     "new_here": "bootstrap interval computed here"
    },
    {
     "observable": "level x(u=0.25)",
     "estimator": "mean_of_Q",
     "comparison": "FULL/WITHIN",
-    "empirical_mse_ratio": 0.8465278512924355,
+    "empirical_mse_ratio": 0.8465278512924358,
     "ci": [
-     0.49732912097020354,
-     1.4861605248409941
+     0.49732912097020365,
+     1.4861605248409946
     ],
-    "variance_ratio": 0.6275512585927026,
+    "variance_ratio": 0.6275512585927027,
     "new_here": "bootstrap interval computed here"
    },
    {
     "observable": "level x(u=0.25)",
     "estimator": "mean_of_Q",
     "comparison": "WITHIN/RAW",
-    "empirical_mse_ratio": 0.1060486530137185,
+    "empirical_mse_ratio": 0.10604865301371852,
     "ci": [
-     0.05901039836749273,
-     0.19156383158819681
+     0.05901039836749277,
+     0.19156383158819695
     ],
-    "variance_ratio": 0.10500183698733878,
+    "variance_ratio": 0.10500183698733882,
     "new_here": "bootstrap interval computed here"
    }
   ]
  },
  "cost": {
   "source": [
-   "output/round22_corrections_2026_09_10/costs.json",
-   "output/round17_compare_2026_09_10/compare.json"
+   "output/principal_burgers_runs/costs.json",
+   "output/heldout_work_experiment_a/compare.json"
   ],
   "scope": "serial single-machine wall-clock, interleaved repetitions, solver only; an implementation result, not an intrinsic property of within-sign pairing",
   "per_pair_seconds": {
@@ -401,11 +401,11 @@
   "variance_times_cost_FULL_over_WITHIN": 0.696633712720065
  },
  "mechanism": {
-  "source": "output/round23_mechanism_2026_09_10/mechanism.json",
+  "source": "output/profile_time_flux_sweep/mechanism.json",
   "N": 2048,
   "h": 0.005,
   "replicates": 48,
-  "note": "variance ratios use advance_pair_flux, which implements WITHIN correctly; the sep_ratio column of this archive is defective and is superseded by output/round24_separation_2026_09_10/separation.json",
+  "note": "variance ratios use advance_pair_flux, which implements WITHIN correctly; the sep_ratio column of this archive is defective and is superseded by output/matched_pair_separation/separation.json",
   "rows": [
    {
     "profile": "P1 single bump",
@@ -518,7 +518,7 @@
   ]
  },
  "separation": {
-  "source": "output/round24_separation_2026_09_10/separation.json",
+  "source": "output/matched_pair_separation/separation.json",
   "replicates": 24,
   "geometric_fact": "for two equally sized sets of reals, matching in sorted order minimises the total absolute matched distance over all bijections; within-sign matching is a constrained bijection, so every entry of the matched-state table is <= 1 by construction",
   "rows": [
@@ -660,7 +660,7 @@
   ]
  },
  "applicability": {
-  "source": "output/round21_applicability_2026_09_10/applicability.json",
+  "source": "output/sign_structure_map/applicability.json",
   "N": 2048,
   "replicates": 48,
   "rows": [
@@ -756,10 +756,10 @@
  },
  "divergence": {
   "source": [
-   "output/round22_corrections_2026_09_10/corrections.json",
-   "output/round25_divergence_2026_09_10/divergence.json"
+   "output/principal_burgers_runs/corrections.json",
+   "output/coupling_divergence_seeds/divergence.json"
   ],
-  "round22_40_seeds": [
+  "principal_runs_40_seeds": [
    {
     "structure": "one_sign",
     "dynamics": "heat",
@@ -825,7 +825,7 @@
     "max_state_diff": 0.6157738353886097
    }
   ],
-  "round25_200_seeds": [
+  "divergence_study_200_seeds": [
    {
     "structure": "one_sign",
     "dynamics": "heat",
@@ -1013,7 +1013,7 @@
   }
  },
  "configurations": {
-  "source": "output/round22_corrections_2026_09_10/corrections.json",
+  "source": "output/principal_burgers_runs/corrections.json",
   "rows": [
    {
     "config": "clustered",
@@ -1081,7 +1081,7 @@
   ]
  },
  "heldout_A": {
-  "source": "output/round17_compare_2026_09_10/compare.json",
+  "source": "output/heldout_work_experiment_a/compare.json",
   "target": 7e-06,
   "target_provenance": "PILOT-INFORMED after round-16; the original 5e-6 experiment was never run (budget gate)",
   "pilot_key": 1601,
@@ -1143,8 +1143,8 @@
  },
  "heldout_B": {
   "source": [
-   "output/round23_mechanism_2026_09_10/worktarget.json",
-   "output/round24_separation_2026_09_10/timing_check.json"
+   "output/heldout_work_experiment_b/worktarget.json",
+   "output/heldout_work_experiment_b/timing_check.json"
   ],
   "target": 2.5e-05,
   "pilot_key": 2310,
@@ -1195,7 +1195,7 @@
   }
  },
  "flux_transfer": {
-  "source": "output/round09_costs_control_2026_09_10/rows.csv (N=1600, h=0.005, 64 seeds)",
+  "source": "output/controls_and_costs/rows.csv (N=1600, h=0.005, 64 seeds)",
   "rows": [
    {
     "flux": "burgers",
@@ -1266,7 +1266,7 @@
   ]
  },
  "controls": {
-  "source": "output/round09_costs_control_2026_09_10/{fields.npz,rows.csv} (N=1600, h=0.005, nu=0.1, T=1, 64 seeds, arms share seed streams)",
+  "source": "output/controls_and_costs/{fields.npz,rows.csv} (N=1600, h=0.005, nu=0.1, T=1, 64 seeds, arms share seed streams)",
   "paired_bootstrap": "same resampled replicate indices in both arms",
   "rows": [
    {
@@ -1650,7 +1650,7 @@
   ]
  },
  "bias_regime": {
-  "source": "output/round07_joint_cell_2026_09_09/joint_cell.json",
+  "source": "output/bias_crossover_cell/joint_cell.json",
   "rows": [
    {
     "N": 6400,
@@ -1701,7 +1701,7 @@
   "caveat": "three cells indicate a direction; they do not establish an asymptotic rate or separate all N/h interactions"
  },
  "final_stage_check": {
-  "source": "output/round25_finalstage_2026_09_10/finalstage.json",
+  "source": "output/final_stage_identity_checks/finalstage.json",
   "statement": "V_reflect - V_switch = (1/4) sum_{unlike} |m_A m_B| [g_{2 sigma}(d) - |d|], conditional on the pre-final paired state, whole-line integrated variance of the pair mean",
   "draws": 12000,
   "conditional_checks": [
@@ -1819,7 +1819,7 @@
   "note": "the Monte Carlo estimate uses a bounded window containing every realised particle plus 8 sigma; the identity is whole-line. Refining the window grid from 6001 to 16001 points moved the estimate by 0.02% at the checked state, so the residual gap at 4000 draws was Monte Carlo error, not quadrature error. Historical key guaranteed_share means an estimated final-only/full-history reduction ratio; it is not a guaranteed share of terminal improvement."
  },
  "final_stage": {
-  "source": "output/round06_finalstep_2026_09_09/finalstep.json",
+  "source": "output/final_stage_switch/finalstep.json",
   "rows": [
    {
     "problem": "gaussian",
@@ -1876,8 +1876,8 @@
   ]
  },
  "calibration": {
-  "source": "output/round25_calibration_2026_09_10/calibration.json",
-  "superseded": "output/round22_corrections_2026_09_10/calibration.json used one standardised shape for both synthetic arms",
+  "source": "output/interval_calibration/calibration.json",
+  "superseded": "output/principal_burgers_runs/calibration.json used one standardised shape for both synthetic arms",
   "rows": [
    {
     "observable": "station x=+0.1",
@@ -2070,7 +2070,7 @@
   "limitation": "performance under these empirical distributions and this configuration; not a guarantee for other problems"
  },
  "law_witness": {
-  "source": "output/round14_audit_2026_09_10/audit.json",
+  "source": "output/single_replica_law_check/audit.json",
   "single_vs_production": {
    "max_abs_dx": 0.0,
    "max_abs_dm": 0.0,
@@ -2079,7 +2079,7 @@
   "seed_deterministic": true
  },
  "counterexample": {
-  "source": "output/round07_counterexample_2026_09_09/counterexample.json",
+  "source": "output/monotonicity_counterexample/counterexample.json",
   "config": {
    "u_left": 0.0,
    "a": 2.0,
@@ -2145,8 +2145,8 @@
  },
  "diagnostic": {
   "source": [
-   "output/round19_transfer_2026_09_10/transfer.json",
-   "output/round19_audit_2026_09_10/audit.json"
+   "output/pilot_prediction_transfer/transfer.json",
+   "output/prediction_claim_check/audit.json"
   ],
   "accuracy": 0.9,
   "rows": 10,
@@ -2176,8 +2176,8 @@
  },
  "locations": {
   "source": [
-   "output/round18_observable_2026_09_10/observable.json",
-   "output/round18_observable_2026_09_10/f_intervals.json"
+   "output/pointwise_observables/observable.json",
+   "output/pointwise_observables/f_intervals.json"
   ],
   "key": 1803,
   "N": 8192,

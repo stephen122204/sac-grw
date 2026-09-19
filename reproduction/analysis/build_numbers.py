@@ -1,19 +1,4 @@
-"""Recompute every number the coupling manuscript quotes, from archived evidence.
-
-Nothing here reruns a simulation. Each entry records the archive it came from, so
-the claim-to-evidence map can be checked mechanically. Two quantities are
-computed here for the first time and are marked `new_here`:
-
-  * bootstrap intervals for the nonlinear EMPIRICAL MSE ratios (the independent
-    review reported the point estimates without uncertainty);
-  * the FULL/WITHIN variance ratio for the cubic flux, from archived integrated
-    variances.
-
-Empirical MSE convention, stated because an earlier report used a different one:
-    MSE_emp = mean_r (Q_r - Q_ref)^2 = bias^2 + s^2 (n-1)/n,
-where s^2 is the ddof=1 sample variance. A plug-in `bias^2 + s^2` exceeds this by
-s^2/n and is not reported.
-"""
+"""Recompute every number the paper quotes from the archived runs under output/ and reproduction/evidence/. Nothing here reruns a simulation. Each entry records the archive it was read from."""
 
 import csv, json
 from pathlib import Path
@@ -59,7 +44,7 @@ def main():
     rng = np.random.default_rng(SEED)
 
     # ---------------------------------------------------------------- fields
-    z = np.load(REVIEW / "replayed_fields.npz")
+    z = np.load(REVIEW / "principal_fields.npz")
     x = z["x"]
     dx = float(x[1] - x[0])
     ref = z["reference"]
@@ -80,8 +65,8 @@ def main():
         return [float(np.percentile(r, 2.5)), float(np.percentile(r, 97.5))]
 
     out["field"] = {
-        "source": "reproduction/evidence/replayed_fields.npz (independent replay of "
-        "output/round22_corrections_2026_09_10 at N=8192, h=0.005, nu=0.1, T=1, 48 pairs)",
+        "source": "reproduction/evidence/principal_fields.npz (independent replay of "
+        "output/principal_burgers_runs at N=8192, h=0.005, nu=0.1, T=1, 48 pairs)",
         "N": 8192,
         "h": 0.005,
         "nu": 0.1,
@@ -115,7 +100,7 @@ def main():
         return np.array(o)
 
     nl = {
-        "source": "same replay archive; observable definitions in the driver docstring",
+        "source": "same archive as the field comparison, with observable definitions in the driver docstring",
         "rows": [],
         "ratios": [],
     }
@@ -172,12 +157,12 @@ def main():
     out["nonlinear"] = nl
 
     # ---------------------------------------------------------------- costs
-    c22 = jload(ARCH / "round22_corrections_2026_09_10/costs.json")
-    c17 = jload(ARCH / "round17_compare_2026_09_10/compare.json")["stats"]
+    c22 = jload(ARCH / "principal_burgers_runs/costs.json")
+    c17 = jload(ARCH / "heldout_work_experiment_a/compare.json")["stats"]
     out["cost"] = {
         "source": [
-            "output/round22_corrections_2026_09_10/costs.json",
-            "output/round17_compare_2026_09_10/compare.json",
+            "output/principal_burgers_runs/costs.json",
+            "output/heldout_work_experiment_a/compare.json",
         ],
         "scope": "serial single-machine wall-clock, interleaved repetitions, solver only; "
         "an implementation result, not an intrinsic property of within-sign pairing",
@@ -203,15 +188,15 @@ def main():
     out["cost"]["variance_times_cost_FULL_over_WITHIN"] = vc
 
     # ------------------------------------------------------------- mechanism
-    mech = jload(ARCH / "round23_mechanism_2026_09_10/mechanism.json")
+    mech = jload(ARCH / "profile_time_flux_sweep/mechanism.json")
     out["mechanism"] = {
-        "source": "output/round23_mechanism_2026_09_10/mechanism.json",
+        "source": "output/profile_time_flux_sweep/mechanism.json",
         "N": mech["N"],
         "h": mech["h"],
         "replicates": mech["reps"],
         "note": "variance ratios use advance_pair_flux, which implements WITHIN correctly; "
         "the sep_ratio column of this archive is defective and is superseded by "
-        "output/round24_separation_2026_09_10/separation.json",
+        "output/matched_pair_separation/separation.json",
         "rows": [
             {
                 k: r[k]
@@ -228,9 +213,9 @@ def main():
             for r in mech["rows"]
         ],
     }
-    sep = jload(ARCH / "round24_separation_2026_09_10/separation.json")
+    sep = jload(ARCH / "matched_pair_separation/separation.json")
     out["separation"] = {
-        "source": "output/round24_separation_2026_09_10/separation.json",
+        "source": "output/matched_pair_separation/separation.json",
         "replicates": sep["reps"],
         "geometric_fact": "for two equally sized sets of reals, matching in sorted order "
         "minimises the total absolute matched distance over all bijections; "
@@ -240,33 +225,33 @@ def main():
     }
 
     # ---------------------------------------------------------- applicability
-    app = jload(ARCH / "round21_applicability_2026_09_10/applicability.json")
+    app = jload(ARCH / "sign_structure_map/applicability.json")
     out["applicability"] = {
-        "source": "output/round21_applicability_2026_09_10/applicability.json",
+        "source": "output/sign_structure_map/applicability.json",
         "N": app["N"],
         "replicates": app["reps"],
         "rows": app["rows"],
     }
-    div22 = jload(ARCH / "round22_corrections_2026_09_10/corrections.json")
-    div25 = jload(ARCH / "round25_divergence_2026_09_10/divergence.json")
+    div22 = jload(ARCH / "principal_burgers_runs/corrections.json")
+    div25 = jload(ARCH / "coupling_divergence_seeds/divergence.json")
     out["divergence"] = {
         "source": [
-            "output/round22_corrections_2026_09_10/corrections.json",
-            "output/round25_divergence_2026_09_10/divergence.json",
+            "output/principal_burgers_runs/corrections.json",
+            "output/coupling_divergence_seeds/divergence.json",
         ],
-        "round22_40_seeds": div22["divergence"],
-        "round25_200_seeds": div25["rows"],
+        "principal_runs_40_seeds": div22["divergence"],
+        "divergence_study_200_seeds": div25["rows"],
         "pooled_separated": div25["pooled_separated"],
     }
     out["configurations"] = {
-        "source": "output/round22_corrections_2026_09_10/corrections.json",
+        "source": "output/principal_burgers_runs/corrections.json",
         "rows": div22["configurations"],
     }
 
     # ------------------------------------------------------------- held-out 1
-    c = jload(ARCH / "round17_compare_2026_09_10/compare.json")
+    c = jload(ARCH / "heldout_work_experiment_a/compare.json")
     out["heldout_A"] = {
-        "source": "output/round17_compare_2026_09_10/compare.json",
+        "source": "output/heldout_work_experiment_a/compare.json",
         "target": c["target"],
         "target_provenance": c["target_provenance"],
         "pilot_key": c["pilot_key"],
@@ -295,12 +280,12 @@ def main():
     out["heldout_A"]["rqmc"] = c["rqmc"]
 
     # ------------------------------------------------------------- held-out 2
-    w = jload(ARCH / "round23_mechanism_2026_09_10/worktarget.json")
-    t = jload(ARCH / "round24_separation_2026_09_10/timing_check.json")
+    w = jload(ARCH / "heldout_work_experiment_b/worktarget.json")
+    t = jload(ARCH / "heldout_work_experiment_b/timing_check.json")
     out["heldout_B"] = {
         "source": [
-            "output/round23_mechanism_2026_09_10/worktarget.json",
-            "output/round24_separation_2026_09_10/timing_check.json",
+            "output/heldout_work_experiment_b/worktarget.json",
+            "output/heldout_work_experiment_b/timing_check.json",
         ],
         "target": w["tol"],
         "pilot_key": w["pilot_key"],
@@ -337,11 +322,11 @@ def main():
 
     # ------------------------------------------------------------------ flux
     rows = list(
-        csv.DictReader(open(ARCH / "round09_costs_control_2026_09_10/rows.csv"))
+        csv.DictReader(open(ARCH / "controls_and_costs/rows.csv"))
     )
     iv = {(r["flux"], r["arm"]): float(r["int_var"]) for r in rows}
     out["flux_transfer"] = {
-        "source": "output/round09_costs_control_2026_09_10/rows.csv (N=1600, h=0.005, 64 seeds)",
+        "source": "output/controls_and_costs/rows.csv (N=1600, h=0.005, 64 seeds)",
         "rows": [
             {
                 "flux": f,
@@ -360,7 +345,7 @@ def main():
     }
 
     # -------------------------------------------------------- control arms
-    zc = np.load(ARCH / "round09_costs_control_2026_09_10/fields.npz")
+    zc = np.load(ARCH / "controls_and_costs/fields.npz")
     xg = zc["x_grid"]
     dxc = float(xg[1] - xg[0])
     arms = [
@@ -380,7 +365,7 @@ def main():
     ]
     cost = {(r["flux"], r["arm"]): (float(r["cost"]), float(r["oneoff"])) for r in rows}
     ctrl = {
-        "source": "output/round09_costs_control_2026_09_10/{fields.npz,rows.csv} "
+        "source": "output/controls_and_costs/{fields.npz,rows.csv} "
         "(N=1600, h=0.005, nu=0.1, T=1, 64 seeds, arms share seed streams)",
         "paired_bootstrap": "same resampled replicate indices in both arms",
         "rows": [],
@@ -422,18 +407,18 @@ def main():
     out["controls"] = ctrl
 
     # -------------------------------------------------------------- bias/work
-    jc = jload(ARCH / "round07_joint_cell_2026_09_09/joint_cell.json")
+    jc = jload(ARCH / "bias_crossover_cell/joint_cell.json")
     out["bias_regime"] = {
-        "source": "output/round07_joint_cell_2026_09_09/joint_cell.json",
+        "source": "output/bias_crossover_cell/joint_cell.json",
         "rows": jc["rows"],
         "caveat": jc["caveat"],
     }
 
     # ------------------------------------------------------------- final step
-    fs = jload(ARCH / "round06_finalstep_2026_09_09/finalstep.json")
-    fsv = jload(ARCH / "round25_finalstage_2026_09_10/finalstage.json")
+    fs = jload(ARCH / "final_stage_switch/finalstep.json")
+    fsv = jload(ARCH / "final_stage_identity_checks/finalstage.json")
     out["final_stage_check"] = {
-        "source": "output/round25_finalstage_2026_09_10/finalstage.json",
+        "source": "output/final_stage_identity_checks/finalstage.json",
         "statement": fsv["statement"],
         "draws": fsv["draws"],
         "conditional_checks": fsv["conditional_checks"],
@@ -442,7 +427,7 @@ def main():
         + " Historical key guaranteed_share means an estimated final-only/full-history reduction ratio; it is not a guaranteed share of terminal improvement.",
     }
     out["final_stage"] = {
-        "source": "output/round06_finalstep_2026_09_09/finalstep.json",
+        "source": "output/final_stage_switch/finalstep.json",
         "rows": [
             {
                 k: r[k]
@@ -465,10 +450,10 @@ def main():
     }
 
     # ------------------------------------------------------------ calibration
-    cal = jload(ARCH / "round25_calibration_2026_09_10/calibration.json")
+    cal = jload(ARCH / "interval_calibration/calibration.json")
     out["calibration"] = {
-        "source": "output/round25_calibration_2026_09_10/calibration.json",
-        "superseded": "output/round22_corrections_2026_09_10/calibration.json "
+        "source": "output/interval_calibration/calibration.json",
+        "superseded": "output/principal_burgers_runs/calibration.json "
         "used one standardised shape for both synthetic arms",
         "rows": cal["rows"],
         "shapes": cal["shapes"],
@@ -477,17 +462,17 @@ def main():
     }
 
     # ------------------------------------------------------ marginal witness
-    aud = jload(ARCH / "round14_audit_2026_09_10/audit.json")
+    aud = jload(ARCH / "single_replica_law_check/audit.json")
     out["law_witness"] = {
-        "source": "output/round14_audit_2026_09_10/audit.json",
+        "source": "output/single_replica_law_check/audit.json",
         "single_vs_production": aud["fixtures"]["single_vs_production"],
         "seed_deterministic": aud["fixtures"]["seed_deterministic"],
     }
 
     # ------------------------------------------------------- counterexample
-    ce = jload(ARCH / "round07_counterexample_2026_09_09/counterexample.json")
+    ce = jload(ARCH / "monotonicity_counterexample/counterexample.json")
     out["counterexample"] = {
-        "source": "output/round07_counterexample_2026_09_09/counterexample.json",
+        "source": "output/monotonicity_counterexample/counterexample.json",
         "config": ce["config"],
         "delta_U": ce["delta_U"],
         "log_exceptional_probability": ce["log_exceptional_probability"],
@@ -496,17 +481,17 @@ def main():
     }
 
     # ---------------------------------------------------------- diagnostic
-    tr = jload(ARCH / "round19_transfer_2026_09_10/transfer.json")
-    au = jload(ARCH / "round19_audit_2026_09_10/audit.json")
+    tr = jload(ARCH / "pilot_prediction_transfer/transfer.json")
+    au = jload(ARCH / "prediction_claim_check/audit.json")
     out["diagnostic"] = {
         "source": [
-            "output/round19_transfer_2026_09_10/transfer.json",
-            "output/round19_audit_2026_09_10/audit.json",
+            "output/pilot_prediction_transfer/transfer.json",
+            "output/prediction_claim_check/audit.json",
         ],
         "accuracy": tr["accuracy"],
         "rows": len(tr["rows"]),
         "exponent_cut_sensitivity": jload(
-            ARCH / "round19_transfer_2026_09_10/work.json"
+            ARCH / "pilot_prediction_transfer/work.json"
         )["cut_robustness"],
         "placebo_shared": au["placebo_shared"],
         "artefact_if_constant": au["artefact_if_constant"],
@@ -515,12 +500,12 @@ def main():
     }
 
     # ----------------------------------------------------------- observables
-    obs18 = jload(ARCH / "round18_observable_2026_09_10/observable.json")
-    fi = jload(ARCH / "round18_observable_2026_09_10/f_intervals.json")
+    obs18 = jload(ARCH / "pointwise_observables/observable.json")
+    fi = jload(ARCH / "pointwise_observables/f_intervals.json")
     out["locations"] = {
         "source": [
-            "output/round18_observable_2026_09_10/observable.json",
-            "output/round18_observable_2026_09_10/f_intervals.json",
+            "output/pointwise_observables/observable.json",
+            "output/pointwise_observables/f_intervals.json",
         ],
         "key": obs18["key"],
         "N": obs18["N"],
