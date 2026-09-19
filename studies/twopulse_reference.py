@@ -1,17 +1,4 @@
-"""Reference and initialisation for the asymmetric signed two-pulse case.
-
-    u0(x) = 0.8 exp(-(x+0.7)^2/(2*0.5^2)) - 0.5 exp(-(x-0.4)^2/(2*0.3^2))
-
-Reference: stabilised whole-line Cole-Hopf,
-    u(x,t) = int ((x-y)/t) e^{-G/(2nu)} dy / int e^{-G/(2nu)} dy,
-    G(y;x,t) = F(y) + (x-y)^2/(2t),  F(y) = int_0^y u0.
-F is analytic here (erf primitive), so no inner quadrature is needed. A shared
-constant near min G is subtracted before exponentiating; it cancels in the ratio.
-
-Initialisation: N/2 particles by deterministic midpoint quantiles of the POSITIVE
-part of u0' and N/2 of the negative part, each carrying |m| = TV/N. This enforces
-equal counts and equal total weight per sign exactly.
-"""
+"""Reference solution and particle initialization for the two-pulse profile (Appendix C)."""
 import numpy as np
 from scipy.special import erf
 from scipy.integrate import quad
