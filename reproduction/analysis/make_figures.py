@@ -49,7 +49,7 @@ NAME = {
     "RAW": "reflected",
     "WITHIN": "within-sign",
     "FULL": "sign-switched",
-    "SINGLE": "unpaired",
+    "SINGLE": "independent",
     "RQMC": "RQMC",
 }
 
@@ -103,7 +103,7 @@ def fig_construction():
                 )
         if rule == "rank":
             pairs = [(i, i, sA[i] * sB[i]) for i in range(len(xA))]
-            ttl = "rank matching\nmultiplier $-\\,\\mathrm{sgn}(m_{A,i})\\mathrm{sgn}(m_{B,i})$"
+            ttl = "rank matching\nmultiplier $-\\,\\mathrm{sgn}(m^A_i)\\,\\mathrm{sgn}(m^B_i)$"
         else:
             pairs = []
             for sgn in (1.0, -1.0):
@@ -126,7 +126,7 @@ def fig_construction():
         ax.set_title(ttl, pad=5, fontsize=8.5)
         ax.set_ylim(-0.55, 1.55)
         ax.set_yticks([0.0, 1.0])
-        ax.set_yticklabels(["replica $B$", "replica $A$"])
+        ax.set_yticklabels(["simulation $B$", "simulation $A$"])
         ax.set_xlabel("position $x$")
         ax.set_xlim(min(xA.min(), xB.min()) - 0.04, max(xA.max(), xB.max()) + 0.04)
         ax.grid(axis="x", alpha=0.2)
@@ -154,21 +154,21 @@ def fig_construction():
             ms=5.4,
             label="$m_i<0$",
         ),
-        Line2D([], [], color="#4d4d4d", lw=1.0, label="reflected: $Z_B=-Z_A$"),
+        Line2D([], [], color="#4d4d4d", lw=1.0, label="reflected pair: $Z^B_i=-Z^A_i$"),
         Line2D(
             [],
             [],
             color="#c1272d",
             lw=1.0,
             ls=(0, (2.4, 1.4)),
-            label="synchronized: $Z_B=+Z_A$",
+            label="synchronized pair: $Z^B_i=Z^A_i$",
         ),
     ]
     fig.legend(
         handles=h,
         ncol=2,
         loc="lower center",
-        bbox_to_anchor=(0.5, -0.10),
+        bbox_to_anchor=(0.5, -0.17),
         frameon=False,
         columnspacing=1.5,
         handletextpad=0.6,
@@ -214,17 +214,8 @@ def fig_fields():
         ax.set_ylim(-lim, lim)
         ax.set_xlabel("$x$")
         ax.set_title(f"{NAME[a]} pairing", fontsize=8.5)
-    axes[0].set_ylabel("$u(x,T)-u_{\\mathrm{ref}}(x,T)$")
-    axes[1].set_ylabel("$u(x,T)-u_{\\mathrm{ref}}(x,T)$")
-    axes[0].text(
-        0.03,
-        0.04,
-        "faint: the two replicas\nbold: their mean",
-        transform=axes[0].transAxes,
-        fontsize=8,
-        color="#666666",
-        va="bottom",
-    )
+    axes[0].set_ylabel("error, $U-u_{\\mathrm{ref}}$")
+    axes[1].set_ylabel("error, $U-u_{\\mathrm{ref}}$")
 
     ax = axes[2]
     v = {a: 0.5 * (z[f"{a}_A"] + z[f"{a}_B"]) for a in ("RAW", "WITHIN", "FULL")}
@@ -240,9 +231,9 @@ def fig_fields():
         k = np.ones(w) / w
         return np.convolve(np.pad(y, w // 2, mode="edge"), k, mode="valid")[: len(y)]
 
-    for num, den, col, lab in (
-        ("FULL", "RAW", C["FULL"], "vs reflected"),
-        ("FULL", "WITHIN", C["WITHIN"], "vs within-sign"),
+    for num, den, col, lab, ls in (
+        ("FULL", "RAW", C["FULL"], "sign-switched / reflected", "-"),
+        ("FULL", "WITHIN", C["WITHIN"], "sign-switched / within-sign", "--"),
     ):
         rr = np.divide(
             var[num],
@@ -250,8 +241,8 @@ def fig_fields():
             out=np.full_like(var[num], np.nan),
             where=var[den] > 1e-10 * var[den].max(),
         )
-        ax.plot(x, rr, color=col, lw=0.5, alpha=0.3, zorder=2)
-        ax.plot(x, smooth(rr), color=col, lw=1.4, zorder=3, label=lab)
+        ax.plot(x, rr, color=col, lw=0.5, alpha=0.3, ls=ls, zorder=2)
+        ax.plot(x, smooth(rr), color=col, lw=1.4, ls=ls, zorder=3, label=lab)
     ax.axhline(1.0, color="#111111", lw=0.6, ls=":")
     ax.set_xlim(-3, 3)
     ax.set_ylim(0, 1.45)
@@ -260,7 +251,13 @@ def fig_fields():
     ax.set_xlabel("$x$")
     ax.set_ylabel("pointwise variance ratio")
     ax.set_title("pointwise variance ratio", fontsize=8.5)
-    ax.legend(frameon=False, loc="lower left", fontsize=8)
+    ax.legend(
+        frameon=False,
+        loc="upper center",
+        bbox_to_anchor=(0.5, -0.32),
+        ncol=2,
+        fontsize=8,
+    )
     fig.tight_layout()
     fig.savefig(FIG / "fig2_fields.pdf")
     plt.close(fig)
@@ -346,7 +343,7 @@ def fig_profiles():
 # ---------------------------------------------------------------- figure 4
 def fig_bias():  # Figure 5 in the manuscript
     jc = jload(ARCH / "bias_crossover_cell/joint_cell.json")["rows"]
-    fig, ax = plt.subplots(figsize=(3.5, 2.6))
+    fig, ax = plt.subplots(figsize=(3.5, 3.4))
     styles = ["-", "--", ":"]
     for row, ls in zip(jc, styles):
         b2, Vf, Vr = row["b2_full"], row["V_full"], row["V_raw"]
@@ -374,11 +371,17 @@ def fig_bias():  # Figure 5 in the manuscript
         )
     ax.set_xscale("log")
     ax.set_xlabel("common work budget (s)")
-    ax.set_ylabel("mean squared error ratio")
+    ax.set_ylabel("model MSE ratio")
     ax.set_title("sign-switched / reflected at fixed $N,h$", fontsize=8.5)
-    ax.axhline(1.0, color="#111111", lw=0.7, ls=":")
+    ax.axhline(1.0, color="#999999", lw=0.6, ls="-")
     ax.set_ylim(0, 1.08)
-    ax.legend(frameon=False, loc="lower right", fontsize=8)
+    ax.legend(
+        frameon=False,
+        loc="upper center",
+        bbox_to_anchor=(0.5, -0.24),
+        ncol=1,
+        fontsize=8,
+    )
 
     fig.tight_layout()
     fig.savefig(FIG / "fig5_bias.pdf")
@@ -400,15 +403,15 @@ def fig_heldout():  # Figure 4 in the manuscript
         ax.text(
             w[i] + 0.12,
             i,
-            f"{w[i]:.2f} s  ({A['arms'][a]['trajectories']} traj.)",
+            f"{w[i]:.2f} s  ({A['arms'][a]['trajectories']} simulations)",
             va="center",
             fontsize=8,
         )
     ax.set_yticks(range(len(order)))
     ax.set_yticklabels([NAME[a] for a in order])
     ax.set_xlim(0, 9.2)
-    ax.set_xlabel("measured work (s)")
-    ax.set_title(r"experiment A: target $7\times10^{-6}$, $N=8192$", fontsize=8.5)
+    ax.set_xlabel("execution time (s)")
+    ax.set_title(r"Experiment I: target $7\times10^{-6}$, $N=8192$", fontsize=8.5)
     ax.grid(axis="y", alpha=0)
 
     ax = axes[1]
@@ -419,15 +422,15 @@ def fig_heldout():  # Figure 4 in the manuscript
         ax.text(
             w[i] + 0.012,
             i,
-            f"{w[i]:.3f} s  ({B['arms'][a]['trajectories']} traj.)",
+            f"{w[i]:.3g} s  ({B['arms'][a]['trajectories']} simulations)",
             va="center",
             fontsize=8,
         )
     ax.set_yticks(range(len(order)))
     ax.set_yticklabels([NAME[a] for a in order])
     ax.set_xlim(0, 0.85)
-    ax.set_xlabel("measured work (s)")
-    ax.set_title(r"experiment B: target $2.5\times10^{-5}$, $N=2048$", fontsize=8.5)
+    ax.set_xlabel("execution time (s)")
+    ax.set_title(r"Experiment II: target $2.5\times10^{-5}$, $N=2048$", fontsize=8.5)
     ax.grid(axis="y", alpha=0)
     fig.tight_layout()
     fig.savefig(FIG / "fig4_heldout.pdf")
