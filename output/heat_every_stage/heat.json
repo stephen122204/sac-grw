@@ -1,6 +1,6 @@
 {
  "setup": {
-  "configuration": "alternating signs on [-0.25, 0.25], |m| = 1/N (Test 6)",
+  "configuration": "alternating signs on [-0.25, 0.25], |m| = 1/N (Test 3)",
   "flux": "zero (heat equation)",
   "N": 128,
   "nu": 0.1,

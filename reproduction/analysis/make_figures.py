@@ -352,21 +352,22 @@ def fig_problem():  # Figure 2 in the manuscript (Section 4.1)
     def u_osc(y):
         return 0.45 * np.sin(3 * y) * np.exp(-(y**2) / (2 * 1.1**2))
 
-    fig, axes = plt.subplots(1, 2, figsize=(7.0, 2.5), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(7.0, 2.9), sharey=True)
     ax = axes[0]
     ax.plot(x, u_two(x), color="#888888", lw=1.0, ls=":", label="initial profile $u_0$")
-    ax.plot(x, ref, color=C["ref"], lw=1.3, label=r"reference $u_{\mathrm{ref}}$ at $T=1$")
+    ax.plot(x, ref, color="#bbbbbb", lw=3.0, label=r"reference $u_{\mathrm{ref}}$ at $T=1$")
     ax.plot(
         x,
         0.5 * (d["FULL_A"][0] + d["FULL_B"][0]),
         color=C["FULL"],
-        lw=0.8,
+        lw=0.9,
         label=r"one sign-switched pair $\bar U$",
+        zorder=3,
     )
     ax.set_xlim(-3, 3)
     ax.set_xlabel("$x$")
     ax.set_ylabel("$u$")
-    ax.legend(frameon=False, fontsize=7, loc="upper right")
+    ax.legend(frameon=False, fontsize=7, loc="upper center", bbox_to_anchor=(0.5, -0.22), ncol=2)
 
     ax = axes[1]
     xx = np.linspace(-5, 5, 2001)
@@ -378,7 +379,7 @@ def fig_problem():  # Figure 2 in the manuscript (Section 4.1)
         ax.plot(xx, f(xx), color=col, lw=1.1, label=lab)
     ax.set_xlim(-4, 4)
     ax.set_xlabel("$x$")
-    ax.legend(frameon=False, fontsize=7, loc="lower left")
+    ax.legend(frameon=False, fontsize=7, loc="upper center", bbox_to_anchor=(0.5, -0.22), ncol=2)
     fig.tight_layout()
     fig.savefig(FIG / "fig2_problems.pdf")
     plt.close(fig)
@@ -554,6 +555,8 @@ def fig_controls():  # Figure 6 in the manuscript (Section 4.6, values in Table 
                 mew=0.9,
             )
         ax.axvline(1.0, color="#999999", lw=0.6)
+        for y_sep in (3.5, 4.5):  # separate the reflected, within-sign and switched groups
+            ax.axhline(y_sep, color="#cccccc", lw=0.6)
         ax.set_xscale("log")
         ax.set_xlim(0.05, 2.2)
         ax.set_xlabel("ratio to reflected pairing")

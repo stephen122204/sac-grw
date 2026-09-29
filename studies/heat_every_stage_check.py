@@ -23,7 +23,7 @@ Gamma_k = (1/4) sum_{unlike} |mA mB| [g_{sqrt(4 sigma^2+2 s_k^2)}(d) - g_{sqrt(2
      Gauss-Hermite quadrature of V_k;
 (c)  reports the per-stage gains Gamma_k along sign-switched trajectories and the share of
      the last stage in their sum.
-Alternating signs on [-0.25, 0.25] as in Test 6, nu = 0.1, T = 1, h = 0.005.
+Alternating signs on [-0.25, 0.25] as in Test 3, nu = 0.1, T = 1, h = 0.005.
 """
 import json
 import sys
@@ -428,7 +428,7 @@ def main():
           f"{gR[:, -1].mean():.4e}, share {gR[:, -1].mean() / red:.4f} of V_reflect - V_switch")
 
     res = dict(
-        setup=dict(configuration='alternating signs on [-0.25, 0.25], |m| = 1/N (Test 6)',
+        setup=dict(configuration='alternating signs on [-0.25, 0.25], |m| = 1/N (Test 3)',
                    flux='zero (heat equation)', N=N, nu=NU, T=T, h=H, K=K, sigma=float(SD),
                    pairs_per_coupling=PAIRS, window=[float(XG[0]), float(XG[-1])],
                    window_points=len(XG), g_tau_max_deviation_from_paper_g=g_err,
