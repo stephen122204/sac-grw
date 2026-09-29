@@ -1,4 +1,4 @@
-"""Numerical checks of the final-stage identity (Section 3.4, Appendix A)."""
+"""Numerical checks of the final-stage identity (Section 3.4, Appendix A.6)."""
 import json, sys, time
 from pathlib import Path
 import numpy as np

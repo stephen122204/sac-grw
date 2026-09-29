@@ -1,4 +1,4 @@
-"""Matched-pair separation under rank and within-sign matching (Section 4.4, Table 4)."""
+"""Matched-pair separation under rank and within-sign matching (Section 4.5, Figure 5 and Table 6)."""
 import json, sys, time
 from pathlib import Path
 import numpy as np

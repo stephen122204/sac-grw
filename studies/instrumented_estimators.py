@@ -1,4 +1,4 @@
-"""Instrumented paired solver and heat-motion control fields for the estimator comparisons (Section 4.3, Appendix D)."""
+"""Instrumented paired solver and heat-motion control fields for the estimator comparisons (Section 4.6, Appendix D)."""
 import sys
 from pathlib import Path
 

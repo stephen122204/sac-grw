@@ -1,4 +1,4 @@
-"""Held-out work comparison against unpaired, reflected, and RQMC estimators (Section 4.5, Experiment A)."""
+"""Held-out work comparison against unpaired, reflected, and RQMC estimators (Section 4.3, Experiment I)."""
 import json, os, platform, sys, time
 from pathlib import Path
 import numpy as np

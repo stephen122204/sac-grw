@@ -1,4 +1,4 @@
-"""Control variates, conditional final stage, and per-method costs on both fluxes (Section 4.3, Table 2)."""
+"""Control variates, conditional final stage, and per-method costs on both fluxes (Section 4.6, Figure 6 and Table 7)."""
 import csv
 import hashlib
 import json

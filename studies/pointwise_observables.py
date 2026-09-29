@@ -1,4 +1,4 @@
-"""Pointwise variance ratios and nonlinear observables (Section 4.6)."""
+"""Pointwise variance ratios and nonlinear observables (Sections 4.2 and 4.7, Appendix E.3)."""
 import json, sys, time
 from pathlib import Path
 import numpy as np
