@@ -109,7 +109,7 @@ def advance_particles(x_p, m_p, u_left, nu, a, dt, n_steps, rng,
     bit-for-bit unchanged.
 
     ``compensate_transport_variance`` is an OPT-IN experimental variant, not the
-    default path and not used by the sign-aware coupling manuscript. When True the Brownian
+    default path and not used by the sign-switched coupling manuscript. When True the Brownian
     standard deviation is reduced per particle from sqrt(2*nu*dt) to
     sqrt(2*nu*dt - (a**2 - u_i**2) * dt**2), using the same reconstructed state
     u_i that set the switching probability for the velocity carried into the
@@ -121,7 +121,7 @@ def advance_particles(x_p, m_p, u_left, nu, a, dt, n_steps, rng,
 
     ``min_variance_three_speed`` is an archived experimental option using
     {-a,0,+a}, with mean u and variance a*abs(u)-u**2. It is not the method
-    evaluated in the sign-aware coupling manuscript.
+    evaluated in the sign-switched coupling manuscript.
 
     ``antithetic`` is an OPT-IN pairing flag for variance-reduction pilots. When
     True the drawn uniforms are reflected (xi -> 1-xi) and the drawn normals are

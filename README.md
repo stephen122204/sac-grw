@@ -1,6 +1,6 @@
 # SAC-GRW
 
-Code for **Sign-Aware Antithetic Coupling for Signed Gradient-Particle Methods**,
+Code for **Sign-Switched Antithetic Coupling for Signed Gradient-Particle Methods**,
 by Stephen Abkin and Prabir Daripa.
 
 The method pairs two gradient-particle simulations by spatial rank and uses
@@ -57,7 +57,7 @@ is not a rerun of a paper benchmark. It does not estimate discretization bias
 or certify an accuracy target.
 
 `FULL` switches by mass sign, `RAW` reflects by spatial rank, `WITHIN` reflects
-within each sign class, and `FINAL` switches only at the last stage. The `heat`,
+partners matched within each sign, and `FINAL` switches only at the last stage. The `heat`,
 `burgers`, and `cubic` fluxes and the `gaussian` and `shock` initial profiles are
 supported. Use an even particle count and a final time divisible by the time
 step. For other initial particles or flux derivatives, use `advance_pair` in
