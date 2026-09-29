@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite the paper below."
-title: "Sign-Aware Antithetic Coupling for Signed Gradient-Particle Methods"
+title: "Sign-Switched Antithetic Coupling for Signed Gradient-Particle Methods"
 authors:
   - family-names: Abkin
     given-names: Stephen
@@ -11,7 +11,7 @@ license: NOASSERTION
 preferred-citation:
   type: article
   title: >-
-    Sign-Aware Antithetic Coupling for Signed Gradient-Particle Methods
+    Sign-Switched Antithetic Coupling for Signed Gradient-Particle Methods
   authors:
     - family-names: Abkin
       given-names: Stephen
