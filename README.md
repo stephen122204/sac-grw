@@ -28,7 +28,7 @@ python reproduce.py paper
 ```
 
 This rebuilds the reported numerical summaries in
-`reproduction/analysis/numbers.json` and creates the five figures in
+`reproduction/analysis/numbers.json` and creates the six figures in
 `reproduction/figures/`.
 No manuscript files or TeX installation are needed.
 
@@ -103,6 +103,11 @@ records the computed values and their source paths. Each directory under
 | Coordinatewise-monotonicity counterexample | `output/monotonicity_counterexample/counterexample.json`. This does not establish a reversed terminal-variance ordering |
 | Interval calibration | `output/interval_calibration/calibration.json`. The earlier common-shape calibration remains in `output/principal_burgers_runs/calibration.json` but is not the reported two-shape calculation |
 | Construction illustration | `reproduction/analysis/fig1_state.npz` and `reproduction/analysis/make_figures.py` |
+| Test problems figure | `reproduction/evidence/principal_fields.npz` (reference and one sign-switched pair) and `reproduction/analysis/make_figures.py` |
+| Error against cost figure | `reproduction/evidence/principal_fields.npz`, the costs in `numbers.json`, the Experiment A plans, and `output/bias_crossover_cell/joint_cell.json` |
+| Control-variate figure and table | the `controls` rows of `numbers.json`, from `output/controls_and_costs/` |
+| Viscosity sweep | `output/viscosity_sweep/viscosity.json`, produced by `studies/viscosity_sweep.py` |
+| Heat-equation stage decomposition and stage gains | `output/heat_every_stage/heat.json`, produced by `studies/heat_every_stage_check.py` |
 
 Experiment A records Python 3.11.4, NumPy 1.26.4, SciPy 1.17.1, and
 macOS 26.6.2 on ARM64. Its reported execution times are medians over
