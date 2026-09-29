@@ -1,4 +1,4 @@
-"""Numerical trace of the two-particle monotonicity counterexample (Section 3.6, Appendix B)."""
+"""Numerical trace of the two-particle monotonicity counterexample (Section 3.4, Appendix B.1)."""
 import json
 import sys
 from pathlib import Path

@@ -59,7 +59,7 @@ def jload(p):
 
 
 # ---------------------------------------------------------------- figure 1
-def fig_construction():
+def fig_construction():  # Figure 1 in the manuscript (Section 3.2)
     """A real paired state: the interleaved-sign configuration after 10 steps."""
     from studies.sign_structure_map import config
     from coupled_gradient_particles import advance_pair
@@ -189,8 +189,8 @@ def fig_construction():
     print("fig1_construction.pdf")
 
 
-# ---------------------------------------------------------------- figure 2
-def fig_fields():
+# ---------------------------------------------------------------- figure 3
+def fig_fields():  # Figure 3 in the manuscript (Section 4.2)
     z = np.load(REVIEW / "principal_fields.npz")
     x = z["x"]
     ref = z["reference"]
@@ -256,13 +256,13 @@ def fig_fields():
         fontsize=8,
     )
     fig.tight_layout()
-    fig.savefig(FIG / "fig2_fields.pdf")
+    fig.savefig(FIG / "fig3_fields.pdf")
     plt.close(fig)
-    print("fig2_fields.pdf")
+    print("fig3_fields.pdf")
 
 
-# ---------------------------------------------------------------- figure 3
-def fig_profiles():
+# ---------------------------------------------------------------- figure 5
+def fig_profiles():  # Figure 5 in the manuscript (Section 4.5)
     mech = jload(ARCH / "profile_time_flux_sweep/mechanism.json")["rows"]
     sep = jload(ARCH / "matched_pair_separation/separation.json")["rows"]
     profiles = ["P1 single bump", "P2 two-pulse", "P3 oscillatory"]
@@ -330,59 +330,89 @@ def fig_profiles():
         frameon=False,
         columnspacing=1.8,
     )
-    fig.savefig(FIG / "fig3_profiles.pdf")
+    fig.savefig(FIG / "fig5_profiles.pdf")
     plt.close(fig)
-    print("fig3_profiles.pdf")
+    print("fig5_profiles.pdf")
 
 
 
-# ---------------------------------------------------------------- test problems
-def fig_problem():  # test problems of Section 4 (Section 4.1)
+# ---------------------------------------------------------------- figure 2
+def fig_problem():  # Figure 2 in the manuscript (Section 4.1)
     d = np.load(REVIEW / "principal_fields.npz")
     x, ref = d["x"], d["reference"]
-    u_two = lambda y: 0.8 * np.exp(-(y + 0.7) ** 2 / (2 * 0.5 ** 2)) - 0.5 * np.exp(-(y - 0.4) ** 2 / (2 * 0.3 ** 2))
-    u_bump = lambda y: 0.8 * np.exp(-(y + 0.2) ** 2 / (2 * 0.45 ** 2))
-    u_osc = lambda y: 0.45 * np.sin(3 * y) * np.exp(-y ** 2 / (2 * 1.1 ** 2))
+
+    def u_two(y):
+        return 0.8 * np.exp(-((y + 0.7) ** 2) / (2 * 0.5**2)) - 0.5 * np.exp(
+            -((y - 0.4) ** 2) / (2 * 0.3**2)
+        )
+
+    def u_bump(y):
+        return 0.8 * np.exp(-((y + 0.2) ** 2) / (2 * 0.45**2))
+
+    def u_osc(y):
+        return 0.45 * np.sin(3 * y) * np.exp(-(y**2) / (2 * 1.1**2))
+
     fig, axes = plt.subplots(1, 2, figsize=(7.0, 2.5), sharey=True)
     ax = axes[0]
     ax.plot(x, u_two(x), color="#888888", lw=1.0, ls=":", label="initial profile $u_0$")
     ax.plot(x, ref, color=C["ref"], lw=1.3, label=r"reference $u_{\mathrm{ref}}$ at $T=1$")
-    ax.plot(x, 0.5 * (d["FULL_A"][0] + d["FULL_B"][0]), color=C["FULL"], lw=0.8, label=r"one sign-switched pair $\bar U$")
-    ax.set_xlim(-3, 3); ax.set_xlabel("$x$"); ax.set_ylabel("$u$")
+    ax.plot(
+        x,
+        0.5 * (d["FULL_A"][0] + d["FULL_B"][0]),
+        color=C["FULL"],
+        lw=0.8,
+        label=r"one sign-switched pair $\bar U$",
+    )
+    ax.set_xlim(-3, 3)
+    ax.set_xlabel("$x$")
+    ax.set_ylabel("$u$")
     ax.legend(frameon=False, fontsize=7, loc="upper right")
+
     ax = axes[1]
     xx = np.linspace(-5, 5, 2001)
-    for f, col, lab in ((u_bump, "#4d4d4d", "single bump (2 sign regions)"),
-                        (u_two, "#1f77b4", "two-pulse (3)"),
-                        (u_osc, "#c1272d", "oscillatory (13)")):
+    for f, col, lab in (
+        (u_bump, "#4d4d4d", "single bump (2 sign regions)"),
+        (u_two, "#1f77b4", "two-pulse (3)"),
+        (u_osc, "#c1272d", "oscillatory (13)"),
+    ):
         ax.plot(xx, f(xx), color=col, lw=1.1, label=lab)
-    ax.set_xlim(-4, 4); ax.set_xlabel("$x$")
+    ax.set_xlim(-4, 4)
+    ax.set_xlabel("$x$")
     ax.legend(frameon=False, fontsize=7, loc="lower left")
     fig.tight_layout()
-    fig.savefig(FIG / "fig0_problems.pdf")
+    fig.savefig(FIG / "fig2_problems.pdf")
     plt.close(fig)
-    print("fig0_problems.pdf")
+    print("fig2_problems.pdf")
 
 
 # ---------------------------------------------------------------- figure 4
-def fig_cost():  # Figure 3 in the manuscript
+def fig_cost():  # Figure 4 in the manuscript (Section 4.3)
     """Left: integrated MSE against execution time at N=8192, h=0.005, from the
     48 Test 1 realizations (curves b^2 + V/R, points from disjoint blocks), with
-    the Experiment I plans. Right: the equal-work model ratio of Section 4."""
+    the Experiment I plans. Right: the equal-work model ratio of Section 4.3."""
     d = np.load(REVIEW / "principal_fields.npz")
     x, ref = d["x"], d["reference"]
     dx = float(x[1] - x[0])
-    sq = lambda g: dx * float(np.sum(g ** 2))
+
+    def sq(g):
+        return dx * float(np.sum(g**2))
+
     cost = jload(HERE / "numbers.json")["cost"]
-    C8 = cost["per_pair_seconds"]["8192"]
+    c8 = cost["per_pair_seconds"]["8192"]
     runs = {"SINGLE": d["RAW_A"]}
     for a in ("RAW", "WITHIN", "FULL"):
         runs[a] = 0.5 * (d[a + "_A"] + d[a + "_B"])
-    per = {"SINGLE": cost["single_8192_s"], "RAW": C8["RAW"], "WITHIN": C8["WITHIN"], "FULL": C8["FULL"]}
+    per = {
+        "SINGLE": cost["single_8192_s"],
+        "RAW": c8["RAW"],
+        "WITHIN": c8["WITHIN"],
+        "FULL": c8["FULL"],
+    }
     V = {a: dx * float(np.sum(r.var(axis=0, ddof=1))) for a, r in runs.items()}
     n = runs["FULL"].shape[0]
-    b2 = sq(runs["FULL"].mean(axis=0) - ref) - V["FULL"] / n  # common bias (Corollary 3.4)
-    A = jload(HERE / "numbers.json")["heldout_A"]["arms"]
+    # One bias estimate for every method (Corollary 3.4), from the switched pairs.
+    b2 = sq(runs["FULL"].mean(axis=0) - ref) - V["FULL"] / n
+    plans = jload(HERE / "numbers.json")["heldout_A"]["arms"]
 
     fig, axes = plt.subplots(1, 2, figsize=(7.0, 3.15))
     ax = axes[0]
@@ -394,20 +424,46 @@ def fig_cost():  # Figure 3 in the manuscript
         for r in Rs:
             blocks = runs[a][: (n // r) * r].reshape(n // r, r, -1).mean(axis=1)
             emp.append(np.mean([sq(bk - ref) for bk in blocks]))
-        ax.plot(np.array(Rs) * per[a], emp, ls="none", marker="o", ms=3.2,
-                mfc="white", mec=C[a], mew=0.9)
+        ax.plot(
+            np.array(Rs) * per[a],
+            emp,
+            ls="none",
+            marker="o",
+            ms=3.2,
+            mfc="white",
+            mec=C[a],
+            mew=0.9,
+        )
     for a in ("SINGLE", "RAW", "FULL", "RQMC"):
-        ax.plot([A[a]["work_s"]], [A[a]["attained"]], ls="none", marker="D", ms=5,
-                color=C[a], mec="black", mew=0.5, zorder=5)
+        ax.plot(
+            [plans[a]["work_s"]],
+            [plans[a]["attained"]],
+            ls="none",
+            marker="D",
+            ms=5,
+            color=C[a],
+            mec="black",
+            mew=0.5,
+            zorder=5,
+        )
     ax.axhline(7e-6, color="#555555", lw=0.8, ls="--")
     ax.axhline(b2, color="#999999", lw=0.6, ls=":")
-    ax.set_xscale("log"); ax.set_yscale("log")
+    ax.set_xscale("log")
+    ax.set_yscale("log")
     ax.set_xlabel("execution time (s)")
     ax.set_ylabel("integrated MSE")
-    handles = [Line2D([], [], color=C[a], lw=1.2, label=NAME[a]) for a in ("SINGLE", "RAW", "WITHIN", "FULL")]
-    handles += [Line2D([], [], ls="none", marker="o", ms=3.2, mfc="white", mec="#444444", label="block estimates"),
-                Line2D([], [], ls="none", marker="D", ms=5, color="#bbbbbb", mec="black", mew=0.5, label="Experiment I plans"),
-                Line2D([], [], color=C["RQMC"], ls="none", marker="D", ms=5, mec="black", mew=0.5, label="RQMC plan")]
+    handles = [
+        Line2D([], [], color=C[a], lw=1.2, label=NAME[a])
+        for a in ("SINGLE", "RAW", "WITHIN", "FULL")
+    ]
+    handles += [
+        Line2D([], [], ls="none", marker="o", ms=3.2, mfc="white", mec="#444444",
+               label="block estimates"),
+        Line2D([], [], ls="none", marker="D", ms=5, color="#bbbbbb", mec="black",
+               mew=0.5, label="Experiment I plans"),
+        Line2D([], [], ls="none", marker="D", ms=5, color=C["RQMC"], mec="black",
+               mew=0.5, label="RQMC plan"),
+    ]
     ax.legend(handles=handles, frameon=False, fontsize=7, loc="upper right")
 
     ax = axes[1]
@@ -416,11 +472,25 @@ def fig_cost():  # Figure 3 in the manuscript
         b2c, Vf, Vr = row["b2_full"], row["V_full"], row["V_raw"]
         Cf, Cr = row["cost_full"], row["cost_raw"]
         W = np.geomspace(max(Cf, Cr), 4000 * Cf, 500)
-        ax.plot(W, (b2c + Vf * Cf / W) / (b2c + Vr * Cr / W), ls=ls, color=C["FULL"], lw=1.2,
-                label=rf"$N={row['N']}$, $h={row['h']}$")
+        ax.plot(
+            W,
+            (b2c + Vf * Cf / W) / (b2c + Vr * Cr / W),
+            ls=ls,
+            color=C["FULL"],
+            lw=1.2,
+            label=rf"$N={row['N']}$, $h={row['h']}$",
+        )
         Bs = row["Bstar_full"]
-        ax.plot([Bs * Cf], [(b2c + Vf / Bs) / (b2c + Vr * Cr / (Bs * Cf))], marker="o", ms=4.5,
-                mfc="white", mec=C["FULL"], mew=1.1, zorder=4)
+        ax.plot(
+            [Bs * Cf],
+            [(b2c + Vf / Bs) / (b2c + Vr * Cr / (Bs * Cf))],
+            marker="o",
+            ms=4.5,
+            mfc="white",
+            mec=C["FULL"],
+            mew=1.1,
+            zorder=4,
+        )
     ax.set_xscale("log")
     ax.set_xlabel("common work budget (s)")
     ax.set_ylabel("model MSE ratio")
@@ -433,24 +503,56 @@ def fig_cost():  # Figure 3 in the manuscript
     print("fig4_cost.pdf")
 
 
-# ---------------------------------------------------------------- figure 5
-def fig_controls():  # Figure 5 in the manuscript (values in Appendix F)
-    rows = {(r["flux"], r["arm"]): r for r in jload(HERE / "numbers.json")["controls"]["rows"]}
-    order = [("RAW", "reflected"), ("RAW+RB", "+ conditional evaluation"),
-             ("RAW+CVH(c*)", "+ heat control"), ("RAW+CVF(c*)", "+ velocity control"),
-             ("WITHIN", "within-sign"), ("FULL", "sign-switched"),
-             ("FULL+RB", "+ conditional evaluation"), ("FULL+CVH(c*)", "+ heat control"),
-             ("FULL+CVF(c*)", "+ velocity control")]
-    col = lambda a: C["FULL"] if a.startswith("FULL") else (C["WITHIN"] if a == "WITHIN" else C["RAW"])
+# ---------------------------------------------------------------- figure 6
+def fig_controls():  # Figure 6 in the manuscript (Section 4.6, values in Table 7)
+    rows = {
+        (r["flux"], r["arm"]): r for r in jload(HERE / "numbers.json")["controls"]["rows"]
+    }
+    order = [
+        ("RAW", "reflected"),
+        ("RAW+RB", "+ conditional evaluation"),
+        ("RAW+CVH(c*)", "+ heat control"),
+        ("RAW+CVF(c*)", "+ velocity control"),
+        ("WITHIN", "within-sign"),
+        ("FULL", "sign-switched"),
+        ("FULL+RB", "+ conditional evaluation"),
+        ("FULL+CVH(c*)", "+ heat control"),
+        ("FULL+CVF(c*)", "+ velocity control"),
+    ]
+
+    def col(a):
+        if a.startswith("FULL"):
+            return C["FULL"]
+        return C["WITHIN"] if a == "WITHIN" else C["RAW"]
+
     fig, axes = plt.subplots(1, 2, figsize=(7.0, 3.0), sharey=True)
-    for ax, flux, ttl in zip(axes, ("burgers", "cubic"), ("Burgers flux", "cubic flux")):
-        for i, (a, lab) in enumerate(order):
-            r = rows[(flux, a)]; y = len(order) - 1 - i
+    for ax, flux in zip(axes, ("burgers", "cubic")):
+        for i, (a, _) in enumerate(order):
+            r = rows[(flux, a)]
+            y = len(order) - 1 - i
             lo, hi = r["ci_vs_RAW"]
-            ax.errorbar([r["ratio_vs_RAW"]], [y], xerr=[[r["ratio_vs_RAW"] - lo], [hi - r["ratio_vs_RAW"]]],
-                        fmt="o", ms=4, color=col(a), ecolor=col(a), elinewidth=0.9, capsize=2)
-            ax.plot([r["var_times_cost_vs_RAW"]], [y], ls="none", marker="D", ms=4,
-                    mfc="white", mec=col(a), mew=0.9)
+            v = r["ratio_vs_RAW"]
+            ax.errorbar(
+                [v],
+                [y],
+                xerr=[[v - lo], [hi - v]],
+                fmt="o",
+                ms=4,
+                color=col(a),
+                ecolor=col(a),
+                elinewidth=0.9,
+                capsize=2,
+            )
+            ax.plot(
+                [r["var_times_cost_vs_RAW"]],
+                [y],
+                ls="none",
+                marker="D",
+                ms=4,
+                mfc="white",
+                mec=col(a),
+                mew=0.9,
+            )
         ax.axvline(1.0, color="#999999", lw=0.6)
         ax.set_xscale("log")
         ax.set_xlim(0.05, 2.2)
@@ -458,20 +560,25 @@ def fig_controls():  # Figure 5 in the manuscript (values in Appendix F)
         ax.grid(axis="y", alpha=0)
     axes[0].set_yticks(range(len(order)))
     axes[0].set_yticklabels([lab for _, lab in order][::-1])
-    handles = [Line2D([], [], ls="none", marker="o", ms=4, color="#444444", label="integrated variance (95% interval)"),
-               Line2D([], [], ls="none", marker="D", ms=4, mfc="white", mec="#444444", label="variance times cost")]
-    fig.legend(handles=handles, frameon=False, fontsize=7.5, loc="lower center", ncol=2, bbox_to_anchor=(0.6, -0.04))
+    handles = [
+        Line2D([], [], ls="none", marker="o", ms=4, color="#444444",
+               label="integrated variance (95% interval)"),
+        Line2D([], [], ls="none", marker="D", ms=4, mfc="white", mec="#444444",
+               label="variance times cost"),
+    ]
+    fig.legend(handles=handles, frameon=False, fontsize=7.5, loc="lower center",
+               ncol=2, bbox_to_anchor=(0.6, -0.04))
     fig.tight_layout(rect=(0, 0.06, 1, 1))
-    fig.savefig(FIG / "fig5_controls.pdf")
+    fig.savefig(FIG / "fig6_controls.pdf")
     plt.close(fig)
-    print("fig5_controls.pdf")
+    print("fig6_controls.pdf")
 
 
 if __name__ == "__main__":
     FIG.mkdir(exist_ok=True)
     fig_construction()
-    fig_fields()
     fig_problem()
-    fig_profiles()
+    fig_fields()
     fig_cost()
+    fig_profiles()
     fig_controls()

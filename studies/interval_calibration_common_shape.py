@@ -1,4 +1,4 @@
-"""Earlier common-shape calibration of the interval procedures (Appendix E, Table 9)."""
+"""Earlier common-shape calibration of the interval procedures (Appendix E.5)."""
 import json, sys
 from pathlib import Path
 import numpy as np

@@ -1,4 +1,4 @@
-"""Nonquadratic-flux transfer test and the general-flux paired stepper imported by later studies (Section 4.4)."""
+"""Nonquadratic-flux transfer test and the general-flux paired stepper imported by later studies (Section 4.6)."""
 import csv
 import hashlib
 import json

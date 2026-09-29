@@ -1,4 +1,4 @@
-"""Joint refinement cell for the bias-dominated regime (Section 4.6, Figure 5)."""
+"""Joint refinement cell for the bias-dominated regime (Section 4.3, Figure 4)."""
 import json
 import sys
 import time

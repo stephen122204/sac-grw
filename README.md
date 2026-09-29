@@ -69,7 +69,7 @@ step. For other initial particles or flux derivatives, use `advance_pair` in
 - `gradient_particles.py`: single-simulation update, particle initialization, and field reconstruction.
 - `reproduction/analysis/`: scripts that rebuild the paper's numbers and figures,
   with `numbers.json` and the Figure 1 state.
-- `reproduction/evidence/`: recomputed particle fields behind Table 1 and Figure 2.
+- `reproduction/evidence/`: recomputed particle fields behind Table 1 and Figures 2, 3, and 4.
 - `output/`: the archived experiments the paper reports, one directory per study.
 - `studies/`: the drivers that produced those archives and the modules they import.
 
@@ -91,8 +91,8 @@ records the computed values and their source paths. Each directory under
 | Conditional final stage, controls, and flux comparison | `output/controls_and_costs/fields.npz` and `rows.csv` |
 | Profiles and observation times | `output/profile_time_flux_sweep/mechanism.json` |
 | Matched-pair distances | `output/matched_pair_separation/separation.json`, the `matched_state` rows. The `own_history` rows describe a different comparison |
-| Work at a target, Experiment A | `output/heldout_work_experiment_a/compare.json` |
-| Work at a target, Experiment B | `output/heldout_work_experiment_b/worktarget.json`, with the interleaved timing summary in `output/heldout_work_experiment_b/timing_check.json` |
+| Work at a target, Experiment A (Experiment I in the paper) | `output/heldout_work_experiment_a/compare.json` |
+| Work at a target, Experiment B (Experiment II in the paper) | `output/heldout_work_experiment_b/worktarget.json`, with the interleaved timing summary in `output/heldout_work_experiment_b/timing_check.json` |
 | Pointwise variance ratios | `output/pointwise_observables/observable.json` and `f_intervals.json` |
 | Nonlinear-observable mean squared errors | `reproduction/evidence/principal_fields.npz`, with the empirical MSE recomputed by `reproduction/analysis/build_numbers.py` |
 | Bias crossover | `output/bias_crossover_cell/joint_cell.json` |

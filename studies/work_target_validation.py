@@ -1,4 +1,4 @@
-"""Independent validation of the work-to-target planning rule (Section 4.5, Appendix E)."""
+"""Independent validation of the work-to-target planning rule (Section 4.3, Appendix E.2)."""
 import json
 import sys
 import time

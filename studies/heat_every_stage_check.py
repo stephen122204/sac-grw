@@ -1,4 +1,4 @@
-"""Every-stage variance decomposition for the heat equation (flux f = 0).
+"""Every-stage variance decomposition for the heat equation, flux f = 0 (Section 3.4, Proposition 3.10, Appendix A.6).
 
 For an admissible coupling, the conditional mean of each terminal field given the
 first k+1 draws is u_- + sum_i m_i Phi((x - X_i(t_{k+1}))/s_k), s_k = sigma sqrt(K-k-1),
