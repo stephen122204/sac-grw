@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-message: "If you use this software or numerical data, please cite this repository and the paper below."
+message: "If you use this software or numerical data, please cite this software release."
 title: "Sign-Switched Antithetic Coupling for Signed Gradient-Particle Methods"
 authors:
   - family-names: Abkin
@@ -9,15 +9,5 @@ authors:
 repository-code: "https://github.com/stephen122204/sac-grw"
 license: MIT
 version: "1.0"
+doi: "10.5281/zenodo.23055907"
 date-released: "2026-09-30"
-preferred-citation:
-  type: article
-  title: >-
-    Sign-Switched Antithetic Coupling for Signed Gradient-Particle Methods
-  authors:
-    - family-names: Abkin
-      given-names: Stephen
-    - family-names: Daripa
-      given-names: Prabir
-  year: 2026
-  notes: "Unpublished manuscript, September 2026; no DOI assigned."
