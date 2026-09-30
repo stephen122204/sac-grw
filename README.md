@@ -129,6 +129,7 @@ summaries and figures.
 
 ## Citation
 
+The first release is [SAC-GRW-v1.0](https://github.com/stephen122204/sac-grw/releases/tag/v1.0).
 Author and paper citation metadata are in [CITATION.cff](CITATION.cff).
 The software and data are distributed under the [MIT license](LICENSE).
 Zenodo deposit metadata are supplied in `.zenodo.json`; the DOI link will be
