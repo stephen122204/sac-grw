@@ -1,6 +1,6 @@
 """Run a coupled field estimate with user-selected parameters.
 
-This is an exploratory example, not a paper benchmark or a tolerance controller.
+Reports the paired field mean and its estimated sampling variance.
 The initial cumulative field is a deterministic step approximation to the chosen
 profile on [-3, 3], continued constantly outside that interval.
 """

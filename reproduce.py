@@ -2,7 +2,8 @@
 
 `paper` rebuilds reproduction/analysis/numbers.json from the archived experiments
 under output/ and draws the six figures into reproduction/figures/. Nothing is
-simulated or timed again, and the drivers that produced the archives are in studies/.
+simulated or timed again. ``verify`` checks solver identities and recomputes central
+archived results independently. The original experiment drivers are in studies/.
 """
 import argparse
 import os
@@ -19,9 +20,16 @@ os.environ.setdefault('SOURCE_DATE_EPOCH', '1704067200')  # 2024-01-01 UTC
 def main():
     parser = argparse.ArgumentParser(
         prog='reproduce.py',
-        description='Reproduce the SAC-GRW paper summaries and figures from the archived experiments.')
-    parser.add_argument('target', choices=['paper'])
-    parser.parse_args()
+        description='Reproduce or verify the sign-switched coupling paper results.')
+    parser.add_argument('target', nargs="?", choices=['paper', 'verify'])
+    args = parser.parse_args()
+    if args.target is None:
+        parser.print_help()
+        return
+    if args.target == "verify":
+        subprocess.run([sys.executable, os.path.join(ROOT, "checks", "verify_results.py")],
+                       cwd=ROOT, check=True)
+        return
     scripts = ['build_numbers.py', 'make_figures.py']
     for script in scripts:
         subprocess.run([sys.executable, os.path.join(ROOT, 'reproduction', 'analysis', script)],

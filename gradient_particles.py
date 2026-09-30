@@ -1,9 +1,10 @@
-"""Single-simulation gradient-particle update of Algorithm 1 in the paper (Section 2.2).
+"""Particle initialization, cumulative reconstruction, and a Burgers stepper.
 
-Sorted signed particles carry positions, masses, and the velocities used by the next
-transport, then receive independent Gaussian diffusion increments. The module also
-provides the cumulative field reconstruction and the tanh-shock initialization of
-Appendix C, with particles on the whole line and an output window used only for reporting.
+The sign-switched coupling paper uses mean transport. For Burgers, select
+``conditional_mean_transport=True`` in ``advance_particles`` to reproduce its
+single-simulation update. The default sampled-velocity options remain available
+for the original study drivers. Particles evolve on the whole line; output
+windows are used for reporting.
 """
 
 import os
@@ -82,9 +83,10 @@ def advance_particles(x_p, m_p, u_left, nu, a, dt, n_steps, rng,
                              antithetic=False):
     """Advance signed gradient particles with the paper's shared stepper.
 
-    One step is exactly the Lie composition stated in the manuscript:
-    two-speed relaxation transport and equilibrium resampling, followed by
-    Brownian diffusion. ``snapshot_steps`` uses one-based completed-step
+    With ``conditional_mean_transport=True``, this is the Burgers update of
+    Algorithm 1 in the sign-switched coupling paper. The default instead uses
+    two-speed transport with equilibrium resampling followed by diffusion,
+    as in the original study drivers. ``snapshot_steps`` uses one-based completed-step
     indices and is intended for study drivers, not for a separate algorithm.
 
     ``rng_brownian`` and ``conditional_mean_transport`` support an internal
