@@ -8,6 +8,8 @@ authors:
     given-names: Prabir
 repository-code: "https://github.com/stephen122204/sac-grw"
 license: MIT
+version: "1.0"
+date-released: "2026-09-30"
 preferred-citation:
   type: article
   title: >-
