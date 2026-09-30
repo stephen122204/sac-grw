@@ -8,7 +8,7 @@ def advance_pair(
 ):
     """Paired general-flux inclusive-schedule update. Sign multipliers and the
     matching are functions of the pre-diffusion configuration, hence predictable
-    before Z is drawn, so each arm keeps its exact marginal law."""
+    before Z is drawn, so each replica keeps its exact marginal law."""
     if policy not in {"RAW", "FULL", "FINAL", "WITHIN"}:
         raise ValueError("unknown coupling policy")
     if not (np.isfinite(nu) and nu >= 0 and np.isfinite(dt) and dt > 0):
