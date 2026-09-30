@@ -130,10 +130,15 @@ summaries and figures.
 ## Citation
 
 The first release is [SAC-GRW-v1.0](https://github.com/stephen122204/sac-grw/releases/tag/v1.0).
-Author and paper citation metadata are in [CITATION.cff](CITATION.cff).
+The archived software and data are available on
+[Zenodo](https://doi.org/10.5281/zenodo.23055907).
+
+Abkin, S., and Daripa, P. (2026). *Sign-Switched Antithetic Coupling for Signed
+Gradient-Particle Methods* (Version 1.0) [Computer software]. Zenodo.
+[https://doi.org/10.5281/zenodo.23055907](https://doi.org/10.5281/zenodo.23055907).
+
+Software citation metadata are in [CITATION.cff](CITATION.cff).
 The software and data are distributed under the [MIT license](LICENSE).
-Zenodo deposit metadata are supplied in `.zenodo.json`; the DOI link will be
-added after the archive is published.
 
 ## Acknowledgments
 

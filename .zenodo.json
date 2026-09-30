@@ -1,7 +1,7 @@
 {
   "title": "Sign-Switched Antithetic Coupling for Signed Gradient-Particle Methods",
   "upload_type": "software",
-  "description": "Python software and numerical data accompanying the manuscript by Stephen Abkin and Prabir Daripa. The code couples signed gradient-particle simulations by spatial rank and switches between reflected and synchronous diffusion increments using particle mass signs. It rebuilds the numerical summaries and six figures from archived heat, Burgers, and cubic-flux experiments, provides independent result and solver checks, and includes a command-line runner for new cases.",
+  "description": "Code and data for \"Sign-Switched Antithetic Coupling for Signed Gradient-Particle Methods\" by Stephen Abkin and Prabir Daripa. See the README for installation and reproduction instructions.",
   "creators": [
     {
       "name": "Abkin, Stephen"
