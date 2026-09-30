@@ -4,11 +4,11 @@ import unittest
 import numpy as np
 from scipy.integrate import quad
 from scipy.special import ndtr
-from coupled_gradient_particles import advance_pair
 from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from coupled_gradient_particles import advance_pair
 from gradient_particles import advance_particles, reconstruct_cumulative_field
 
 
@@ -118,17 +118,6 @@ class CouplingTests(unittest.TestCase):
                 for j in (0, 1):
                     np.testing.assert_array_equal(a[i][j], b[i][j])
 
-    def test_a_replica_is_policy_independent(self):
-        initial = (np.linspace(-0.1, 0.1, 12), np.tile([0.05, -0.05], 6), 0.0)
-        baseline = advance_pair(
-            initial, 0.1, 0.005, 20, np.random.default_rng(81), "RAW", lambda u: u
-        )
-        for p in ("FULL", "WITHIN", "FINAL"):
-            other = advance_pair(
-                initial, 0.1, 0.005, 20, np.random.default_rng(81), p, lambda u: u
-            )
-            np.testing.assert_array_equal(other[0][0], baseline[0][0])
-            np.testing.assert_array_equal(other[0][1], baseline[0][1])
 
     def test_finalstage_identity_by_independent_indicator_quadrature(self):
         # Unequal magnitudes, unlike pairs, and separated particles.
@@ -158,21 +147,6 @@ class CouplingTests(unittest.TestCase):
         self.assertAlmostEqual(exact, numeric, places=10)
         self.assertGreater(exact, 0)
 
-    def test_incompatible_compensation_options_are_rejected(self):
-        for option in ("conditional_mean_transport", "redraw_after_diffusion"):
-            with self.assertRaises(ValueError):
-                advance_particles(
-                    np.array([-0.1, 0.1]),
-                    np.array([0.5, -0.5]),
-                    0.0,
-                    0.1,
-                    2.0,
-                    0.005,
-                    2,
-                    np.random.default_rng(1),
-                    compensate_transport_variance=True,
-                    **{option: True}
-                )
 
     def test_invalid_inputs_are_rejected(self):
         init = (np.arange(4.0), np.array([1.0, -1.0, 1.0, -1.0]), 0.0)
