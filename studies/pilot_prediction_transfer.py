@@ -1,4 +1,4 @@
-"""Tests whether a baseline-only pilot predicts the coupling benefit on other problems (Appendix E)."""
+"""Tests whether a baseline-only pilot predicts the coupling benefit on other problems (archive-only, not in the paper)."""
 import json, sys, time
 from pathlib import Path
 import numpy as np

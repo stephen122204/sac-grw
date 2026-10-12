@@ -1,4 +1,4 @@
-"""Deterministic spectral reference solution for the viscous conservation law (Appendix C)."""
+"""Deterministic spectral reference solution for the viscous conservation law (the reference solution of Section 5.1)."""
 import numpy as np
 
 L_DOMAIN = 32.0

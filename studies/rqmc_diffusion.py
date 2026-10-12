@@ -1,4 +1,4 @@
-"""Randomized quasi-Monte Carlo diffusion inputs for the sorted particles, used as a comparator (Section 4.3, Appendix D.2)."""
+"""Randomized quasi-Monte Carlo diffusion inputs for the sorted particles, used as a comparator (Example 2, Section 5.3)."""
 import numpy as np
 from scipy.stats import qmc, norm
 import scipy

@@ -1,4 +1,4 @@
-"""Compares a coupled replica with the single-simulation update on the same draws (Section 3.3)."""
+"""Compares a coupled replica with the single-simulation update on the same draws (Proposition 3.3, Section 3.3)."""
 import json
 import os
 import subprocess

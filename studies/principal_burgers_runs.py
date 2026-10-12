@@ -1,4 +1,4 @@
-"""Principal two-pulse Burgers runs at 8192 particles with per-pair costs and one-sign checks (Sections 3.4 and 4.2)."""
+"""Principal two-pulse Burgers runs at 8192 particles with per-pair costs and one-sign checks (Example 1, Section 5.2, Table 1 and Figure 2)."""
 import json, sys, time
 from pathlib import Path
 import numpy as np

@@ -1,4 +1,4 @@
-"""Reference solution and particle initialization for the two-pulse profile (Appendix C)."""
+"""Reference solution and particle initialization for the two-pulse profile (Section 5.1)."""
 import numpy as np
 from scipy.special import erf
 from scipy.integrate import quad

@@ -1,4 +1,4 @@
-"""Sign-structure configurations at the production cell (Section 4.4, Table 3)."""
+"""Sign-structure configurations at the production cell (Example 3, Section 5.4, Table 3)."""
 import json, sys, time
 from pathlib import Path
 import numpy as np

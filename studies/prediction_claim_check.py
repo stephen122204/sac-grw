@@ -1,4 +1,4 @@
-"""Check of the pilot-based prediction claim for the pointwise study (Appendix E)."""
+"""Check of the pilot-based prediction claim for the pointwise study (archive-only, not in the paper)."""
 import json, sys, time
 from pathlib import Path
 import numpy as np

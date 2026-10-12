@@ -1,4 +1,4 @@
-"""Transport-aware known-mean control variate (Section 4.6, Appendix D)."""
+"""Transport-aware known-mean control variate (Example 5, Section 5.6)."""
 import sys
 from pathlib import Path
 

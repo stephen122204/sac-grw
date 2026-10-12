@@ -1,4 +1,4 @@
-"""Held-out work comparison including within-sign pairing (Section 4.3, Experiment II)."""
+"""Held-out work comparison including within-sign pairing (Example 2, Section 5.3, Experiment II and Table 2)."""
 import json, sys, time
 from pathlib import Path
 import numpy as np

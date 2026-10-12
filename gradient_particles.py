@@ -84,7 +84,7 @@ def advance_particles(x_p, m_p, u_left, nu, a, dt, n_steps, rng,
     """Advance signed gradient particles with the paper's shared stepper.
 
     With ``conditional_mean_transport=True``, this is the Burgers update of
-    Algorithm 1 in the sign-switched coupling paper. The default instead uses
+    the step in Section 2.2 of the sign-switched coupling paper. The default instead uses
     two-speed transport with equilibrium resampling followed by diffusion,
     as in the original study drivers. ``snapshot_steps`` uses one-based completed-step
     indices and is intended for study drivers, not for a separate algorithm.
@@ -258,7 +258,7 @@ def advance_particles(x_p, m_p, u_left, nu, a, dt, n_steps, rng,
     u_max_history = []
 
     for step in range(1, n_steps + 1):
-        # Production timing (Algorithm 1, `sec:gbmc-algorithm`): the labels in
+        # Production timing (the step order of Section 2.2): the labels in
         # v were drawn from the PREVIOUS reconstruction, so this transport,
         # the following sort/reconstruct/verify/redraw, and the Brownian
         # displacement must keep this order. Do not reorder these stages.

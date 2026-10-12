@@ -1,4 +1,4 @@
-"""Viscosity sweep of the three pairings on the two-pulse Burgers problem (Section 4.5, Table 8)."""
+"""Viscosity sweep of the three pairings on the two-pulse Burgers problem (Example 4, Section 5.5)."""
 import json, sys, time
 from pathlib import Path
 import numpy as np

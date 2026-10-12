@@ -1,4 +1,4 @@
-"""Two-shape calibration of the variance-ratio intervals (Appendix E.5)."""
+"""Two-shape calibration of the variance-ratio intervals (the interval convention of Section 5.1; archive-only)."""
 import json, sys, time
 from pathlib import Path
 import numpy as np

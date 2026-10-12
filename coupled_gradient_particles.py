@@ -1,4 +1,4 @@
-"""Coupled advance of two simulations of Algorithm 1 under the admissible couplings of Section 3.2: RAW reflects at equal rank, FULL switches by the mass-sign product, WITHIN reflects within each sign class, FINAL switches only at the last stage. Multipliers and matching are fixed before each draw, so each replica keeps the single-simulation law (Section 3.3)."""
+"""Coupled advance of two simulations of the step of Section 2.2 under the admissible couplings of Section 3.2 (Definition 3.2): RAW reflects at equal rank, FULL switches by the mass-sign product, WITHIN reflects within each sign class, FINAL switches only at the last stage. Multipliers and matching are fixed before each draw, so each replica keeps the single-simulation law (Proposition 3.3)."""
 
 import numpy as np
 

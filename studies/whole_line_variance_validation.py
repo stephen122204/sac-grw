@@ -1,4 +1,4 @@
-"""Exact whole-line variance validation used by the final-stage and screen studies (Section 3.4)."""
+"""Exact whole-line variance validation used by the final-stage and screen studies (Proposition 4.3 and Corollary 4.4, Section 4.2)."""
 import csv, hashlib, json, sys, time, warnings
 from pathlib import Path
 import numpy as np

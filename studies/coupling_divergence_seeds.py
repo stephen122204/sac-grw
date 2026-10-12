@@ -1,4 +1,4 @@
-"""Fraction of seeds on which switched and reflected pairing diverge for separated sign regions (Section 3.4, Appendix B.2)."""
+"""Fraction of seeds on which switched and reflected pairing diverge for separated sign regions (Example 3, Section 5.4; the counts are archive-only)."""
 import json, sys, time
 from pathlib import Path
 import numpy as np

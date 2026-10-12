@@ -1,4 +1,4 @@
-"""Early screen of the variance ordering across parameter cells, before the studies of Section 4. Provenance only."""
+"""Early screen of the variance ordering across parameter cells, before the studies of Section 5. Provenance only."""
 import json, sys, warnings
 from pathlib import Path
 import numpy as np

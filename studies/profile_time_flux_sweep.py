@@ -1,4 +1,4 @@
-"""Initial profile, observation time, and flux sweep (Section 4.5, Figure 5 and Table 5)."""
+"""Initial profile, observation time, and flux sweep (Example 4, Section 5.5, Figure 4 left)."""
 import json, sys, time
 from pathlib import Path
 import numpy as np

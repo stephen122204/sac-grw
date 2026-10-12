@@ -1,4 +1,4 @@
-"""Switching only at the last diffusion stage and its exact one-stage guarantee (Section 3.4, Appendix A.6)."""
+"""Switching only at the last diffusion stage and its exact one-stage guarantee (Corollary 4.4, Section 4.2; Example 5, Section 5.6)."""
 import csv, hashlib, json, sys, time
 from pathlib import Path
 import numpy as np

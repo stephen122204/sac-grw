@@ -1,4 +1,4 @@
-"""Smooth nonstationary transient study of the single-simulation update, and the Gaussian gradient-particle initialization used by the paired prototype (Section 2.1, Appendix C)."""
+"""Smooth nonstationary transient study of the single-simulation update, and the Gaussian gradient-particle initialization used by the paired prototype (Section 2.1)."""
 
 import contextlib
 import csv
