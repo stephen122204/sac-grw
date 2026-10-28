@@ -1,7 +1,8 @@
 # Sign-Switched Antithetic Coupling for Signed Gradient-Particle Methods
 
-Python software and numerical data for the paper of the same name
-by Stephen Abkin and Prabir Daripa. The examples cover the heat equation,
+Python software and numerical data for the paper
+*Sign-switched antithetic coupling in gradient random-walk methods for
+convection–diffusion equations* by Stephen Abkin and Prabir Daripa. The examples cover the heat equation,
 viscous Burgers' equation, and a scalar equation with a cubic flux.
 
 The method pairs two gradient-particle simulations by spatial rank and uses
@@ -128,6 +129,21 @@ The pinned dependencies above specify the environment for rebuilding the
 summaries and figures.
 
 ## Citation
+
+Preprint: https://arxiv.org/abs/2610.01120
+
+```bibtex
+@misc{abkin2026sign,
+  title         = {Sign-switched antithetic coupling in gradient random-walk methods for convection--diffusion equations},
+  author        = {Abkin, Stephen and Daripa, Prabir},
+  year          = {2026},
+  eprint        = {2610.01120},
+  archivePrefix = {arXiv},
+  primaryClass  = {math.NA},
+  doi           = {10.48550/arXiv.2610.01120},
+  url           = {https://arxiv.org/abs/2610.01120}
+}
+```
 
 The first release is [SAC-GRW-v1.0](https://github.com/stephen122204/sac-grw/releases/tag/v1.0).
 The archived software and data are available on

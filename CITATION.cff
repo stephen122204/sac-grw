@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-message: "If you use this software or numerical data, please cite this software release."
+message: "If you use this software or numerical data, please cite this release and the accompanying paper."
 title: "Sign-Switched Antithetic Coupling for Signed Gradient-Particle Methods"
 authors:
   - family-names: Abkin
@@ -11,3 +11,15 @@ license: MIT
 version: "1.0"
 doi: "10.5281/zenodo.23055907"
 date-released: "2026-09-30"
+preferred-citation:
+  type: article
+  title: "Sign-switched antithetic coupling in gradient random-walk methods for convection-diffusion equations"
+  authors:
+    - family-names: Abkin
+      given-names: Stephen
+    - family-names: Daripa
+      given-names: Prabir
+  year: 2026
+  doi: 10.48550/arXiv.2610.01120
+  url: "https://arxiv.org/abs/2610.01120"
+  notes: "arXiv preprint arXiv:2610.01120"
